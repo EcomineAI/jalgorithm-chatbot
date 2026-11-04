@@ -41,15 +41,26 @@ export default function ChatPage() {
     setError(null)
 
     try {
-      const [reply, intent] = await Promise.all([
-        sendMessage(history.map(({ role, content }) => ({ role, content }))),
-        classifyIntent(text),
-      ])
+      const intent = await classifyIntent(text)
 
+      // Refuse off-topic messages without calling the LLM
+      if (intent === 'other') {
+        const refusal = "I can only help with appointment bookings and service inquiries. Would you like to book, reschedule, or cancel an appointment?"
+        const assistantMsg = { id: Date.now() + 1, role: 'assistant', content: refusal, intent }
+        setMessages((prev) => [...prev, assistantMsg])
+        await supabase.from('chat_logs').insert({
+          user_message: text,
+          bot_reply: refusal,
+          intent_classified: intent,
+          session_id: getSessionId(),
+        }).then(() => {})
+        return
+      }
+
+      const reply = await sendMessage(history.map(({ role, content }) => ({ role, content })))
       const assistantMsg = { id: Date.now() + 1, role: 'assistant', content: reply, intent }
       setMessages((prev) => [...prev, assistantMsg])
 
-      // Log conversation to Supabase for research evaluation
       await supabase.from('chat_logs').insert({
         user_message: text,
         bot_reply: reply,

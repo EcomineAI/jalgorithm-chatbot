@@ -82,6 +82,13 @@ Reply in English or Filipino based on the client's language.`
 
 // ── send message ──────────────────────────────────────────────────────────────
 
+// Keep only the last N messages to stay within context window.
+// System prompt ~600 tokens + 10 messages * ~200 tokens = ~2600 tokens safe budget.
+function trimHistory(messages, limit = 10) {
+  if (messages.length <= limit) return messages
+  return messages.slice(-limit)
+}
+
 export async function sendMessage(messages) {
   if (!_tunnelUrl) {
     throw new Error('AI is currently offline. Please try again later.')
@@ -94,10 +101,12 @@ export async function sendMessage(messages) {
       model: 'local-model',
       messages: [
         { role: 'system', content: buildSystemPrompt() },
-        ...messages,
+        ...trimHistory(messages),
       ],
       temperature: 0.5,
-      max_tokens: 256,
+      max_tokens: 200,  // short replies, fast output
+      top_p: 0.9,
+      repeat_penalty: 1.1,
       stream: false,
     }),
   })

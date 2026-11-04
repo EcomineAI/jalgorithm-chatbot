@@ -135,7 +135,23 @@ export async function classifyIntent(message) {
       messages: [
         {
           role: 'system',
-          content: `Classify the message into one of: book, reschedule, cancel, faq, other. Reply with the single word only.`,
+          content: `Classify the client message into exactly one of these intents. Reply with the single word only, nothing else.
+
+book - client wants to make a new appointment
+reschedule - client wants to change an existing appointment date/time
+cancel - client wants to cancel an existing appointment
+faq - client is asking about services, prices, availability, location, how to book, artist info, or any general question about the business
+other - message is completely unrelated to hair, makeup, appointments, or the business
+
+Examples:
+"What services do you offer?" -> faq
+"Magkano ang bridal?" -> faq
+"May available ba kayo?" -> faq
+"Book an appointment" -> book
+"Gusto ko mag-book" -> book
+"Pwede ba palitan yung schedule ko?" -> reschedule
+"Cancel na yung booking ko" -> cancel
+"Kumain ka na ba?" -> other`,
         },
         { role: 'user', content: message },
       ],

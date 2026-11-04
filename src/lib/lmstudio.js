@@ -1,12 +1,25 @@
 import { supabase } from './supabase.js'
 
-// Current tunnel URL — updated live via Supabase Realtime
+// Current tunnel URL - updated live via Supabase Realtime
 let _tunnelUrl = null
 let _status = 'connecting' // 'connecting' | 'online' | 'offline'
 const _listeners = new Set()
 
+// Knowledgebase cache - loaded once on startup
+let _kb = null
+
 function notify() {
   _listeners.forEach((fn) => fn(_status, _tunnelUrl))
+}
+
+// Load knowledgebase.md from /public
+async function loadKnowledgebase() {
+  try {
+    const res = await fetch('/knowledgebase.md')
+    if (res.ok) _kb = await res.text()
+  } catch {
+    _kb = null
+  }
 }
 
 // Fetch the current tunnel URL from Supabase on startup
@@ -22,8 +35,7 @@ async function fetchTunnelUrl() {
   notify()
 }
 
-// Subscribe to realtime changes so the URL updates the moment
-// tunnel_bridge.py pushes a new URL or clears it on shutdown
+// Subscribe to realtime changes
 supabase
   .channel('tunnel_config_changes')
   .on(
@@ -38,11 +50,10 @@ supabase
   .subscribe()
 
 fetchTunnelUrl()
+loadKnowledgebase()
 
-// Subscribe to tunnel status changes (used by ChatPage to show online/offline)
 export function onTunnelStatus(fn) {
   _listeners.add(fn)
-  // fire immediately with current state
   fn(_status, _tunnelUrl)
   return () => _listeners.delete(fn)
 }
@@ -51,25 +62,23 @@ export function getTunnelStatus() {
   return _status
 }
 
+// Reload KB - called by admin dashboard after updating knowledgebase.md
+export async function reloadKnowledgebase() {
+  await loadKnowledgebase()
+}
+
 // ── system prompt ─────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are JAL, a friendly and professional appointment assistant for a freelance hair and makeup artist based in Olongapo City.
+function buildSystemPrompt() {
+  const base = `You are JAL, the appointment assistant for a freelance hair and makeup artist.
+Reply in 1-3 short sentences only. Be friendly but concise.
+Never make up info not in the knowledgebase.
+For bookings, collect: client name, service, date/time, location, contact number.
+Reply in English or Filipino based on the client's language.`
 
-You help clients with:
-- Booking new appointments (services: bridal makeup, hair styling, personal makeup, event packages)
-- Rescheduling existing appointments
-- Cancelling appointments
-- Answering FAQs about services and availability
-
-For every booking request, collect:
-1. Client name
-2. Service type
-3. Event date and time
-4. Event location
-5. Contact number
-
-Respond warmly but concisely. If a request is unclear, ask for clarification. Always confirm booking details before finalizing.
-Reply in English or Filipino depending on the client's language.`
+  if (_kb) return `${base}\n\n--- KNOWLEDGEBASE (source of truth) ---\n${_kb}\n--- END KNOWLEDGEBASE ---`
+  return base
+}
 
 // ── send message ──────────────────────────────────────────────────────────────
 
@@ -84,18 +93,16 @@ export async function sendMessage(messages) {
     body: JSON.stringify({
       model: 'local-model',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildSystemPrompt() },
         ...messages,
       ],
-      temperature: 0.7,
-      max_tokens: 512,
+      temperature: 0.5,
+      max_tokens: 256,
       stream: false,
     }),
   })
 
-  if (!response.ok) {
-    throw new Error(`AI error: ${response.status}`)
-  }
+  if (!response.ok) throw new Error(`AI error: ${response.status}`)
 
   const data = await response.json()
   return data.choices[0].message.content
@@ -114,13 +121,12 @@ export async function classifyIntent(message) {
       messages: [
         {
           role: 'system',
-          content: `Classify the following client message into exactly one of these intents: book, reschedule, cancel, faq, other.
-Reply with only the intent word, nothing else.`,
+          content: `Classify the message into one of: book, reschedule, cancel, faq, other. Reply with the single word only.`,
         },
         { role: 'user', content: message },
       ],
       temperature: 0,
-      max_tokens: 10,
+      max_tokens: 5,
       stream: false,
     }),
   })

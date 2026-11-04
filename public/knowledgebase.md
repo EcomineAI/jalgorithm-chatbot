@@ -1,8 +1,9 @@
 # JAL Knowledgebase
 # This file is the only source of truth for JAL. Read this before replying to any client.
 
-## Artist Info
-- Name: [Artist Name]
+## Salon Info
+- Name: Vicky's Parlor
+- Artist: Vicky
 - Based in: Olongapo City, Zambales
 - Contact: [Phone/Facebook Page]
 - Working hours: 8AM - 7PM daily
@@ -42,4 +43,7 @@ Q: What areas do you cover?
 A: Olongapo City and nearby areas. Travel fee applies for Subic, Castillejos, San Antonio, and beyond.
 
 Q: Do you have a portfolio?
-A: Yes, you can view the artist's work on [Facebook/Instagram Page Link].
+A: Yes, you can view Vicky's work on [Facebook/Instagram Page Link].
+
+Q: What is the name of this salon?
+A: This is Vicky's Parlor, a freelance hair and makeup service based in Olongapo City.

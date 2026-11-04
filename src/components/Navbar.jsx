@@ -27,7 +27,7 @@ export default function Navbar() {
           <div className="w-7 h-7 bg-pink-500 rounded-lg flex items-center justify-center">
             <Sparkles size={14} className="text-white" />
           </div>
-          JALgorithm
+          Vicky's Parlor
         </Link>
 
         {/* Desktop links */}

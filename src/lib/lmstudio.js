@@ -82,7 +82,8 @@ You can help with:
 
 If asked to book, collect: name, service, preferred date and time, location, contact number.
 Reply in English or Filipino depending on how the client writes.
-Never make up information not in the knowledgebase below.`
+Never make up information not in the knowledgebase below.
+Never use placeholder text like [Your name] or [name] — just ask the question directly.`
 
   if (_kb) return `${base}\n\nKNOWLEDGEBASE:\n${_kb}`
   return base

@@ -125,7 +125,7 @@ export async function sendMessage(messages) {
 // ── classify intent ───────────────────────────────────────────────────────────
 
 export async function classifyIntent(message) {
-  if (!_tunnelUrl) return 'other'
+  if (!_tunnelUrl) return 'faq'
 
   const response = await fetch(`${_tunnelUrl}/v1/chat/completions`, {
     method: 'POST',
@@ -135,36 +135,66 @@ export async function classifyIntent(message) {
       messages: [
         {
           role: 'system',
-          content: `Classify the client message into exactly one of these intents. Reply with the single word only, nothing else.
+          // /no_think disables Qwen3 reasoning mode so it replies directly
+          content: `/no_think
+You are a classifier. Reply with ONE word only — no punctuation, no explanation, no thinking.
 
-book - client wants to make a new appointment
-reschedule - client wants to change an existing appointment date/time
-cancel - client wants to cancel an existing appointment
-faq - client is asking about services, prices, availability, location, how to book, artist info, or any general question about the business
-other - message is completely unrelated to hair, makeup, appointments, or the business
+Intents:
+book       = wants to make a new appointment
+reschedule = wants to change an appointment date/time
+cancel     = wants to cancel an appointment
+faq        = asking about services, prices, location, hours, artist, or anything about the business
+other      = completely unrelated to hair, makeup, beauty, or appointments
 
 Examples:
-"What services do you offer?" -> faq
-"Magkano ang bridal?" -> faq
-"May available ba kayo?" -> faq
 "Book an appointment" -> book
+"I want to book" -> book
 "Gusto ko mag-book" -> book
-"Pwede ba palitan yung schedule ko?" -> reschedule
-"Cancel na yung booking ko" -> cancel
-"Kumain ka na ba?" -> other`,
+"Reschedule" -> reschedule
+"Pwede ba palitan yung schedule?" -> reschedule
+"Cancel booking" -> cancel
+"Cancel na" -> cancel
+"What services do you offer?" -> faq
+"Magkano bridal?" -> faq
+"May available ba?" -> faq
+"What's your location?" -> faq
+"hi" -> faq
+"hello" -> faq
+"Kumain ka na ba?" -> other
+"What's the weather?" -> other`,
         },
         { role: 'user', content: message },
       ],
       temperature: 0,
-      max_tokens: 5,
+      max_tokens: 10,
       stream: false,
     }),
   })
 
-  if (!response.ok) return 'other'
+  if (!response.ok) return 'faq'
 
   const data = await response.json()
-  const raw = data.choices[0].message.content.trim().toLowerCase()
+  const raw = data.choices[0].message.content || ''
+
+  // Strip <think>...</think> blocks that reasoning models emit
+  const stripped = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim().toLowerCase()
+
+  // Extract the last word in case the model still adds padding
+  const words = stripped.split(/\s+/).filter(Boolean)
+  const last = words[words.length - 1] || ''
+
   const valid = ['book', 'reschedule', 'cancel', 'faq', 'other']
-  return valid.includes(raw) ? raw : 'other'
+
+  // Check full stripped text first, then last word
+  if (valid.includes(stripped)) return stripped
+  if (valid.includes(last)) return last
+
+  // Keyword fallback so common phrases never get refused
+  const lc = message.toLowerCase()
+  if (/book|appointment|schedule|apoint/.test(lc)) return 'book'
+  if (/reschedule|palitan|change|move/.test(lc)) return 'reschedule'
+  if (/cancel|cancell/.test(lc)) return 'cancel'
+  if (/service|price|magkano|available|location|hours|offer|bridal|hair|makeup|package|how|what|where|when|sino|ano|hello|hi|kumusta/.test(lc)) return 'faq'
+
+  return 'faq'
 }

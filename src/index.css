@@ -12,3 +12,120 @@
 body {
   font-family: var(--font-sans);
 }
+
+/* ── Smooth scroll ── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Idle float — apply to hero card, step cards, etc. ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
+}
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-4px) rotate(0.5deg); }
+}
+
+/* ── Pulse glow — pink ring breathe ── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+  50%       { box-shadow: 0 0 0 8px rgba(236, 72, 153, 0.12); }
+}
+
+/* ── Shimmer — skeleton/badge shine ── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* ── Sparkle spin ── */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Fade up entrance ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scale in entrance ── */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Utility classes */
+.animate-float        { animation: float 4s ease-in-out infinite; }
+.animate-float-slow   { animation: float-slow 6s ease-in-out infinite; }
+.animate-float-subtle { animation: float-subtle 5s ease-in-out infinite; }
+.animate-pulse-glow   { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-spin-slow    { animation: spin-slow 8s linear infinite; }
+.animate-fade-up      { animation: fade-up 0.6s ease-out both; }
+.animate-scale-in     { animation: scale-in 0.5s ease-out both; }
+
+/* ── Global hover lift ── */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+}
+
+/* ── Pink hover lift (for cards on light bg) ── */
+.hover-lift-pink {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s ease;
+}
+.hover-lift-pink:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(236, 72, 153, 0.18);
+}
+
+/* ── Button press ── */
+.btn-press {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.btn-press:hover  { transform: translateY(-2px); }
+.btn-press:active { transform: scale(0.96) translateY(0px); }
+
+/* ── Shimmer badge ── */
+.shimmer-badge {
+  background: linear-gradient(
+    90deg,
+    rgba(236,72,153,0.15) 0%,
+    rgba(236,72,153,0.35) 40%,
+    rgba(236,72,153,0.15) 80%
+  );
+  background-size: 200% auto;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* ── Icon hover spin ── */
+.icon-hover-spin {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.icon-hover-spin:hover { transform: rotate(20deg) scale(1.2); }
+
+/* ── Link underline slide ── */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 0; height: 1.5px;
+  background: #ec4899;
+  transition: width 0.25s ease;
+}
+.link-underline:hover::after { width: 100%; }

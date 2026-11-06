@@ -120,7 +120,21 @@ export async function sendMessage(messages) {
   if (!response.ok) throw new Error(`AI error: ${response.status}`)
 
   const data = await response.json()
-  return data.choices[0].message.content
+  return stripMarkdown(data.choices[0].message.content)
+}
+
+function stripMarkdown(text) {
+  return text
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')  // remove reasoning blocks
+    .replace(/^#{1,6}\s+/gm, '')                 // remove headings
+    .replace(/\|.*\|/g, '')                      // remove table rows
+    .replace(/^[-|]+$/gm, '')                    // remove table dividers
+    .replace(/\*\*(.*?)\*\*/g, '$1')             // remove bold
+    .replace(/\*(.*?)\*/g, '$1')                 // remove italic
+    .replace(/`(.*?)`/g, '$1')                   // remove inline code
+    .replace(/^[-*]\s+/gm, '• ')                 // normalize bullets
+    .replace(/\n{3,}/g, '\n\n')                  // collapse excess newlines
+    .trim()
 }
 
 // ── classify intent ───────────────────────────────────────────────────────────

@@ -121,6 +121,19 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
+      {/* Quick replies */}
+      <div className="max-w-2xl mx-auto w-full px-4 pb-2 flex gap-2 flex-wrap">
+        {['Book an appointment', 'What services do you offer?', 'How much is bridal makeup?', 'Do you do home service?'].map((q) => (
+          <button
+            key={q}
+            onClick={() => setInput(q)}
+            className="text-xs bg-white border border-gray-200 hover:border-pink-300 hover:text-pink-500 text-gray-500 px-3 py-1.5 rounded-full transition-colors"
+          >
+            {q}
+          </button>
+        ))}
+      </div>
+
       {/* Input */}
       <div className="bg-white border-t border-gray-100 px-4 py-3">
         <form onSubmit={handleSend} className="max-w-2xl mx-auto flex gap-3 items-end">

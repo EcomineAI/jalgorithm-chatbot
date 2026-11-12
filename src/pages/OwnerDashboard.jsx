@@ -2,8 +2,16 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Calendar, Users, Bell, BarChart2, LogOut, Sparkles,
-  CheckCircle, XCircle, Clock, AlertCircle,
+  CheckCircle, XCircle, Clock, AlertCircle, Store,
 } from 'lucide-react'
+import BusinessInfoTab from './owner/BusinessInfoTab.jsx'
+
+const TABS = [
+  { id: 'appointments', icon: Calendar, label: 'Appointments' },
+  { id: 'logs', icon: BarChart2, label: 'Chat Logs' },
+  { id: 'reminders', icon: Bell, label: 'Reminders' },
+  { id: 'business', icon: Store, label: 'Business Info' },
+]
 import { supabase } from '../lib/supabase.js'
 
 const STATUS_STYLES = {
@@ -13,7 +21,7 @@ const STATUS_STYLES = {
   no_show: { color: 'text-red-600 bg-red-50', icon: AlertCircle, label: 'No-show' },
 }
 
-export default function AdminDashboard() {
+export default function OwnerDashboard() {
   const [appointments, setAppointments] = useState([])
   const [stats, setStats] = useState({ total: 0, confirmed: 0, noShow: 0, completion: 0 })
   const [loading, setLoading] = useState(true)
@@ -58,7 +66,7 @@ export default function AdminDashboard() {
 
   async function handleLogout() {
     await supabase.auth.signOut()
-    navigate('/admin/login')
+    navigate('/owner/login')
   }
 
   async function updateStatus(id, status) {
@@ -77,11 +85,7 @@ export default function AdminDashboard() {
           JALgorithm
         </div>
         <nav className="flex-1 space-y-1">
-          {[
-            { id: 'appointments', icon: Calendar, label: 'Appointments' },
-            { id: 'logs', icon: BarChart2, label: 'Chat Logs' },
-            { id: 'reminders', icon: Bell, label: 'Reminders' },
-          ].map((item) => (
+          {TABS.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
@@ -110,13 +114,25 @@ export default function AdminDashboard() {
         <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
           <div>
             <h1 className="font-bold text-gray-900 capitalize">
-              {activeTab === 'appointments' ? 'Appointments' : activeTab === 'logs' ? 'Chat Logs' : 'Reminders'}
+              {TABS.find((t) => t.id === activeTab)?.label}
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">JALgorithm Admin Dashboard</p>
+            <p className="text-xs text-gray-400 mt-0.5">Owner's panel</p>
           </div>
-          <button onClick={handleLogout} className="md:hidden text-gray-400 hover:text-red-500">
-            <LogOut size={18} />
-          </button>
+          <div className="md:hidden flex items-center gap-3">
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value)}
+              aria-label="Section"
+              className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-pink-300"
+            >
+              {TABS.map((t) => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+            <button onClick={handleLogout} className="text-gray-400 hover:text-red-500" aria-label="Sign out">
+              <LogOut size={18} />
+            </button>
+          </div>
         </header>
 
         <div className="p-6">
@@ -142,7 +158,7 @@ export default function AdminDashboard() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-50">
-                      {['Client', 'Service', 'Date', 'Status', 'Reminder', 'Action'].map((h) => (
+                      {['Ref', 'Client', 'Service', 'Date', 'Status', 'Reminder', 'Action'].map((h) => (
                         <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">
                           {h}
                         </th>
@@ -152,13 +168,13 @@ export default function AdminDashboard() {
                   <tbody className="divide-y divide-gray-50">
                     {loading ? (
                       <tr>
-                        <td colSpan={6} className="px-4 py-8 text-center text-gray-400 text-sm">
+                        <td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">
                           Loading appointments...
                         </td>
                       </tr>
                     ) : appointments.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-4 py-8 text-center text-gray-400 text-sm">
+                        <td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-sm">
                           No appointments yet.
                         </td>
                       </tr>
@@ -167,11 +183,12 @@ export default function AdminDashboard() {
                         const s = STATUS_STYLES[appt.status] || STATUS_STYLES.confirmed
                         return (
                           <tr key={appt.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3 font-mono text-xs text-gray-500">{appt.reference_code || '-'}</td>
                             <td className="px-4 py-3 font-medium text-gray-900">{appt.client_name}</td>
                             <td className="px-4 py-3 text-gray-500">{appt.service_type}</td>
                             <td className="px-4 py-3 text-gray-500">
-                              {new Date(appt.appointment_date).toLocaleDateString('en-PH', {
-                                month: 'short', day: 'numeric', year: 'numeric',
+                              {new Date(appt.appointment_date).toLocaleString('en-PH', {
+                                month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila',
                               })}
                             </td>
                             <td className="px-4 py-3">
@@ -241,8 +258,11 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3 text-gray-700 max-w-xs truncate">{log.user_message}</td>
                         <td className="px-4 py-3">
                           <span className="bg-pink-50 text-pink-600 text-xs px-2 py-0.5 rounded-full font-medium capitalize">
-                            {log.intent_classified}
+                            {log.intent_classified?.toLowerCase().replace(/_/g, ' ')}
                           </span>
+                          {typeof log.confidence === 'number' && (
+                            <span className="ml-1 text-xs text-gray-400">{Math.round(log.confidence * 100)}%</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-gray-500 max-w-xs truncate">{log.bot_reply}</td>
                       </tr>
@@ -252,6 +272,8 @@ export default function AdminDashboard() {
               </table>
             </div>
           )}
+
+          {activeTab === 'business' && <BusinessInfoTab />}
 
           {activeTab === 'reminders' && (
             <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center text-gray-400">

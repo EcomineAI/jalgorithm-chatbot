@@ -1,15 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Sparkles, Menu, X, ChevronDown, MessageCircle, Scissors, Info, Phone, HelpCircle } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
-
-const services = [
-  { name: 'Bridal Makeup', price: 'PHP 3,500' },
-  { name: 'Hair Styling', price: 'PHP 500' },
-  { name: 'Personal Makeup', price: 'PHP 800' },
-  { name: 'Event Package', price: 'PHP 2,500' },
-]
+import { useBusinessInfo, formatPeso } from '../lib/useBusinessInfo.js'
 
 export default function Navbar() {
+  // Services and prices come from the Owner's panel (same data the chatbot uses).
+  const { catalog } = useBusinessInfo()
+  const services = (catalog?.services ?? []).map((s) => ({ name: s.name, price: formatPeso(s.price) }))
   const { pathname } = useLocation()
   const isHome = pathname === '/'
   const [scrolled, setScrolled] = useState(false)

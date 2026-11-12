@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Sparkles, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
 
-export default function AdminLogin() {
+export default function OwnerLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -21,7 +21,7 @@ export default function AdminLogin() {
       setError(error.message)
       setLoading(false)
     } else {
-      navigate('/admin')
+      navigate('/owner')
     }
   }
 
@@ -32,7 +32,7 @@ export default function AdminLogin() {
           <div className="w-12 h-12 bg-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Sparkles size={22} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Owner Login</h1>
           <p className="text-gray-500 text-sm mt-1">JALgorithm Dashboard</p>
         </div>
 
@@ -44,7 +44,7 @@ export default function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="stylist@example.com"
+              placeholder="owner@example.com"
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 transition-all"
             />
           </div>

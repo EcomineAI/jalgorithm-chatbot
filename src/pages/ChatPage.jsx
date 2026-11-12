@@ -1,75 +1,105 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Send, Sparkles, ArrowLeft, Loader2, Wifi, WifiOff } from 'lucide-react'
-import { sendMessage, classifyIntent, onTunnelStatus } from '../lib/lmstudio.js'
+import { Send, Sparkles, ArrowLeft, Loader2, Wifi, WifiOff, RotateCcw } from 'lucide-react'
+import { createJAlgorithm, initialState } from '../jalgorithm/index.js'
+import { createAppointmentService } from '../services/appointments.js'
 import { supabase } from '../lib/supabase.js'
+import { useBusinessInfo } from '../lib/useBusinessInfo.js'
+
+// JAlgorithm runs entirely in the browser; only appointment operations, chat logging and
+// loading the owner's business info use Supabase.
+const appointmentActions = createAppointmentService(supabase)
 
 const WELCOME = {
   id: 'welcome',
   role: 'assistant',
-  content: `Hi! I'm JAL, your appointment assistant. 👋\n\nI can help you:\n• Book a new appointment\n• Reschedule an existing one\n• Cancel a booking\n• Answer questions about services\n\nWhat can I do for you today?`,
+  content: `Hi! I'm JAL, your appointment assistant. 👋\n\nI can help you:\n• Book a new appointment\n• Check available slots\n• Reschedule or cancel a booking\n• Answer questions about services, prices, location, and hours\n\nEnglish, Tagalog, or Taglish is fine! What can I do for you today?`,
+}
+
+const STORAGE_KEY = 'jal_conversation'
+
+function loadConversation() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY))
+    if (saved?.messages?.length && saved.state) return saved
+  } catch {
+    /* storage unavailable or corrupted: start fresh */
+  }
+  return { messages: [WELCOME], state: initialState() }
+}
+
+function saveConversation(messages, state) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, state }))
+  } catch {
+    /* ignore: the conversation simply won't survive a refresh */
+  }
 }
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState([WELCOME])
+  const [initial] = useState(loadConversation)
+  const [messages, setMessages] = useState(initial.messages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [tunnelStatus, setTunnelStatus] = useState('connecting')
+  const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine)
+  const stateRef = useRef(initial.state)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
+  // The bot is built from the owner's business info (or the cached/default copy when offline).
+  const { catalog } = useBusinessInfo()
+  const bot = useMemo(() => (catalog ? createJAlgorithm({ actions: appointmentActions, catalog }) : null), [catalog])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    saveConversation(messages, stateRef.current)
   }, [messages])
 
   useEffect(() => {
-    return onTunnelStatus((status) => setTunnelStatus(status))
+    const up = () => setOnline(true)
+    const down = () => setOnline(false)
+    window.addEventListener('online', up)
+    window.addEventListener('offline', down)
+    return () => {
+      window.removeEventListener('online', up)
+      window.removeEventListener('offline', down)
+    }
   }, [])
+
+  function handleReset() {
+    stateRef.current = initialState()
+    setMessages([WELCOME])
+    setError(null)
+    inputRef.current?.focus()
+  }
 
   async function handleSend(e) {
     e.preventDefault()
     const text = input.trim()
-    if (!text || loading) return
+    if (!text || loading || !bot) return
 
     const userMsg = { id: Date.now(), role: 'user', content: text }
-    const history = [...messages.filter((m) => m.id !== 'welcome'), userMsg]
-
     setMessages((prev) => [...prev, userMsg])
     setInput('')
     setLoading(true)
     setError(null)
 
     try {
-      const intent = await classifyIntent(text)
-
-      // Refuse off-topic messages without calling the LLM
-      if (intent === 'other') {
-        const refusal = "I can only help with appointment bookings and service inquiries. Would you like to book, reschedule, or cancel an appointment?"
-        const assistantMsg = { id: Date.now() + 1, role: 'assistant', content: refusal, intent }
-        setMessages((prev) => [...prev, assistantMsg])
-        await supabase.from('chat_logs').insert({
-          user_message: text,
-          bot_reply: refusal,
-          intent_classified: intent,
-          session_id: getSessionId(),
-        }).then(() => {})
-        return
+      const result = await bot.processMessage(text, stateRef.current)
+      stateRef.current = result.state
+      const assistantMsg = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: result.reply,
+        intent: result.intent,
+        confidence: result.nlu?.confidence,
       }
-
-      const reply = await sendMessage(history.map(({ role, content }) => ({ role, content })))
-      const assistantMsg = { id: Date.now() + 1, role: 'assistant', content: reply, intent }
       setMessages((prev) => [...prev, assistantMsg])
-
-      await supabase.from('chat_logs').insert({
-        user_message: text,
-        bot_reply: reply,
-        intent_classified: intent,
-        session_id: getSessionId(),
-      }).then(() => {})
-
+      logTurn(text, result)
     } catch (err) {
-      setError('Could not connect to the chatbot. Make sure LM Studio is running.')
+      console.error('JAlgorithm error', err)
+      setError('Something went wrong while processing your message. Please try again.')
       setMessages((prev) => prev.filter((m) => m.id !== userMsg.id))
       setInput(text)
     } finally {
@@ -91,11 +121,18 @@ export default function ChatPage() {
           </div>
           <div>
             <div className="font-semibold text-sm text-gray-900">JAL</div>
-            {tunnelStatus === 'online' && <div className="flex items-center gap-1 text-xs text-green-500 font-medium"><Wifi size={10} /> Online</div>}
-            {tunnelStatus === 'offline' && <div className="flex items-center gap-1 text-xs text-red-400 font-medium"><WifiOff size={10} /> Offline</div>}
-            {tunnelStatus === 'connecting' && <div className="text-xs text-gray-400">Connecting...</div>}
+            {online
+              ? <div className="flex items-center gap-1 text-xs text-green-500 font-medium"><Wifi size={10} /> Online</div>
+              : <div className="flex items-center gap-1 text-xs text-amber-500 font-medium"><WifiOff size={10} /> Offline · questions only, booking unavailable</div>}
           </div>
         </div>
+        <button
+          onClick={handleReset}
+          title="Start a new conversation"
+          className="ml-auto text-gray-400 hover:text-pink-500 transition-colors p-1"
+        >
+          <RotateCcw size={18} />
+        </button>
       </header>
 
       {/* Messages */}
@@ -103,7 +140,7 @@ export default function ChatPage() {
         {messages.map((msg) => (
           <ChatBubble key={msg.id} message={msg} />
         ))}
-        {loading && (
+        {(loading || !bot) && (
           <div className="flex gap-3 items-end">
             <div className="w-7 h-7 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Sparkles size={12} className="text-pink-500" />
@@ -150,7 +187,7 @@ export default function ChatPage() {
           />
           <button
             type="submit"
-            disabled={!input.trim() || loading}
+            disabled={!input.trim() || loading || !bot}
             className="bg-pink-500 hover:bg-pink-600 disabled:bg-pink-200 text-white p-3 rounded-xl transition-colors flex-shrink-0"
           >
             <Send size={16} />
@@ -179,13 +216,46 @@ function ChatBubble({ message }) {
       >
         {message.content}
         {message.intent && !isUser && (
-          <div className="mt-1.5 text-xs opacity-50 capitalize">
-            Intent: {message.intent}
+          <div className="mt-1.5 text-xs opacity-50">
+            Intent: {message.intent.toLowerCase().replace(/_/g, ' ')}
+            {typeof message.confidence === 'number' && ` · ${Math.round(message.confidence * 100)}%`}
           </div>
         )}
       </div>
     </div>
   )
+}
+
+// Research log of each turn. Fire-and-forget: a logging failure never blocks the chat.
+function logTurn(userMessage, result) {
+  const nlu = result.nlu
+  supabase
+    .from('chat_logs')
+    .insert({
+      session_id: getSessionId(),
+      user_message: userMessage,
+      bot_reply: result.reply,
+      intent_classified: result.intent,
+      confidence: nlu?.confidence ?? null,
+      normalized_message: nlu?.normalized ?? null,
+      language: nlu?.language ?? null,
+      entities: nlu
+        ? {
+            raw_intent: nlu.intent,
+            ambiguous: nlu.ambiguous,
+            candidates: nlu.candidates,
+            date: nlu.entities.date,
+            time: nlu.entities.time,
+            service: nlu.entities.service,
+            corrections: nlu.changes,
+            action: result.action,
+            elapsed_ms: result.elapsedMs,
+          }
+        : null,
+    })
+    .then(({ error }) => {
+      if (error) console.warn('chat log not saved:', error.message)
+    })
 }
 
 function getSessionId() {

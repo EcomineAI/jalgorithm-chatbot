@@ -1,0 +1,1473 @@
+{
+ "description": "Held-out TEST set for intent recognition. Never used to configure or tune JAlgorithm. Written by the developers to imitate real client chat (not collected from real clients). 'accept' lists alternative labels that are also a reasonable reading of an ambiguous message. Items flagged seen_in_development are the example messages from the project brief; they were looked at during development, so the report also gives results without them.",
+ "items": [
+  {
+   "text": "Hello, I'd like to book a makeup session for my sister's wedding",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Can I schedule a hair appointment for next Saturday?",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "I'd like to reserve bridal makeup for December 12",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Please book me in for personal makeup on Friday at 10am",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "I want to get an appointment for my debut",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "Could you put me down for the hair and makeup package?",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "gusto ko pong magpabook ng makeup para sa kasal ko",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "magpapaschedule po ako ng bridal sa enero",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "pwede po bang magpa-book ng ayos ng buhok",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "mag papaappointment po sana ako sa sabado",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "mgpapa sched sana aq",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "shortcuts",
+   "seen_in_development": true
+  },
+  {
+   "text": "pa book aq ng hmu sa dec 5",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "pa sched po ng event makeup pls",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "gsto q mgpa book ng bridal",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "shortcuts"
+  },
+  {
+   "text": "i wanna book an apointment",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "misspellings"
+  },
+  {
+   "text": "pa-shedule po ng make up",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "misspellings"
+  },
+  {
+   "text": "book ko po sana yung wedding package namin",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "pa-reserve po ng slot for my graduation makeup",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "need ko ng mua for prom, pwede mag book?",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "mag aavail po ako ng bridal makeup",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "pabook",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "incomplete"
+  },
+  {
+   "text": "appointment po",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "incomplete",
+   "accept": [
+    "VIEW_APPOINTMENT",
+    "UNKNOWN_INTENT"
+   ]
+  },
+  {
+   "text": "book bridal",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "incomplete"
+  },
+  {
+   "text": "Gusto ko magpa-appointment.",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish",
+   "seen_in_development": true
+  },
+  {
+   "text": "set mo ako ng sched for hair styling",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "kukuha po ako ng schedule for my mom",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "How can I make a reservation?",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "I need someone to do my makeup on the 18th, can I book you?",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "pa appointment po ulit",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "mag bobook po sana ako",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "Do you have any openings on Thursday?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Is 2pm on Saturday still free?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "What slots do you have on December 20?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Are you available tomorrow morning?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "When's your next free slot?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "available pa po ba kayo sa ika-28?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "may bakante pa po ba sa linggo ng umaga",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "pwede po ba kayo sa martes ng alas tres",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "meron pa ba kayong bakanteng oras sa biyernes",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "pwde b bukas?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "shortcuts",
+   "seen_in_development": true
+  },
+  {
+   "text": "anu oras available kau?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "shortcuts",
+   "seen_in_development": true
+  },
+  {
+   "text": "may slot p b ng 3pm?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "shortcuts",
+   "seen_in_development": true
+  },
+  {
+   "text": "may available ba bukas ng 3pm?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "taglish",
+   "seen_in_development": true
+  },
+  {
+   "text": "pno yung appoinemt ng gantong oras kaya ba or aq magadjust?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "misspellings",
+   "seen_in_development": true
+  },
+  {
+   "text": "availble po ba kayo sa sat",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "misspellings"
+  },
+  {
+   "text": "free po ba kayo this weekend",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "open pa ba yung 10am sa dec 3",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "fully booked na ba kayo sa december?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "May available ba bukas?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "tagalog",
+   "seen_in_development": true
+  },
+  {
+   "text": "kaya pa ba ng 1pm sa lunes",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "slots sa sunday?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "incomplete"
+  },
+  {
+   "text": "available sa 15?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "incomplete"
+  },
+  {
+   "text": "pwede ng 4pm?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "incomplete"
+  },
+  {
+   "text": "anong mga oras pa ang bakante nyo",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "Can you still fit me in next week?",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "en",
+   "category": "paraphrase",
+   "accept": [
+    "BOOK_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "available pa ba si vicky sa 24",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "may vacant slot pa po ba",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "ok lang ba 6pm or adjust nalang ako",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "paraphrase"
+  },
+  {
+   "text": "I'd like to move my appointment to a different date",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Can I change my booking from Friday to Sunday?",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Need to push my appointment back a few days",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "Could we do my session later in the day instead?",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase",
+   "accept": [
+    "CHECK_AVAILABILITY"
+   ]
+  },
+  {
+   "text": "pwede po bang ilipat ang appointment ko sa susunod na linggo",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "papalitan ko po sana ang oras ng sched ko",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "iuusog ko po sana ng isang oras",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "pa move n lng ng sched ko",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "fil",
+   "category": "shortcuts",
+   "seen_in_development": true
+  },
+  {
+   "text": "pa move ng appointment ko sa friday ng 2pm",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish",
+   "seen_in_development": true
+  },
+  {
+   "text": "pa resched po aq",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "resked ko po sa 30",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "i need to reshedule",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "en",
+   "category": "misspellings"
+  },
+  {
+   "text": "pwde ba mapalitan sched q",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "fil",
+   "category": "shortcuts"
+  },
+  {
+   "text": "change sched po, ibang araw na lang",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "pwede bang iurong sa hapon yung booking ko",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "reschedule",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "en",
+   "category": "incomplete"
+  },
+  {
+   "text": "lipat date po",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "incomplete"
+  },
+  {
+   "text": "pa adjust ng date ng booking ko",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "move to next week po yung bridal namin",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "Is it possible to switch my appointment to the morning?",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "pa-reschedule ng appt ko pls",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "Please cancel my appointment for Saturday",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "I'd like to cancel my booking",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "We won't push through with the booking anymore, please cancel",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "Drop my reservation please",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "ikakansela ko na po ang booking ko",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "hindi na po namin itutuloy, pakikansela na lang",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "cancel q n lng appointment q",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts",
+   "seen_in_development": true
+  },
+  {
+   "text": "pa cncl po ng sched",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "cansel ko po yung booking",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "taglish",
+   "category": "misspellings"
+  },
+  {
+   "text": "pls cancle my apointment",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "en",
+   "category": "misspellings"
+  },
+  {
+   "text": "di na po tuloy yung debut, cancel na",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "cancel na lang po namin yung wedding package",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "cancel",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "en",
+   "category": "incomplete"
+  },
+  {
+   "text": "pa-cancel",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "taglish",
+   "category": "incomplete"
+  },
+  {
+   "text": "ipacancel ko na po",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "We decided not to continue, please remove our booking",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "When is my booking again?",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Can you check if my appointment went through?",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "What date did I book?",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "anong oras po ulit yung appointment ko",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "kelan nga ulit sched ko",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "fil",
+   "category": "shortcuts"
+  },
+  {
+   "text": "pa check ng appt q",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "confirmed na ba booking ko?",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "status ng appointment ko po",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "pakita po details ng booking ko",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "i forgot when my appoinment is",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "en",
+   "category": "misspellings"
+  },
+  {
+   "text": "d q mkapunta bukas",
+   "intent": "CANNOT_ATTEND",
+   "lang": "fil",
+   "category": "shortcuts",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT"
+   ],
+   "seen_in_development": true
+  },
+  {
+   "text": "I'm not going to make it on Saturday",
+   "intent": "CANNOT_ATTEND",
+   "lang": "en",
+   "category": "english",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "I won't be able to attend my appointment",
+   "intent": "CANNOT_ATTEND",
+   "lang": "en",
+   "category": "paraphrase",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "hindi po ako makakarating sa linggo",
+   "intent": "CANNOT_ATTEND",
+   "lang": "fil",
+   "category": "tagalog",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "di ako makakapunta, nagkasakit anak ko",
+   "intent": "CANNOT_ATTEND",
+   "lang": "fil",
+   "category": "tagalog",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "may emergency kami, di makakapunta sa sched",
+   "intent": "CANNOT_ATTEND",
+   "lang": "taglish",
+   "category": "taglish",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "di q kaya pmunta sa friday",
+   "intent": "CANNOT_ATTEND",
+   "lang": "fil",
+   "category": "shortcuts",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "cant come tomorrow sorry",
+   "intent": "CANNOT_ATTEND",
+   "lang": "en",
+   "category": "incomplete",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "How much is the full bridal makeup?",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "What's the rate for hair styling?",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "How much would the wedding package cost?",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Do you charge for consultations?",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "What's the damage for debut makeup?",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "magkano po ang singil sa pag-aayos ng buhok",
+   "intent": "ASK_PRICE",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "magkano po ang bayad sa personal makeup",
+   "intent": "ASK_PRICE",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "hm po cons?",
+   "intent": "ASK_PRICE",
+   "lang": "taglish",
+   "category": "shortcuts",
+   "seen_in_development": true
+  },
+  {
+   "text": "mgkano po hmu",
+   "intent": "ASK_PRICE",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "hm ung hair and makeup pkg",
+   "intent": "ASK_PRICE",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "magkanu po pag event",
+   "intent": "ASK_PRICE",
+   "lang": "fil",
+   "category": "misspellings"
+  },
+  {
+   "text": "how mutch is the package",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "misspellings"
+  },
+  {
+   "text": "price po ng bridal and entourage",
+   "intent": "ASK_PRICE",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "may consultation fee po ba kayo",
+   "intent": "ASK_PRICE",
+   "lang": "taglish",
+   "category": "taglish",
+   "accept": [
+    "ASK_BOOKING_POLICY"
+   ]
+  },
+  {
+   "text": "rates?",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "incomplete"
+  },
+  {
+   "text": "magkano",
+   "intent": "ASK_PRICE",
+   "lang": "fil",
+   "category": "incomplete"
+  },
+  {
+   "text": "pricelist po",
+   "intent": "ASK_PRICE",
+   "lang": "taglish",
+   "category": "incomplete"
+  },
+  {
+   "text": "mura lang ba hair styling nyo",
+   "intent": "ASK_PRICE",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "What kinds of services are available?",
+   "intent": "ASK_SERVICES",
+   "lang": "en",
+   "category": "english",
+   "accept": [
+    "CHECK_AVAILABILITY"
+   ]
+  },
+  {
+   "text": "Do you also do hair or just makeup?",
+   "intent": "ASK_SERVICES",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "anu mga services nyo po",
+   "intent": "ASK_SERVICES",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "ano po ang mga package nyo",
+   "intent": "ASK_SERVICES",
+   "lang": "fil",
+   "category": "tagalog",
+   "accept": [
+    "ASK_PRICE"
+   ]
+  },
+  {
+   "text": "ano pa pong ibang inooffer nyo bukod sa makeup",
+   "intent": "ASK_SERVICES",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "may wedding package po ba kayo",
+   "intent": "ASK_SERVICES",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "servces?",
+   "intent": "ASK_SERVICES",
+   "lang": "en",
+   "category": "misspellings"
+  },
+  {
+   "text": "list ng services pls",
+   "intent": "ASK_SERVICES",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "What can I book with you?",
+   "intent": "ASK_SERVICES",
+   "lang": "en",
+   "category": "paraphrase",
+   "accept": [
+    "BOOK_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "Where exactly is your shop?",
+   "intent": "ASK_LOCATION",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Can you send me your address?",
+   "intent": "ASK_LOCATION",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "How do I get to your place?",
+   "intent": "ASK_LOCATION",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "san b loc ng parlor nyo exactly",
+   "intent": "ASK_LOCATION",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "san po kau banda",
+   "intent": "ASK_LOCATION",
+   "lang": "fil",
+   "category": "shortcuts"
+  },
+  {
+   "text": "saan po ba matatagpuan ang parlor ninyo",
+   "intent": "ASK_LOCATION",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "lokasyon po ng salon",
+   "intent": "ASK_LOCATION",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "adress nyo po?",
+   "intent": "ASK_LOCATION",
+   "lang": "taglish",
+   "category": "misspellings"
+  },
+  {
+   "text": "anong city kayo",
+   "intent": "ASK_LOCATION",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "location?",
+   "intent": "ASK_LOCATION",
+   "lang": "en",
+   "category": "incomplete"
+  },
+  {
+   "text": "sakop nyo ba ang subic",
+   "intent": "ASK_LOCATION",
+   "lang": "fil",
+   "category": "tagalog",
+   "accept": [
+    "GENERAL_INQUIRY"
+   ]
+  },
+  {
+   "text": "What time do you start in the morning?",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Are you open on holidays?",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Until what time can I book in the evening?",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "en",
+   "category": "paraphrase",
+   "accept": [
+    "CHECK_AVAILABILITY"
+   ]
+  },
+  {
+   "text": "anong oras po kayo nagsasara",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "bukas po ba kayo tuwing linggo",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "open b kau ng sunday",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "hanggang anong oras po open",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "oppening hours?",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "en",
+   "category": "misspellings"
+  },
+  {
+   "text": "store hours po",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "taglish",
+   "category": "incomplete"
+  },
+  {
+   "text": "Do I need to pay a deposit to secure the date?",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "How far ahead do I have to book?",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "Can I get my reservation fee back if I cancel?",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "en",
+   "category": "paraphrase",
+   "accept": [
+    "CANCEL_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "ilang araw po before dapat magpa book",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "may reservation fee po ba sa bridal",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "taglish",
+   "category": "taglish",
+   "accept": [
+    "ASK_PRICE"
+   ]
+  },
+  {
+   "text": "may dp po ba",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "fil",
+   "category": "shortcuts"
+  },
+  {
+   "text": "ano policy nyo sa cancellation",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "tumatanggap ba kayo ng walk-in",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "Hey, good day!",
+   "intent": "GREETING",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "good morning po",
+   "intent": "GREETING",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "hellow jal",
+   "intent": "GREETING",
+   "lang": "en",
+   "category": "misspellings"
+  },
+  {
+   "text": "hii po ate",
+   "intent": "GREETING",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "magandang araw po",
+   "intent": "GREETING",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "musta po kayo",
+   "intent": "GREETING",
+   "lang": "fil",
+   "category": "shortcuts"
+  },
+  {
+   "text": "hello? anyone there?",
+   "intent": "GREETING",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "Thanks so much for the help!",
+   "intent": "THANKS",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "thank u po",
+   "intent": "THANKS",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "tnx sa info",
+   "intent": "THANKS",
+   "lang": "en",
+   "category": "shortcuts"
+  },
+  {
+   "text": "maraming salamat po sa tulong",
+   "intent": "THANKS",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "slamat sa sagot",
+   "intent": "THANKS",
+   "lang": "fil",
+   "category": "misspellings"
+  },
+  {
+   "text": "ok noted, thanks",
+   "intent": "THANKS",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "Do you travel to Castillejos?",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "en",
+   "category": "english",
+   "accept": [
+    "ASK_LOCATION"
+   ]
+  },
+  {
+   "text": "Can I pay through GCash?",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "en",
+   "category": "english"
+  },
+  {
+   "text": "Where can I see samples of your work?",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "en",
+   "category": "paraphrase",
+   "accept": [
+    "ASK_LOCATION"
+   ]
+  },
+  {
+   "text": "Will you remind me before my appointment?",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "en",
+   "category": "paraphrase"
+  },
+  {
+   "text": "pupunta po ba kayo sa bahay namin",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "pwede po ba home service",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "sino po mag aayos sakin",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "fil",
+   "category": "tagalog"
+  },
+  {
+   "text": "pno mgbayad",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "fil",
+   "category": "shortcuts"
+  },
+  {
+   "text": "may fb page po kayo",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "taglish",
+   "category": "shortcuts"
+  },
+  {
+   "text": "contact number nyo po",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "home servise po kayo?",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "taglish",
+   "category": "misspellings"
+  },
+  {
+   "text": "may travel fee ba sa san antonio",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "taglish",
+   "category": "taglish"
+  },
+  {
+   "text": "What's the capital of France?",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unrelated"
+  },
+  {
+   "text": "Can you recommend a good restaurant nearby?",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unrelated"
+  },
+  {
+   "text": "I'm so tired today",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unrelated"
+  },
+  {
+   "text": "What's the score of the Gilas game?",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unrelated"
+  },
+  {
+   "text": "anong oras na ngayon",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unrelated"
+  },
+  {
+   "text": "may pasok ba bukas",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unrelated"
+  },
+  {
+   "text": "uulan ba mamaya",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unrelated"
+  },
+  {
+   "text": "ang cute mo naman",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unrelated"
+  },
+  {
+   "text": "ano gagawin ko sa buhay",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unrelated"
+  },
+  {
+   "text": "asdfghjkl",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unrelated"
+  },
+  {
+   "text": "lol",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unrelated"
+  },
+  {
+   "text": "pa share ng wifi password",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "taglish",
+   "category": "unrelated"
+  },
+  {
+   "text": "write me a poem about love",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unrelated"
+  },
+  {
+   "text": "magkano ang bigas ngayon",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unrelated",
+   "accept": [
+    "ASK_PRICE"
+   ]
+  },
+  {
+   "text": "who is the president of the philippines",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unrelated",
+   "accept": [
+    "GENERAL_INQUIRY"
+   ]
+  },
+  {
+   "text": "Do you sell lipstick?",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unsupported"
+  },
+  {
+   "text": "Can you do my nails too?",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unsupported"
+  },
+  {
+   "text": "hiring po ba kayo ng assistant",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "taglish",
+   "category": "unsupported"
+  },
+  {
+   "text": "pwede po ba magpagupit ng buhok ng lalaki",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unsupported",
+   "accept": [
+    "BOOK_APPOINTMENT",
+    "ASK_SERVICES"
+   ]
+  },
+  {
+   "text": "can you send me a tutorial on contouring",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "en",
+   "category": "unsupported"
+  },
+  {
+   "text": "nagrerent din po ba kayo ng gown",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unsupported",
+   "accept": [
+    "ASK_SERVICES"
+   ]
+  },
+  {
+   "text": "yung appointment ko po",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "taglish",
+   "category": "ambiguous",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT",
+    "BOOK_APPOINTMENT",
+    "UNKNOWN_INTENT"
+   ]
+  },
+  {
+   "text": "about my booking",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "en",
+   "category": "ambiguous",
+   "accept": [
+    "RESCHEDULE_APPOINTMENT",
+    "CANCEL_APPOINTMENT",
+    "BOOK_APPOINTMENT",
+    "UNKNOWN_INTENT"
+   ]
+  },
+  {
+   "text": "pwede ba sa sabado or i-cancel ko na lang",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "ambiguous",
+   "accept": [
+    "CANCEL_APPOINTMENT",
+    "RESCHEDULE_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "bridal",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "ambiguous",
+   "accept": [
+    "BOOK_APPOINTMENT",
+    "ASK_SERVICES",
+    "UNKNOWN_INTENT"
+   ]
+  },
+  {
+   "text": "sa sabado po sana",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "ambiguous",
+   "accept": [
+    "CHECK_AVAILABILITY",
+    "RESCHEDULE_APPOINTMENT"
+   ]
+  },
+  {
+   "text": "schedule",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "en",
+   "category": "ambiguous",
+   "accept": [
+    "VIEW_APPOINTMENT",
+    "CHECK_AVAILABILITY",
+    "UNKNOWN_INTENT"
+   ]
+  },
+  {
+   "text": "bukas",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "ambiguous",
+   "accept": [
+    "ASK_OPERATING_HOURS",
+    "BOOK_APPOINTMENT",
+    "UNKNOWN_INTENT"
+   ]
+  },
+  {
+   "text": "pa change po",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "ambiguous",
+   "accept": [
+    "UNKNOWN_INTENT"
+   ]
+  }
+ ]
+}

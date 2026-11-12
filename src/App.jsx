@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LandingPage from './pages/LandingPage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
-import AdminLogin from './pages/AdminLogin.jsx'
-import AdminDashboard from './pages/AdminDashboard.jsx'
+import OwnerLogin from './pages/OwnerLogin.jsx'
+import OwnerDashboard from './pages/OwnerDashboard.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 export default function App() {
@@ -11,15 +11,18 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/chat" element={<ChatPage />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/owner/login" element={<OwnerLogin />} />
         <Route
-          path="/admin"
+          path="/owner"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <OwnerDashboard />
             </ProtectedRoute>
           }
         />
+        {/* Old URLs; /admin will become the developer debug panel later. */}
+        <Route path="/admin/login" element={<Navigate to="/owner/login" replace />} />
+        <Route path="/admin" element={<Navigate to="/owner" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

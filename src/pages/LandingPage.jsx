@@ -2,35 +2,30 @@ import { Link } from 'react-router-dom'
 import { Bell, MessageCircle, CheckCircle, ChevronDown, Star, ArrowRight, Sparkles, Phone, MapPin, Clock } from 'lucide-react'
 import Navbar from '../components/Navbar.jsx'
 import Footer from '../components/Footer.jsx'
+import { useBusinessInfo, formatPeso } from '../lib/useBusinessInfo.js'
+import { formatTime } from '../jalgorithm/entities/calendar.js'
 
 const HERO_IMG = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1400&q=90&fit=crop'
 
-const services = [
-  {
-    name: 'Bridal Makeup',
-    desc: 'Full glam for your wedding day',
-    price: 'PHP 3,500',
-    img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80&fit=crop',
-  },
-  {
-    name: 'Hair Styling',
-    desc: 'Updos and event-ready styles',
-    price: 'PHP 500',
-    img: 'https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&q=80&fit=crop',
-  },
-  {
-    name: 'Personal Makeup',
-    desc: 'Debuts, parties, and shoots',
-    price: 'PHP 800',
-    img: 'https://images.unsplash.com/photo-1512207736890-6ffed8a84e8d?w=600&q=80&fit=crop',
-  },
-  {
-    name: 'Event Package',
-    desc: 'Hair + makeup for entourages',
-    price: 'PHP 2,500',
-    img: 'https://images.unsplash.com/photo-1457972729786-0411a3b2b626?w=600&q=80&fit=crop',
-  },
-]
+// Photos stay in code; names, descriptions, prices and which cards show come from the Owner's panel.
+const SERVICE_IMAGES = {
+  bridal: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80&fit=crop',
+  hair_styling: 'https://images.unsplash.com/photo-1620331311520-246422fd82f9?w=600&q=80&fit=crop',
+  personal_makeup: 'https://images.unsplash.com/photo-1512207736890-6ffed8a84e8d?w=600&q=80&fit=crop',
+  hair_makeup: 'https://images.unsplash.com/photo-1457972729786-0411a3b2b626?w=600&q=80&fit=crop',
+}
+const DEFAULT_SERVICE_IMAGE = 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80&fit=crop'
+
+function landingServices(catalog) {
+  const all = catalog?.services ?? []
+  const flagged = all.filter((s) => s.showOnLanding)
+  return (flagged.length ? flagged : all.slice(0, 4)).map((s) => ({
+    name: s.name,
+    desc: s.description,
+    price: formatPeso(s.price),
+    img: SERVICE_IMAGES[s.key] ?? DEFAULT_SERVICE_IMAGE,
+  }))
+}
 
 const steps = [
   { icon: MessageCircle, title: 'Chat to Book', desc: 'Message JAL with your preferred service, date, and event.' },
@@ -50,6 +45,9 @@ const gallery = [
 ]
 
 export default function LandingPage() {
+  const { catalog } = useBusinessInfo()
+  const services = landingServices(catalog)
+  const biz = catalog?.business
   return (
     <div className="min-h-screen bg-white text-gray-800 flex flex-col">
       <Navbar />
@@ -302,8 +300,8 @@ export default function LandingPage() {
       <section id="contact" className="py-10 px-6 bg-white border-y border-gray-100 scroll-mt-20">
         <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
           {[
-            { icon: MapPin, label: 'Location', value: 'Olongapo City, Zambales' },
-            { icon: Clock, label: 'Working Hours', value: '8:00 AM - 7:00 PM daily' },
+            { icon: MapPin, label: 'Location', value: biz?.location ?? '…' },
+            { icon: Clock, label: 'Working Hours', value: biz ? `${formatTime(biz.hours.open)} - ${formatTime(biz.hours.close)} ${biz.hours.days}` : '…' },
             { icon: Phone, label: 'Book via Chat', value: 'Available 24/7 through JAL' },
           ].map((item) => (
             <div key={item.label} className="flex flex-col items-center gap-2">

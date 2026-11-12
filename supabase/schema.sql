@@ -1,5 +1,6 @@
--- JALgorithm Supabase Schema
--- Run this in the Supabase SQL editor to set up the database.
+-- JALgorithm Supabase Schema (base tables)
+-- Fresh install: run this file, then supabase/migrations/20261112_jalgorithm.sql
+-- (services, booking settings, reference codes and the chatbot booking functions).
 
 -- Appointments table
 create table if not exists appointments (
@@ -23,7 +24,7 @@ create table if not exists chat_logs (
   session_id text,
   user_message text not null,
   bot_reply text,
-  intent_classified text check (intent_classified in ('book', 'reschedule', 'cancel', 'faq', 'other')),
+  intent_classified text, -- JAlgorithm intent id, e.g. BOOK_APPOINTMENT, UNKNOWN_INTENT
   created_at timestamptz default now()
 );
 
@@ -48,36 +49,5 @@ create policy "Allow authenticated read on chat_logs"
   to authenticated
   using (true);
 
--- Policy: allow chatbot (anon) to insert appointments via service role
--- (use Supabase Edge Functions with service role key for this)
-
--- Tunnel config table (stores the current LM Studio tunnel URL)
-create table if not exists tunnel_config (
-  id integer primary key default 1,
-  lm_studio_url text,
-  updated_at timestamptz default now()
-);
-
--- Seed one row so tunnel_bridge.py can always PATCH it
-insert into tunnel_config (id, lm_studio_url)
-values (1, null)
-on conflict (id) do nothing;
-
--- Enable realtime on tunnel_config so frontend gets instant updates
-alter publication supabase_realtime add table tunnel_config;
-
--- Enable RLS
-alter table tunnel_config enable row level security;
-
--- Anyone can read the tunnel URL (needed by the public chat page)
-create policy "Allow public read on tunnel_config"
-  on tunnel_config for select
-  to anon
-  using (true);
-
--- Only service role can write (tunnel_bridge.py uses service key)
-create policy "Allow service role write on tunnel_config"
-  on tunnel_config for all
-  to service_role
-  using (true)
-  with check (true);
+-- The public chatbot never writes appointments directly: it calls the SECURITY DEFINER
+-- functions jal_book / jal_reschedule / jal_cancel defined in the migration.

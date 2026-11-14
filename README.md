@@ -105,7 +105,7 @@ npm run evaluate   # intent-recognition evaluation → reports/evaluation.md / .
 node scripts/evaluate.js --set validation   # the set used for tuning
 ```
 
-See [docs/JALGORITHM.md](docs/JALGORITHM.md) for the engine design, methodology, and results.
+See [docs/NAVIGATION.md](docs/NAVIGATION.md) to find where to change things and how to debug them, and [docs/JALGORITHM.md](docs/JALGORITHM.md) for the engine design, methodology, and results.
 
 ## Pages
 

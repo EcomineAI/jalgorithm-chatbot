@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertTriangle,
   CalendarCheck,
   ChevronDown,
   ChevronUp,
+  Download,
+  FileText,
+  Upload,
   MessageSquare,
   Search,
   Star,
@@ -18,6 +21,12 @@ import {
   paginateItems,
 } from '../../lib/ownerInsights.js'
 import { PaginationBar, StatKpiCard } from '../../components/owner/OwnerPrimitives.jsx'
+import {
+  downloadChatLogTemplate,
+  exportChatLogsCsv,
+  parseChatLogsCsv,
+} from '../../lib/csvExport.js'
+import { supabase } from '../../lib/supabase.js'
 
 const STARRED_STORAGE_KEY = 'jal_starred_chat_logs_v1'
 
@@ -108,7 +117,8 @@ function getSessionPrimaryBadge(session) {
   }
 }
 
-export default function ChatLogsTab({ chatLogs }) {
+export default function ChatLogsTab({ chatLogs, onImported }) {
+  const importInputRef = useRef(null)
   const [viewMode, setViewMode] = useState('sessions')
   const [category, setCategory] = useState('all')
   const [sortBy, setSortBy] = useState('important')
@@ -122,6 +132,38 @@ export default function ChatLogsTab({ chatLogs }) {
     setPage(1)
     setExpandedId(null)
   }, [viewMode, category, sortBy, query, hideTrash, chatLogs?.length])
+
+  async function handleChatLogImport(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    const text = await file.text()
+    const { rows, errors } = parseChatLogsCsv(text)
+    if (errors.length > 0) {
+      const preview = errors
+        .slice(0, 5)
+        .map((e) => `Line ${e.line}: ${e.message}`)
+        .join('\n')
+      const more = errors.length > 5 ? `\n...and ${errors.length - 5} more` : ''
+      window.alert(`Nothing was imported. Fix these rows and try again:\n\n${preview}${more}`)
+      return
+    }
+    if (rows.length === 0) {
+      window.alert('The file has no chat rows to import.')
+      return
+    }
+    const count = rows.length
+    if (!window.confirm(`Import ${count} chat message${count === 1 ? '' : 's'} into the live database?`)) {
+      return
+    }
+    const { error } = await supabase.from('chat_logs').insert(rows)
+    if (error) {
+      window.alert(`Import failed: ${error.message}`)
+      return
+    }
+    window.alert(`Imported ${count} chat message${count === 1 ? '' : 's'}.`)
+    onImported?.()
+  }
 
   const toggleStar = (id, event) => {
     event?.stopPropagation()
@@ -268,6 +310,41 @@ export default function ChatLogsTab({ chatLogs }) {
 
   return (
     <div className="space-y-4 sm:space-y-5">
+      <div className="flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => downloadChatLogTemplate()}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50"
+        >
+          <FileText size={16} strokeWidth={1.75} />
+          Blank Template
+        </button>
+        <button
+          type="button"
+          onClick={() => importInputRef.current?.click()}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50"
+        >
+          <Upload size={16} strokeWidth={1.75} />
+          Import CSV
+        </button>
+        <input
+          ref={importInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          onChange={handleChatLogImport}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => exportChatLogsCsv(chatLogs ?? [])}
+          disabled={!chatLogs || chatLogs.length === 0}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Download size={16} strokeWidth={1.75} />
+          Export CSV
+        </button>
+      </div>
+
       {/* Compact 3-Card Summary Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
         <div className="col-span-2 sm:col-span-1">

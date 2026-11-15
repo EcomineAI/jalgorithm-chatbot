@@ -1,10 +1,10 @@
 # JAlgorithm evaluation (validation set)
 
-Generated 2026-11-15T04:12:24.912Z with a fixed clock (2026-11-12T02:00:00.000Z) on Node v22.16.0.
+Generated 2026-11-15T06:39:33.991Z with a fixed clock (2026-11-12T02:00:00.000Z) on Node v22.16.0.
 
 > The evaluation messages were written by the developers to imitate real client chat. They were not collected from real clients. Treat these numbers as a development benchmark. Thesis results should come from a test set of real, consented client messages.
 
-Training examples: 454. Evaluated messages: 100 (100 excluding the brief's example messages that were seen during development).
+Training examples: 453. Evaluated messages: 100 (100 excluding the brief's example messages that were seen during development).
 
 Overlap with training data (exact/near-duplicate): none
 
@@ -87,9 +87,9 @@ Overlap with training data (exact/near-duplicate): none
 
 ## Performance
 
-- Engine start-up (normalize training data + train Naive Bayes and TF-IDF): 71.7 ms
-- Per-message analysis latency: mean 0.43 ms, p50 0.35 ms, p95 0.89 ms, max 2.12 ms
-- Heap increase from creating the engine: 3.36 MB (approximate; run with node --expose-gc for a cleaner measurement); total heap in use after the run: 9.3 MB
+- Engine start-up (normalize training data + train Naive Bayes and TF-IDF): 55.1 ms
+- Per-message analysis latency: mean 0.30 ms, p50 0.26 ms, p95 0.75 ms, max 1.20 ms
+- Heap increase from creating the engine: 3.29 MB (approximate; run with node --expose-gc for a cleaner measurement); total heap in use after the run: 9.6 MB
 - Latency excludes Supabase calls, which depend on the network.
 
 ## Normalization

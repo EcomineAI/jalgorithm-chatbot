@@ -56,11 +56,14 @@ Business facts (prices, hours, location) come in through a **catalog** object. I
 | Change what JAL says | `src/jalgorithm/config/responses.js` (**both** `en` and `fil`) | run `npm test` |
 | Add a new date or time format | `src/jalgorithm/entities/date.js` or `time.js` | tests in `tests/entities.test.js` |
 | Add a new kind of question JAL answers | see §4 "Add a new intent" | |
-| Change the chat page look or layout | `src/pages/ChatPage.jsx` | |
-| Change the landing page | `src/pages/LandingPage.jsx` (photos are in code, text is from the owner) | |
-| Change the navbar | `src/components/Navbar.jsx` | |
-| Change the owner's dashboard tabs | `src/pages/OwnerDashboard.jsx` (`TABS` list at the top) | |
-| Change the Business Info form | `src/pages/owner/BusinessInfoTab.jsx` | |
+| Change the booking step progress bar, messages, or quick widgets | `src/pages/ChatPage.jsx`, `src/components/ChatWidgets.jsx` | |
+| Change the landing page layout or hero preview card | `src/pages/LandingPage.jsx` | Catalog defaults/showcase photos in `src/jalgorithm/config/business.js` |
+| Change the navbar, desktop dropdown, or mobile navigation drawer | `src/components/Navbar.jsx` | |
+| Change the owner dashboard tabs, sidebar rail, or appointments view | `src/pages/OwnerDashboard.jsx` | |
+| Change the owner Dashboard Home cards, calendar, or manual booking modal | `src/components/owner/DashboardHomeTab.jsx`, `ManualBookingModal.jsx`, `OwnerPrimitives.jsx` | |
+| Change the Business Info workspaces or photo uploads | `src/pages/owner/BusinessInfoTab.jsx`, `src/lib/mediaUpload.js` | |
+| Change Owner Chat Logs grouping or filters | `src/pages/owner/ChatLogsTab.jsx`, `src/lib/ownerInsights.js` | |
+| Change the localhost desktop-only Dev Studio (`/dev`) | `src/pages/DevDebugPage.jsx`, `src/pages/dev/*.jsx`, `src/lib/devTools.js` | |
 | Change how bookings are checked (hours, 3-day rule, overlaps) | SQL: `supabase/migrations/20261112_jalgorithm.sql` (`jal_slot_problem`, `jal_book`, …) | **not** in JS; run a migration |
 | Change what the owner is allowed to edit | SQL: policies in `supabase/migrations/20261113_owner_panel.sql` | |
 | Add an owner account | Supabase Auth user, then `insert into app_owners …` (README step 4) | |
@@ -75,24 +78,30 @@ Business facts (prices, hours, location) come in through a **catalog** object. I
 | File | What it does |
 |---|---|
 | `main.jsx` | App entry point; mounts `App` |
-| `App.jsx` | **All routes.** Add a new page here |
-| `pages/LandingPage.jsx` | `/` public landing page |
-| `pages/ChatPage.jsx` | `/chat`: the chat UI. Builds the bot, sends messages, logs turns, saves the conversation in `sessionStorage` |
+| `App.jsx` | **All routes** (`/`, `/chat`, `/owner/login`, `/owner`, `/dev`, legacy redirects) |
+| `pages/LandingPage.jsx` | `/` public landing page (hero with white frosted-glass JAL preview, filtered service cards, lookbook lightbox, booking FAQ) |
+| `pages/ChatPage.jsx` | `/chat`: guest chat UI with collapsible multi-session sidebar (`localStorage`), booking progress bar, reply threading, and Supabase turn logging (`chat_logs` + `dev_chat_logs`) |
 | `pages/OwnerLogin.jsx` | `/owner/login` |
-| `pages/OwnerDashboard.jsx` | `/owner`: sidebar tabs (Appointments, Chat Logs, Reminders, Business Info) |
-| `pages/owner/BusinessInfoTab.jsx` | The Business Info forms (salon details, services, hours) |
-| `components/Navbar.jsx`, `Footer.jsx` | Shared layout |
-| `components/ProtectedRoute.jsx` | Blocks non-owners from `/owner` |
-| `lib/supabase.js` | Creates the one Supabase client (reads `.env.local`) |
-| `lib/useBusinessInfo.js` | React hook: loads the business catalog once per page |
-| `index.css` | Global styles and animation classes |
+| `pages/OwnerDashboard.jsx` | `/owner`: Owner Studio shell with collapsible desktop rail, mobile slide-out drawer, global search, notification popover, Appointments (+ Manual Booking), Reminders (1-Day Prep & Client Reminders), Chat Logs, and Business Info |
+| `pages/owner/BusinessInfoTab.jsx` | 4 consolidated Business Info workspaces (`Salon Profile & Photos`, `Services & Portfolio`, `Hours & Booking Rules`, `Travel, Extra Heads & Policies`) |
+| `pages/owner/ChatLogsTab.jsx` | Session-grouped and turn-level lead/inquiry logs with starred pins (`jal_starred_chat_logs_v1`) |
+| `pages/owner/OwnerChatSandbox.jsx` | Reusable interactive bot runner + Dev NLU Inspector (embedded inside `/dev`) |
+| `pages/DevDebugPage.jsx` | `/dev`: localhost + desktop-only (`>= 1024px`) Dev Studio shell guarded by `ProtectedRoute` |
+| `pages/dev/*.jsx` | `DevCleanupTab` (raw logs, trash session delete, auto-retention), `DevBatchTesterTab`, `DevSystemMapTab`, `DevPaperIpoDiagram`, `DevNluAnimationTab` |
+| `components/Navbar.jsx`, `Footer.jsx` | Shared layout, desktop Services dropdown, and animated `< md` slide-out navigation drawer |
+| `components/ChatWidgets.jsx`, `StudioMark.jsx` | Shared `ChatBubble`, `FlowControls`, `BOOKING_STEPS`, and brand monogram emblem |
+| `components/owner/*.jsx` | `OwnerPrimitives` (`StatKpiCard`, `ActionTileButton`, modals, form inputs), `DashboardHomeTab`, `ManualBookingModal` |
+| `components/ProtectedRoute.jsx` | Enforces `app_owners` access check via `checkOwnerAccess()` and displays support ticket fallback details |
+| `lib/` | Shared browser helpers: `supabase.js`, `useBusinessInfo.js`, `chatSessions.js`, `ownerInsights.js`, `calendarLinks.js`, `mediaUpload.js`, `nluDebug.js`, `devTools.js` |
+| `index.css` | Global theme variables (`--ease-editorial`, warm stone surfaces), Newsreader/Inter fonts, and restrained UI animations |
 
 ### Services (`src/services/`): the only code that talks to Supabase for business logic
 
 | File | What it does |
 |---|---|
 | `appointments.js` | Booking actions: available slots, book, find, reschedule, cancel. Maps results to `{ ok, reason, data }` |
-| `businessInfo.js` | Loads the owner's business catalog (with cache and offline fallback); owner save functions |
+| `businessInfo.js` | Loads the owner's business catalog (with `localStorage` cache and offline defaults); owner save functions and `checkOwnerAccess()` |
+| `devLogs.js` | Owner-gated reads/deletes/pruning for `chat_logs` and `dev_chat_logs` in `/dev` (`jal_get_dev_log_stats`, `jal_set_dev_prune_days`, `jal_delete_log_session`, `jal_prune_dev_and_trash_logs`) |
 
 ### The chatbot engine (`src/jalgorithm/`)
 
@@ -127,8 +136,14 @@ Business facts (prices, hours, location) come in through a **catalog** object. I
 | File | Contents |
 |---|---|
 | `schema.sql` | Base tables: `appointments`, `chat_logs`. Run first on a fresh project |
+| `setup_all.sql` | Idempotent combined script merging `schema.sql` and all migrations for quick fresh setup |
 | `migrations/20261112_jalgorithm.sql` | `services`, `booking_settings`, reference codes, the `jal_*` booking functions |
 | `migrations/20261113_owner_panel.sql` | `business_profile`, service keywords, `app_owners`, `is_owner()`, owner-only policies |
+| `migrations/20261114_beneficiary_interview_features.sql` | Service `inclusions`, branding/bio/tags, travel areas, additional head pricing, tiered deposit & rush rules |
+| `migrations/20261114_service_pricing_modes.sql` | Flexible service `price_mode` (`fixed`, `starting`, `range`, `varies`), `price_max`, `price_note` |
+| `migrations/20261115_salon_media.sql` | `hero_photo_url`, `artist_photo_url`, `gallery_urls`, `services.image_url`, and `salon-media` Storage bucket policies |
+| `migrations/20261115_dev_logs_and_cap.sql` | `dev_chat_logs` table and 1,000-row rolling cap trigger on `chat_logs` and `dev_chat_logs` |
+| `migrations/20261116_dev_cleanup_and_retention.sql` | Owner delete policies, `dev_auto_prune_days` (default 3), and `jal_*_dev_*` log cleanup/prune RPCs |
 
 **Migrations are append-only.** To change the database, add a new file with a later date. Don't edit one that's already been run.
 
@@ -215,8 +230,8 @@ Business facts (prices, hours, location) come in through a **catalog** object. I
 2. Enable RLS on the table and write policies. Owner-only data uses `is_owner()`.
 3. Call it from `services/` (never directly from a page or the chatbot).
 
-### Add the admin (debug) panel (not built yet)
-Planned: `/admin` for developers, using a separate `app_admins` table. Put it in `src/pages/AdminDashboard.jsx` and register it in `App.jsx`. Read `chat_logs` to show per-message analysis.
+### Developer Debug Studio (`/dev`)
+Built in `src/pages/DevDebugPage.jsx` (`src/pages/dev/*.jsx`) and guarded by `ProtectedRoute` + `isLocalDevHost()` + desktop viewport (`>= 1024px`). `/admin` and `/admin/login` redirect to `/owner` and `/owner/login`.
 
 ---
 
@@ -224,13 +239,15 @@ Planned: `/admin` for developers, using a separate `app_admins` table. Put it in
 
 | Data | Stored in | Who can read | Who can change |
 |---|---|---|---|
-| Appointments | Supabase `appointments` | Owners | Chatbot (via `jal_*` functions); owners |
-| Chat turns (for research) | Supabase `chat_logs` | Owners | Anyone can insert (the chat page) |
-| Salon info, services, hours | Supabase `business_profile`, `services`, `booking_settings` | Everyone (public read) | Owners |
+| Appointments | Supabase `appointments` | Owners | Chatbot (`jal_*` functions); Owners (incl. Manual Booking) |
+| Owner Lead Logs | Supabase `chat_logs` (capped at 1,000 rows) | Owners | Chat page (filtered via `isOwnerImportantLog`); Owners can delete |
+| Raw Turn Logs | Supabase `dev_chat_logs` (capped at 1,000 rows, auto-pruned) | Owners | Chat page logs every turn; Owners can delete/prune in `/dev` |
+| Salon info, services, hours, media | Supabase `business_profile`, `services`, `booking_settings`, `salon-media` Storage | Everyone (public read) | Owners (`localStorage` fallback `jal_owner_overrides_v1` if pre-migration) |
 | Owner list | Supabase `app_owners` | Nobody directly (via `is_owner()`) | Developer, in SQL |
 | Last loaded salon info | Browser `localStorage` (`jal_catalog_v1`) | This browser | Automatic |
-| Current chat conversation | Browser `sessionStorage` (`jal_conversation`) | This tab | Automatic |
-| Secrets | `app/.env.local` (never committed) | — | Developer |
+| Multi-session guest conversations | Browser `localStorage` (`jal_sessions_v1`, `jal_chat_settings_v1`) | This browser | Automatic (migrates legacy `sessionStorage` key `jal_conversation`) |
+| Owner UI preferences | Browser `localStorage` (`jal_owner_sidebar_collapsed`, `jal_starred_chat_logs_v1`) | This browser | Automatic |
+| Secrets | `app/.env.local` (never committed) | N/A | Developer |
 
 ---
 

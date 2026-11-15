@@ -693,7 +693,7 @@ export function buildDashboardMetrics(appointments, chatLogs, todayIso) {
   let confirmedTotal = 0
   let noShowTotal = 0
   let remindersDueTotal = 0
-  const soonCutoff = shiftIsoDate(today, 2)
+  const soonCutoff = shiftIsoDate(today, 3)
 
   for (const appt of allAppts) {
     const isConfirmedLike = appt?.status === 'confirmed' || appt?.status === 'rescheduled'

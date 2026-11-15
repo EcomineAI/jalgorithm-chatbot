@@ -176,7 +176,7 @@ export function computeOwnerPrepSummary(appointment, { freeTravelAreas = ['Olong
   }
 }
 
-/** Formats a ready-to-send client reminder message (1-2 days before the appointment). */
+/** Formats a ready-to-send client reminder message (sent 3 days before the appointment). */
 export function buildClientReminderText(appointment, businessName = 'our studio') {
   const dt = appointment?.date && appointment?.time
     ? { date: appointment.date, time: appointment.time.slice(0, 5) }

@@ -106,7 +106,7 @@ Each component is first scaled to a distribution over intents:
 | Component | Type | How it works |
 |---|---|---|
 | Rule scorer (`classifier/rules.js`) | Conventional, hand-written | Weighted sum of concept tags, with penalties (e.g. `#CANCEL` lowers `BOOK_APPOINTMENT`). Weights are in `config/intents.js`. |
-| Multinomial Naive Bayes (`classifier/naiveBayes.js`) | **Machine learning** | Class priors and per-class likelihoods of unigrams, bigrams and concept tags are *learned* from labeled examples (`data/training.js`, 291 examples), with Laplace smoothing α = 0.5. Trained when the engine starts (~40 ms) and fully deterministic. |
+| Multinomial Naive Bayes (`classifier/naiveBayes.js`) | **Machine learning** | Class priors and per-class likelihoods of unigrams, bigrams and concept tags are *learned* from labeled examples (`data/training.js`, 453 examples), with Laplace smoothing α = 0.5. Trained when the engine starts (~55 ms) and fully deterministic. |
 | TF-IDF + cosine (`classifier/tfidf.js`) | Conventional vector-space model | Similarity to each intent's centroid. The nearest training example's similarity is also used as a relevance signal. This measures **lexical overlap only**; it is not semantic understanding. |
 
 **Decision layer (`classifier/ensemble.js`):**
@@ -119,13 +119,15 @@ Messages are never forced into a known intent: unrelated text gets a polite scop
 
 ## 5. Conversation state management
 
-The state is a plain JSON object (`dialogue/state.js`), saved in `sessionStorage` so a page refresh keeps the conversation:
+The state is a plain JSON object (`dialogue/state.js`), persisted across browser sessions in `localStorage` (`jal_sessions_v1` via `src/lib/chatSessions.js`, migrating legacy `sessionStorage`):
 
 ```js
 { lang, turn, lastIntent,
+  recentContext: { service, date, time, updatedTurn },
   flow: { intent, slots: {service, date, time, name, contact, location, reference},
-          awaiting, confirming, appointment, checked, misses, … } | null,
-  pending: { type: 'clarify' | 'offer_book' | 'cancel_or_abort', … } | null }
+          awaiting, confirming, appointment, checked, misses, ... } | null,
+  pausedFlow: { ... } | null,
+  pending: { type: 'clarify' | 'offer_book' | 'cancel_or_abort', ... } | null }
 ```
 
 | Behaviour | How |
@@ -170,35 +172,17 @@ Extracted values are never assumed to be bookable: availability always comes fro
 
 No npm dependency had to be removed: the LLM integration used plain `fetch`.
 
-## 8. Files
+## 8. Key Files & Modules
 
-**New**
-- `src/jalgorithm/` (engine):
-  - `index.js`, `analyzer.js`, `responder.js`
-  - `config/{business,shortcuts,lexicon,intents,responses}.js`
-  - `data/training.js`
-  - `pipeline/{preprocess,tokenizer,normalizer,fuzzy,features,language}.js`
-  - `entities/{index,date,time,calendar}.js`
-  - `classifier/{features,naiveBayes,tfidf,rules,ensemble}.js`
-  - `dialogue/{state,manager}.js`
-- `src/services/appointments.js`, `src/services/businessInfo.js`, `src/lib/useBusinessInfo.js`
-- `src/pages/owner/BusinessInfoTab.jsx` (Owner's panel → Business Info)
-- `supabase/migrations/20261112_jalgorithm.sql`, `supabase/migrations/20261113_owner_panel.sql`
-- `tests/*.test.js` (normalizer, entities, classifier, dialogue, appointments, businessInfo, datasets)
-- `tests/data/{intent_test_set,intent_validation_set,normalization_cases}.json`
-- `scripts/{evaluate,baseline}.js`
-- `reports/evaluation*.{md,json}` (generated)
-- `docs/JALGORITHM.md`
-
-**Modified**
-- `src/pages/ChatPage.jsx`: engine integration, session persistence, reset button, offline indicator, richer chat logs
-- `src/pages/AdminDashboard.jsx` → renamed `OwnerDashboard.jsx` (route `/owner`): reference code column, appointment time, intent confidence, Business Info tab, tab picker on phones
-- `src/pages/AdminLogin.jsx` → renamed `OwnerLogin.jsx` (route `/owner/login`)
-- `src/components/ProtectedRoute.jsx`: also requires the account to be in `app_owners`
-- `src/components/Navbar.jsx`, `src/pages/LandingPage.jsx`: services, prices, location and hours come from the owner's data
-- `supabase/schema.sql`: tunnel table removed; intent check constraint removed
-- `package.json`: vitest, `test` and `evaluate` scripts
-- `start.bat`, `.env.example`, `.gitignore`, `README.md`
+- `src/jalgorithm/` (engine): `index.js`, `analyzer.js`, `responder.js`, `config/{business,shortcuts,lexicon,intents,responses}.js`, `data/training.js`, `pipeline/{preprocess,tokenizer,normalizer,fuzzy,features,language}.js`, `entities/{index,date,time,calendar}.js`, `classifier/{features,naiveBayes,tfidf,rules,ensemble}.js`, `dialogue/{state,manager}.js`
+- `src/services/`: `appointments.js`, `businessInfo.js`, `devLogs.js`
+- `src/lib/`: `useBusinessInfo.js`, `chatSessions.js`, `ownerInsights.js`, `calendarLinks.js`, `mediaUpload.js`, `nluDebug.js`, `devTools.js`
+- `src/components/`: `Navbar.jsx`, `Footer.jsx`, `ProtectedRoute.jsx`, `ChatWidgets.jsx`, `StudioMark.jsx`, `owner/{OwnerPrimitives,DashboardHomeTab,ManualBookingModal}.jsx`
+- `src/pages/`: `LandingPage.jsx`, `ChatPage.jsx`, `OwnerLogin.jsx`, `OwnerDashboard.jsx`, `owner/{BusinessInfoTab,ChatLogsTab,OwnerChatSandbox}.jsx`, `DevDebugPage.jsx`, `dev/{DevCleanupTab,DevBatchTesterTab,DevSystemMapTab,DevPaperIpoDiagram,DevNluAnimationTab}.jsx`
+- `supabase/`: `schema.sql`, `setup_all.sql`, and append-only migrations (`20261112_jalgorithm.sql` through `20261116_dev_cleanup_and_retention.sql`)
+- `vercel.json`: catch-all SPA rewrite so `/chat`, `/owner`, `/owner/login`, and `/dev` resolve directly
+- `tests/`: 12 Vitest test files (`appointments`, `businessInfo`, `calendarLinks`, `chatSessions`, `classifier`, `datasets`, `devTools`, `dialogue`, `entities`, `mediaUpload`, `normalizer`, `ownerInsights`) plus `tests/data/{intent_test_set,intent_validation_set,normalization_cases}.json`
+- `scripts/{evaluate,baseline}.js`, `reports/evaluation*.{md,json}`, `docs/{JALGORITHM,NAVIGATION,HISTORY}.md`
 
 ## 9. Setup
 
@@ -214,75 +198,57 @@ If you still have `SUPABASE_SERVICE_KEY` in your own `.env.local`, delete it; no
 
 ## 10. Automated tests
 
-`npm test` runs 171 Vitest tests in about 3 seconds, all passing at the time of writing:
+`npm test` runs **267 Vitest tests across 12 test files** in ~4–6 seconds:
 
 | File | Covers |
 |---|---|
-| `normalizer.test.js` | Preprocessing, tokenization, all 50 normalization cases, false-correction guards, edit distance |
-| `entities.test.js` | Dates/times with a fixed clock (relative, weekdays, months, Filipino forms, invalid values), services, contacts, references, names |
-| `classifier.test.js` | Naive Bayes and TF-IDF units, rule scorer, the brief's 10 example messages, out-of-domain rejection, language detection |
-| `dialogue.test.js` | Multi-turn conversations with mocked actions: availability → "3pm sana"; book → Friday → "Kahit 2pm"; corrections; interruption + resume; reset; cancel-vs-stop clarification; reschedule; can't-attend → cancel; view; failure and offline handling |
-| `appointments.test.js` | RPC parameter mapping, reason codes, network failure / missing migration → `unreachable`, DB error → `error` |
-| `businessInfo.test.js` | Mapping database rows to the catalog, cache and offline fallback, blocked writes reported as `not_authorized`, error mapping; the chatbot answering with the owner's prices, keywords, hours, rules and contact details |
-| `datasets.test.js` | No overlap between training, validation and test sets; valid labels; every reply exists in both languages |
+| `normalizer.test.js` | Preprocessing, tokenization, all 50 normalization cases, Conyo/Jeje normalization, false-correction guards, edit distance |
+| `entities.test.js` | Dates/times with a fixed clock (including multi-date `extractDates()`), services, contacts, references, `extractHeadCount()`, attendee names |
+| `classifier.test.js` | Naive Bayes and TF-IDF units, rule scorer, the brief's example messages, out-of-domain rejection, language detection |
+| `dialogue.test.js` | Multi-turn conversations with mocked actions, cross-turn memory, group head calculation, secondary multi-question answers, draft pausing/resumption, beneficiary interview & Conyo/Jeje scenarios |
+| `appointments.test.js` | RPC parameter mapping, reason codes, network failure / missing migration -> `unreachable`, DB error -> `error` |
+| `businessInfo.test.js` | Mapping database rows to catalog, pricing modes (`fixed`, `starting`, `range`, `varies`), cache & fallback, `checkOwnerAccess()`, beneficiary preset |
+| `datasets.test.js` | Zero overlap between training (`453`), validation (`100`), and test (`222`) sets; valid labels; EN/FIL placeholder parity |
+| `chatSessions.test.js` | Multi-session `localStorage` persistence, naming, paused draft detection, saved recent references |
+| `ownerInsights.test.js` | Profile completion %, appointment date/status filtering, pagination, calendar grouping, session-grouped chat logs, trash log filtering |
+| `calendarLinks.test.js` | Manila date math, Google Calendar & Google Maps URL builders, owner 1-day prep & reminder templates |
+| `mediaUpload.test.js` | Image URL sanitization, compression fallback, Storage upload path safety |
+| `devTools.test.js` | Localhost host guard, raw log trash grouping, auto-prune helpers, batch NLU suite execution |
 
-**Not covered by automated tests:** the SQL functions themselves. No database was available in the development environment, so the migration has not been executed against Supabase yet. Run it, then do the manual end-to-end check in the README (book → view → reschedule → cancel).
+**Not covered by unit tests:** SQL RPC functions (`jal_*`) run in Supabase PostgreSQL and require manual end-to-end verification after applying `supabase/setup_all.sql` (or all append-only migrations).
 
 ## 11. Evaluation results
 
-Run with `npm run evaluate`; full output is in `reports/evaluation.md`. The method:
+Run with `npm run evaluate` (or `node scripts/evaluate.js --set validation` when tuning); full outputs live in `reports/evaluation.md` and `reports/evaluation-validation.md`.
 
-- **Three disjoint data sets.** Training (291, used to fit Naive Bayes / TF-IDF), validation (72, used to tune lexicon/weights/thresholds) and test (222, held out). Exact or near-duplicate overlap is checked automatically.
-- **Tuning used validation errors only.** During development, some off-topic words had been added that mirrored test items. They were removed before the final run, which lowered test accuracy from 90.1% to the 88.3% reported here.
-- **13 test messages are the example messages from the project brief.** They were looked at during development, so results are also reported without them.
+- **Three disjoint sets.** Training (`453` examples used to fit Naive Bayes and TF-IDF), validation (`100` examples used for tuning; **100.0%** strict accuracy, **100.0%** macro-F1, **100.0%** OOD rejection), and held-out test (`222` messages, `0` training overlap).
 
 | Metric (test set, 222 messages) | JAlgorithm | Keyword baseline |
 |---|---|---|
-| Accuracy | **88.3%** | 50.0% |
-| Macro F1 | **88.7%** | 52.9% |
-| Accuracy excluding brief examples (209) | 87.6% | |
-| Lenient accuracy (listed alternatives / clarification accepted) | 91.0% | |
-| English / Filipino / Taglish accuracy | 88.0% / 82.3% / 93.5% | 55.4% / 38.7% / 53.2% |
-| Unrelated/unsupported messages rejected as UNKNOWN | **57.1%** | |
-| In-domain messages wrongly rejected | 3.0% | |
+| Strict accuracy | **94.6%** | 50.0% |
+| Macro F1 | **94.9%** | 52.9% |
+| Accuracy excluding seen-in-development (`209`) | 94.3% | |
+| Lenient accuracy (clarification / acceptable alternative accepted) | 96.4% | |
+| English / Filipino / Taglish accuracy | 89.2% / 98.4% / 97.4% | 55.4% / 38.7% / 53.2% |
+| Out-of-domain messages rejected as UNKNOWN | **85.7%** | |
+| In-domain messages wrongly rejected | 1.5% | |
 
-**Per category:**
+**Performance (Node 22):**
+- Engine start-up (training normalization + NB + TF-IDF): `57.6 ms` (`55.1 ms` in validation run)
+- Per-message analysis latency: `p50 = 0.35 ms`, `p95 = 1.62 ms` (`mean = 0.56 ms`)
+- Heap increase from creating the engine: ~`3.71 MB`
+- Supabase RPC network time is extra and depends on network latency.
 
-| Category | Accuracy |
-|---|---|
-| Taglish | 97.4% |
-| English | 96.3% |
-| Misspellings | 93.8% |
-| Tagalog | 91.2% |
-| Shortcuts | 90.9% |
-| Incomplete messages | 100% |
-| Ambiguous | 87.5% |
-| English paraphrases | 75.0% |
-| Unrelated | 60.0% |
-| Unsupported requests | 50.0% |
+**Normalization:** 50 cases, `100.0%` exact match, `0` false corrections across 19 protected-word cases.
 
-**Performance (Node 22, ordinary laptop):**
-- Engine start-up: ~40 ms
-- Per-message analysis: p50 ≈ 0.3 ms, p95 ≈ 1 ms
-- Heap growth from creating the engine: ≈ 1 MB
-- Network time for Supabase calls is extra and not measured here.
+**How to read these numbers.** All evaluation messages were written by the developers to imitate client chat; none were collected from real clients. The results show the method works and beats a keyword baseline. They are **not** the thesis's live-deployment intent accuracy, which should be measured on consented real client messages.
 
-**Normalization:** 50 cases, all correctly normalized, 0 false corrections in 19 protected-word cases. These cases were written together with the normalizer, so they work as a regression suite, not as an independent accuracy estimate.
+## 12. Known limitations and next steps
 
-**How to read these numbers.** All evaluation messages were written by the developers to imitate client chat; none were collected from real clients. The results show the method works and beats a keyword baseline. They are **not** the thesis's intent-recognition accuracy. That should be measured on real, consented client messages that JAlgorithm has never seen, split as the methodology describes.
-
-## 12. Limitations and future work
-
-1. **Out-of-domain rejection is the weakest part (57%).** Unrelated questions that contain domain-like words still get pulled into an intent. Examples: "anong oras na ngayon" (oras + ngayon → availability) and "hiring po ba kayo ng assistant" (→ general inquiry). Options: more `OUT_OF_SCOPE` training data from real logs, and a stricter relevance guard.
-2. **English paraphrases with unseen vocabulary (75%).** Lexical methods can't infer that "how far ahead do I have to book" asks about policy. Fix: add phrasings observed in chat logs to the lexicon and training data.
-3. **Filipino informational questions** with uncommon words ("sakop", "nagsasara", "dp") are missed. Same fix.
-4. **Single-intent output.** A message with two requests gets one intent (the ambiguity check may ask). Multi-intent splitting is not implemented.
-5. **Date heuristics.** "Sa susunod na Biyernes" is read as next week's Friday when this week's is still ahead, which some speakers would read differently; the bot always shows the full date before confirming. A lone "q" is read as "ko".
-6. **Service durations in the migration are assumptions.** Confirm them with the artist.
-7. **The SQL migration still needs to be run and checked** on the real Supabase project.
-8. **Reminders** (3 days / 1 day before) are described to clients but not implemented in this codebase. The dashboard's Reminders tab is still a placeholder.
-9. **Business info changes reach the chatbot on the next chat load**, not instantly in an already-open chat. Landing-page photos are still chosen in code (by service key); services without a photo get a default image.
-10. **Continuous improvement path.** `chat_logs` now stores the normalized text, confidence, raw intent, corrections and action outcome of every turn. Low-confidence and UNKNOWN turns can be reviewed, labeled, and added to `training.js` or the lexicon; Naive Bayes retrains automatically on the next load.
+1. **English paraphrases with unseen phrasing (`75.0%`)** and **unsupported capability requests (`66.7%`)**: purely lexical matching still relies on adding real-world client phrasing observed in `chat_logs` / `dev_chat_logs` to `training.js` or `lexicon.js`.
+2. **Primary single-intent resolution with secondary FAQ answering**: messages asking an operational flow question plus a secondary pricing/hours/location question answer the FAQ inline (`answerSecondaryInfo`), while two competing transactional actions trigger clarification.
+3. **Database migrations**: run `supabase/setup_all.sql` (or migrations in date order) on any fresh Supabase project and verify booking RPCs + `salon-media` uploads end to end.
+4. **Continuous improvement path**: actionable leads store metadata in `chat_logs` (capped at `1,000` rows), raw diagnostics store turns in `dev_chat_logs` (auto-pruned after `dev_auto_prune_days`), and `/dev` provides batch NLU testing and cleanup controls.
 
 ## Which techniques are machine learning?
 

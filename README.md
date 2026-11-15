@@ -70,8 +70,13 @@ In the Supabase SQL editor, either paste `supabase/setup_all.sql` (combined idem
 6. `supabase/migrations/20261115_salon_media.sql`, which adds hero/artist/service/gallery media columns and `salon-media` Storage bucket policies
 7. `supabase/migrations/20261115_dev_logs_and_cap.sql`, which adds `dev_chat_logs` and a 1,000-row rolling cap trigger on `chat_logs` and `dev_chat_logs`
 8. `supabase/migrations/20261116_dev_cleanup_and_retention.sql`, which adds owner delete policies, session cleanup RPCs, and configurable auto-retention (`dev_auto_prune_days`, default 3 days)
+9. `supabase/migrations/20261117_auto_reminders.sql`, which adds the `reminder_queue` table, the daily 3-day reminder queue, and the pg_cron jobs. Enable `pg_cron` and `pg_net` first, and add the `reminder_function_url` and `reminder_cron_secret` secrets in Vault. Then deploy the `supabase/functions/send-reminders` Edge Function with its `CRON_SECRET`, `SMS_GATEWAY_URL` and `SMS_GATEWAY_KEY` secrets.
 
-Both the individual migrations and `supabase/setup_all.sql` are safe to re-run.
+10. `supabase/migrations/20261118_session_messages_and_push.sql`, which adds session reminders (`client_messages`, `jal_send_session_reminder`, `jal_session_messages`), Web Push subscriptions, and the triggers that notify the owner and clients. Add the Vault secret `notify_function_url` (`https://<project-ref>.supabase.co/functions/v1/notify`), then deploy `supabase/functions/notify` with `CRON_SECRET`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT` set. Generate the keys once with `npx web-push generate-vapid-keys`. Put the public key in `.env.local` as `VITE_VAPID_PUBLIC_KEY` and the private key only in Supabase secrets. Redeploy `send-reminders` too, since it now posts into client sessions.
+
+Both the individual migrations and `supabase/setup_all.sql` are safe to re-run. Steps 9 and 10 are not in `setup_all.sql`, so run them separately.
+
+Push notifications need HTTPS (Vercel and localhost both qualify). iPhone only delivers web push to a site added to the Home Screen (iOS 16.4 or later).
 
 ### 4. Create the owner account
 
@@ -84,13 +89,14 @@ Both the individual migrations and `supabase/setup_all.sql` are safe to re-run.
 
 ### 5. Fill in the business info
 
-In the Owner's panel, open **Business Info**:
+In the Owner Studio (`/owner`), open **Business Info** (4 workspaces):
 
-- **Salon details**: name, artist, location, contact, portfolio link, payment methods, consultation fee, travel areas, reservation fee
-- **Services & prices**: name, price, duration, the keywords clients use (e.g. "kasal" for Bridal), whether it shows on the website, and whether it's still offered
-- **Hours & booking rules**: opening/closing time, how many days ahead clients must book, cancel/reschedule notice, time between slots
+- **Salon Profile & Photos**: name, artist, bio, experience years, location, contact, Messenger/Page link, specialty tags, hero banner photo, artist portrait
+- **Services & Portfolio**: service name, price mode (`fixed`, `starting`, `range`, `varies`), duration, inclusions, keywords clients use (e.g. "kasal" for Bridal), card images, and portfolio gallery photos (up to 12)
+- **Hours & Booking Rules**: opening/closing time, minimum advance booking days, cancel/reschedule cutoff notice, buffer between slots
+- **Travel, Extra Heads & Policies**: inclusive vs. out-of-town travel areas, additional head starting rate, payment methods, tiered deposit & rush rules, consultation fee
 
-The chatbot, navbar and landing page all show this data. Changes reach the chatbot the next time someone opens the chat. Service durations start as guesses (e.g. bridal = 3 hours), so check them first.
+The chatbot, navbar (including the mobile navigation drawer), landing page, and Studio Lookbook all read this data dynamically. Service durations start as defaults (e.g. bridal = 3 hours), so review them with the artist first.
 
 ### 6. Run
 
@@ -116,11 +122,12 @@ See [docs/NAVIGATION.md](docs/NAVIGATION.md) to find where to change things and 
 
 | Route | Description |
 |---|---|
-| `/` | Landing page (public) |
-| `/chat` | Client chatbot interface |
+| `/` | Landing page (public: hero with white frosted-glass JAL preview, services filter, lookbook lightbox, dynamic FAQ) |
+| `/chat` | Client chatbot interface (`localStorage` multi-session sidebar, step progress bar, reply quoting, saved drafts) |
 | `/owner/login` | Owner login |
-| `/owner` | Owner's panel (appointments, chat logs, reminders, business info) |
-| `/admin` | Reserved for the developer debug panel (redirects to `/owner` for now) |
+| `/owner` | Owner Studio (Dashboard Home, Appointments + Manual Booking, Chat Logs, Reminders & 1-Day Prep, Business Info) |
+| `/dev` | Localhost desktop-only (`>= 1024px`) Dev Studio (DevBot sandbox, Raw Dev Logs, Cleanup & Auto-Retention, Batch Tester, System Map & Paper IPO, Animated NLU Flow) |
+| `/admin` | Redirects to `/owner` |
 
 ## Editing the chatbot
 

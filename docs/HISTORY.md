@@ -12,8 +12,23 @@ Dates are as recorded in git. The project is a student thesis: an appointment ch
 2. **Nov 12, 2026: JAlgorithm replaces the LLM.** The LLM, the tunnel, and the Python bridge were removed. A deterministic, in-browser NLP engine was built instead. It handles English, Filipino and Taglish, and it books appointments through Supabase database functions.
 3. **Nov 12–14, 2026: Owner's panel.** Business information (name, services, prices, hours, booking rules) moved out of code and into Supabase. The owner edits it at `/owner`. The chatbot, navbar and landing page all read the same data.
 4. **Nov 14, 2026: Cleanup and docs.** LLM leftovers removed, the tech stack file rewritten, and a navigation guide added.
+5. **Nov 14–15, 2026: Beneficiary features, Owner Studio overhaul, Dev Studio & UI/UX polish.** Added owner-configurable media uploads, pricing modes, travel/extra-head rules, Page Handoff cards, Google Calendar/Maps integration, multi-session chat persistence (`localStorage`), collapsible owner/public sidebars, localhost desktop-only Dev Studio (`/dev`), NLU upgrades (Conyo/Jeje/indirect normalization, cross-turn memory, `453` training examples), white frosted-glass preview card, `"JAL"` display identity, and Round 1–2 UI polish.
 
-Current state: code is complete and tested (171 automated tests pass, the build succeeds). **The database migrations have not yet been applied to the live Supabase project**, so booking and the owner panel don't work there yet. See §7.
+Current state: **267/267** Vitest tests pass across **12** test files (checked by running `npx vitest run`), training set has **453** examples, test-set accuracy is **94.6%** (**100.0%** on the 100-message validation set), and commits are pushed to `origin/main` up to `a72be59`. Ensure all append-only SQL migrations (or `supabase/setup_all.sql`) are applied on the target Supabase project. See §7.
+
+---
+
+## 1b. Growth of the examples and tests
+
+These figures were checked against the reports and the test runs, not recalled from memory.
+
+| Stage | Date | Intent examples | Tests | How it was checked |
+|---|---|---|---|---|
+| Early development | Nov 4–7 | About 50 example messages (developer's account; no committed file records this number) | None recorded | The LLM classifier prompt in commit `17c17c8` had 15 few-shot examples |
+| First JAlgorithm commit | Nov 12 | 291 training, 72 validation, 222 test | 171 tests in 7 files | `reports/evaluation*.md` at `8084f4f`; suite run in an export of `8084f4f` |
+| Current | Nov 15 | 453 training, 100 validation, 222 test | 267 tests in 12 files | `reports/evaluation*.md`; `npx vitest run` |
+
+Training examples grew from 291 to 453 between Nov 12 and Nov 15, when the multi-style conversation data (Conyo, Jeje, indirect phrasing) was added. The test set stayed at 222 messages, and its training overlap stayed at 0. The test count grew from 171 to 267, and the number of test files from 7 to 12.
 
 ---
 
@@ -61,7 +76,7 @@ These were asked as questions and answered before any code was written.
 - **Booking functions** in `supabase/migrations/20261112_jalgorithm.sql`: `jal_available_slots`, `jal_book`, `jal_find`, `jal_reschedule`, `jal_cancel`. They enforce working hours, the 3-day advance rule, no overlaps (with an advisory lock against double booking), the 24-hour cutoff, and reference-plus-mobile ownership. Also drops the `tunnel_config` table.
 - **App layer:** `src/services/appointments.js` maps each Supabase result to `{ ok, reason, data }`. Network failures become `unreachable`, so the bot can say "booking system unavailable" instead of failing silently.
 - **Chat page** runs the engine in the browser, saves the conversation in `sessionStorage`, has a reset button and an offline indicator, and logs every turn to `chat_logs` with the confidence, normalized text, corrections and action result.
-- **Tests:** Vitest, 162 at the time, covering normalization, entities, classifiers, multi-turn dialogues, and the service layer.
+- **Tests:** Vitest, 171 tests in 7 files at the time (checked by running the suite on this commit), covering normalization, entities, classifiers, multi-turn dialogues, and the service layer.
 - **Evaluation** (`scripts/evaluate.js`, output in `reports/`). Three disjoint sets: training (291), validation (72, used for tuning), test (222, held out). Result on the test set: **88.3% accuracy, 88.7% macro-F1**, against 50% for a keyword baseline.
 
 ### Important honesty notes (keep these)
@@ -110,6 +125,17 @@ The salon's facts were hardcoded in three places (`config/business.js`, `Navbar.
 
 ---
 
+## 5b. Phase 5: Beneficiary features, Owner SaaS UI, Dev Studio & Polish (Nov 14–15, 2026)
+
+**Commits:** `9b70be5` (docs) -> `ad70428` (Owner Studio, Chat UI, dynamic catalog & Dev Studio) -> `b26dbec` (`vercel.json` SPA rewrites) -> `a72be59` (UI polish, mobile drawer, JAL branding & NLU upgrades).
+
+- **Beneficiary interview features & dynamic media:** Added `20261114_beneficiary_interview_features.sql`, `20261114_service_pricing_modes.sql`, and `20261115_salon_media.sql` (mirrored in `setup_all.sql`) supporting per-service inclusions, flexible pricing (`fixed`, `starting`, `range`, `varies`), travel areas, additional head rates, tiered deposit/rush rules, and hero/artist/service/gallery uploads (`salon-media` bucket + local fallback).
+- **NLU & dialogue upgrades:** Added Conyo/Jeje/indirect normalization, `extractDates()` multi-date handling, `extractHeadCount()` group estimates, `recentContext` cross-turn memory, `pausedFlow` draft pausing/resuming, reply quoting (`replyContext`), and expanded training data to **453** examples (`100` validation examples at **100.0%** accuracy; **222** held-out test messages at **94.6%** strict / **96.4%** lenient accuracy with **0** training overlap).
+- **Customer Chat & Public Website UI/UX:** Upgraded `/chat` to `localStorage` multi-session history (`jal_sessions_v1`), extracted shared `ChatWidgets.jsx` + `StudioMark.jsx`, added a white frosted-glass Hero `JAL` preview card and lightboxes/filters in `LandingPage.jsx`, and upgraded `Navbar.jsx` with an animated `< md` slide-out navigation drawer.
+- **Owner Studio & Localhost Dev Studio (`/dev`):** Redesigned Owner Studio (`DashboardHomeTab.jsx`, `ManualBookingModal.jsx`, 4 consolidated workspaces in `BusinessInfoTab.jsx`, session-grouped `ChatLogsTab.jsx`, 1-Day Prep & Client Reminders, collapsible desktop rail + mobile drawer), split lead logs (`chat_logs`) from raw turn diagnostics (`dev_chat_logs` via `20261115_dev_logs_and_cap.sql` and `20261116_dev_cleanup_and_retention.sql`), and built the desktop-only (`>= 1024px`) `/dev` Dev Studio (`DevCleanupTab`, `DevBatchTesterTab`, `DevSystemMapTab`, `DevPaperIpoDiagram`, `DevNluAnimationTab`).
+
+---
+
 ## 6. Git history and repository rules
 
 - **Repo:** the project's GitHub repository (`jalgorithm-chatbot`), branch `main`. Hosting is Vercel.
@@ -140,28 +166,30 @@ The salon's facts were hardcoded in three places (`config/business.js`, `Navbar.
 | 2026-11-07 | `f829e3d` | Strip markdown from LLM replies |
 | 2026-11-07 | `17c17c8` | System prompt simplified to behaviour-only |
 | 2026-11-12 | `8084f4f` | **JAlgorithm engine, Supabase booking, Owner's panel, cleanup of LLM code** |
+| 2026-11-14 | `9b70be5` | Add navigation guide and history log |
+| 2026-11-15 | `ad70428` | Overhaul Owner Studio, Chat UI, dynamic salon catalog, and Desktop Dev Studio |
+| 2026-11-15 | `b26dbec` | Add `vercel.json` SPA rewrite for direct route navigation (`/owner`, `/chat`, `/dev`) |
+| 2026-11-15 | `a72be59` | Polish website, chat, owner and dev UI with mobile drawer, JAL branding and NLU upgrades |
 
-The commit IDs above are the ones after the Nov 13 rewrite. Commit `8084f4f` contains all of the Nov 12–14 work (the owner panel, the cleanup and the docs). The earlier IDs (`559ab1c` etc.) were the pre-rewrite versions; the code is identical.
+The commit IDs above reflect the clean history on `origin/main` after the Nov 13 rewrite.
 
 ---
 
 ## 7. Current state and open items
 
-### Working in code (not yet verified in a browser)
-- Chatbot engine, all intents listed in `config/intents.js`
-- Owner's panel and Business Info tab
-- Landing page and navbar reading the owner's data
-- 171 tests pass; production build passes
+### Working in code and verified locally
+- JAlgorithm NLU engine, multi-turn booking/reschedule/cancel/view dialogue, group head quotes, FAQ answers, and offline catalog cache (`12` test suites, `267/267` Vitest tests passing)
+- Public Website (`LandingPage`, animated `< md` `Navbar` sidebar drawer, dynamic gallery lightbox, white frosted-glass `JAL` hero card) and Client Chat (`ChatPage`, `localStorage` sessions, interactive booking widgets)
+- Owner Studio (`DashboardHomeTab`, `ManualBookingModal`, `Appointments`, `Reminders`, `ChatLogsTab`, 4-workspace `BusinessInfoTab`, mobile responsive shell)
+- Localhost Desktop Dev Studio (`/dev`: Bot Runner, Raw Logs Cleanup & Auto-Retention, Batch NLU Stress Tester, System Map, Paper IPO Diagram, Animated NLU Flow)
+- Browser viewport verification across `/`, `/chat`, and `/owner/login` at desktop (`1280x800`) and mobile (`390x844`)
 
-### Not yet done
-1. **Apply the migrations to the live Supabase project**, in order: `schema.sql` (if the project is fresh), `20261112_jalgorithm.sql`, `20261113_owner_panel.sql`. Until then, `services`, `business_profile` and the `jal_*` functions don't exist, and the site falls back to the built-in defaults.
-2. **Create the owner account** and add it to `app_owners` (README step 4). Without this, nobody can see appointments or chat logs.
-3. **Check service durations** with the stylist. They are the developer's guesses (bridal 3 h, wedding package 5 h, and so on).
-4. **Push the latest cleanup and docs** (the code is committed on `main` up to `8084f4f`; the cleanup and these docs are uncommitted at the time of writing).
-5. **Admin / debug panel** at `/admin`, for developers. Planned to use an `app_admins` table and show per-message analysis from `chat_logs`. Not built.
-6. **Reminders** (3 days and 1 day before an appointment) are promised to clients on the landing page and in the bot's FAQ, but nothing sends them. The Reminders tab is a placeholder.
-7. **Thesis:** the classifier wording in the thesis draft (`Notes for Drafting (1).md`, not in git) should say "rule-based and Naive Bayes hybrid", not "fine-tuned transformer". Real-client evaluation is still required.
-8. **Known limits:** out-of-scope rejection (57%), English paraphrases with unseen words (75%), multi-request messages (only one intent is recognized).
+### Still open / operational setup
+1. **Apply all Supabase SQL migrations** on any fresh/live project using `supabase/setup_all.sql` (or running `schema.sql` plus `20261112` through `20261116` in date order), and verify end-to-end RPC bookings, `dev_chat_logs` cap/cleanup, and `salon-media` uploads in Supabase.
+2. **Create and grant owner access** in `app_owners` (README step 4) so `/owner` and localhost `/dev` unlock for authenticated testing.
+3. **Confirm default service durations and rates** with the salon artist inside `/owner` -> Business Info.
+4. **Thesis evaluation on real clients:** replace the synthetic developer-written benchmark sets with consented real client messages once field-tested.
+5. **Outsourced push notifications / SMS reminders:** `Reminders` currently prepares the 1-day owner schedule and copyable 3-day client reminder templates in the Owner Dashboard rather than auto-sending external SMS/email.
 
 ---
 

@@ -39,6 +39,9 @@ import {
   groupSessionsByRecency,
   collectSavedReferences,
 } from '../lib/chatSessions.js'
+import { collectReferenceContacts, appendReminderMessages } from '../lib/sessionReminders.js'
+import { currentPermission, enableClientAlerts } from '../lib/push.js'
+import NotificationPrompt from '../components/NotificationPrompt.jsx'
 import {
   ChatBubble,
   FlowControls,
@@ -91,6 +94,71 @@ export default function ChatPage() {
     () => collectSavedReferences(sessionsState.sessions, catalog),
     [sessionsState.sessions, catalog]
   )
+
+  // Booking code + mobile pairs typed in this browser. The server checks each pair before
+  // returning any reminder, so only the client who booked can see it.
+  const contactPairs = useMemo(() => collectReferenceContacts(sessionsState.sessions), [sessionsState.sessions])
+  const contactPairKey = contactPairs.map((p) => `${p.reference}|${p.contact}|${p.sessionId}`).join(',')
+  const [alertStatus, setAlertStatus] = useState(() => currentPermission())
+  const [alertMessage, setAlertMessage] = useState(null)
+
+  // Pull reminders the studio posted for these bookings: on load, every minute, and when the tab is shown.
+  useEffect(() => {
+    if (!contactPairs.length) return undefined
+    let cancelled = false
+
+    async function pullReminders() {
+      for (const pair of contactPairs) {
+        try {
+          const { data, error: rpcError } = await supabase.rpc('jal_session_messages', {
+            p_ref: pair.reference,
+            p_contact: pair.contact,
+          })
+          if (cancelled || rpcError || !Array.isArray(data) || data.length === 0) continue
+          setSessionsState((prev) => ({
+            ...prev,
+            sessions: appendReminderMessages(prev.sessions, pair.sessionId, data),
+          }))
+        } catch {
+          // Offline or the server is unreachable: try again on the next check.
+        }
+      }
+    }
+
+    pullReminders()
+    const timer = setInterval(pullReminders, 60_000)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') pullReminders()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+    // contactPairKey changes only when the set of pairs changes, so the poll is not restarted on every message.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactPairKey])
+
+  // Permission already granted (e.g. allowed earlier in site settings): register this device
+  // for these bookings silently, since no prompt is needed.
+  useEffect(() => {
+    if (currentPermission() !== 'granted' || !contactPairs.length) return
+    enableClientAlerts(contactPairs.map(({ reference, contact }) => ({ reference, contact }))).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactPairKey])
+
+  async function handleEnableAlerts() {
+    setAlertMessage(null)
+    try {
+      const linked = await enableClientAlerts(contactPairs.map(({ reference, contact }) => ({ reference, contact })))
+      setAlertStatus(currentPermission())
+      setAlertMessage(`Reminder alerts are on for ${linked} booking${linked === 1 ? '' : 's'} on this device.`)
+    } catch (err) {
+      setAlertStatus(currentPermission())
+      setAlertMessage(err.message)
+    }
+  }
 
   // Keep latest settings accessible inside async send handlers.
   const settingsRef = useRef(settings)
@@ -690,6 +758,16 @@ export default function ChatPage() {
           className="flex-1 overflow-y-auto overflow-x-hidden px-3.5 sm:px-4 lg:px-8 py-5 sm:py-6"
         >
           <div className="max-w-3xl xl:max-w-4xl mx-auto w-full space-y-5">
+            <NotificationPrompt
+              storageKey="jal_client_notif_snooze"
+              show={contactPairs.length > 0 && alertStatus !== 'granted'}
+              title="Get your appointment reminders?"
+              body="Allow notifications so the studio can remind you about your booking on this device."
+              onEnable={handleEnableAlerts}
+            />
+            {alertMessage && (
+              <div className="text-xs text-stone-600 bg-[#f8f6f2] border border-stone-200/80 rounded-lg px-3 py-2">{alertMessage}</div>
+            )}
             {messages.map((msg) => (
               <ChatBubble
                 key={msg.id}

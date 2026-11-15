@@ -1011,6 +1011,9 @@ function logTurn(userMessage, result, sessionId) {
         corrections: nlu.changes,
         action: result.action,
         elapsed_ms: result.elapsedMs,
+        // Booking funnel (objective 3.2): which flow is active and which step the bot asks for next.
+        flow_intent: result.state?.flow?.intent ?? null,
+        flow_step: result.state?.flow?.awaiting ?? null,
       }
     : null
 

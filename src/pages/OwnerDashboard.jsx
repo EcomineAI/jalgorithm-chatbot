@@ -31,6 +31,7 @@ import BusinessInfoTab from './owner/BusinessInfoTab.jsx'
 import ChatLogsTab from './owner/ChatLogsTab.jsx'
 import StudioMark from '../components/StudioMark.jsx'
 import NotificationPrompt from '../components/NotificationPrompt.jsx'
+import BookingCompletionCard from '../components/owner/BookingCompletionCard.jsx'
 import { DashboardHomeTab } from '../components/owner/DashboardHomeTab.jsx'
 import { ManualBookingModal } from '../components/owner/ManualBookingModal.jsx'
 import {
@@ -977,6 +978,12 @@ export default function OwnerDashboard() {
                 setActiveTab('appointments')
               }}
             />
+          )}
+
+          {activeTab === 'dashboard' && (
+            <div className="mt-4 sm:mt-6">
+              <BookingCompletionCard />
+            </div>
           )}
 
           {activeTab === 'appointments' && (

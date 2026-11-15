@@ -66,6 +66,35 @@ export function extractLocation(original) {
   return { value: s }
 }
 
+const CORRECTION_MARKERS = new Set(['este', 'mali'])
+
+function correctionTail(words) {
+  let cut = -1
+  for (let i = 0; i < words.length - 1; i++) {
+    if (CORRECTION_MARKERS.has(words[i])) cut = i + 1
+    else if (words[i] === 'wait' && i > 0) cut = i + 1
+    else if (words[i] === 'i' && words[i + 1] === 'mean' && i + 2 < words.length) cut = i + 2
+  }
+  return cut > 0 ? words.slice(cut) : null
+}
+
+function pickWithCorrection(words, extractor, hasValue) {
+  const tail = correctionTail(words)
+  if (tail) {
+    const corrected = extractor(tail)
+    if (hasValue(corrected)) return corrected
+  }
+  if (words.includes('pala')) {
+    let last = null
+    for (let i = 0; i < words.length; i++) {
+      const res = extractor(words.slice(i))
+      if (hasValue(res)) last = res
+    }
+    if (last) return last
+  }
+  return extractor(words)
+}
+
 /**
  * @param {object} p
  * @param {{type: string, text: string}[]} p.tokens normalized tokens
@@ -76,14 +105,15 @@ export function extractLocation(original) {
  * @param {object} p.serviceIndex output of buildServiceIndex()
  */
 export function extractEntities({ tokens, words, original, now, expect, serviceIndex }) {
-  const date = extractDate(words, { now, expect })
-  const time = extractTime(words, { expect })
+  const date = pickWithCorrection(words, (ws) => extractDate(ws, { now, expect }), (d) => Boolean(d?.date || d?.week || d?.invalid))
+  const time = pickWithCorrection(words, (ws) => extractTime(ws, { expect }), (t) => Boolean(t?.time || t?.anyTime || t?.invalid))
+  const service = pickWithCorrection(words, (ws) => extractService(ws, serviceIndex), (s) => Boolean(s?.key))
   const entities = {
     date: date?.date ?? null,
     dateInfo: date,
     time: time?.time ?? null,
     timeInfo: time,
-    service: extractService(words, serviceIndex)?.key ?? null,
+    service: service?.key ?? null,
     contact: extractContact(tokens),
     reference: extractReference(tokens, expect),
   }

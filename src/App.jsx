@@ -3,6 +3,7 @@ import LandingPage from './pages/LandingPage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
 import OwnerLogin from './pages/OwnerLogin.jsx'
 import OwnerDashboard from './pages/OwnerDashboard.jsx'
+import DevDebugPage from './pages/DevDebugPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 export default function App() {
@@ -20,7 +21,15 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        {/* Old URLs; /admin will become the developer debug panel later. */}
+        <Route
+          path="/dev"
+          element={
+            <ProtectedRoute>
+              <DevDebugPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Legacy redirect to Owner Studio */}
         <Route path="/admin/login" element={<Navigate to="/owner/login" replace />} />
         <Route path="/admin" element={<Navigate to="/owner" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />

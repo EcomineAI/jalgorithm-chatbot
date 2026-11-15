@@ -56,7 +56,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 ### 3. Set up Supabase
 
-In the Supabase SQL editor, run in order:
+In the Supabase SQL editor, either paste `supabase/setup_all.sql` (combined idempotent script) or run these in order:
 
 1. `supabase/schema.sql` (base tables: appointments, chat_logs)
 2. `supabase/migrations/20261112_jalgorithm.sql`, which adds:
@@ -65,8 +65,13 @@ In the Supabase SQL editor, run in order:
    - the chatbot booking functions (`jal_available_slots`, `jal_book`, `jal_find`, `jal_reschedule`, `jal_cancel`)
    - removal of the old LM Studio `tunnel_config` table
 3. `supabase/migrations/20261113_owner_panel.sql`, which adds the salon profile, service keywords, and the owner allow-list
+4. `supabase/migrations/20261114_beneficiary_interview_features.sql`, which adds service inclusions, artist bio/branding fields, travel fee notes, additional head rates, and tiered booking rules
+5. `supabase/migrations/20261114_service_pricing_modes.sql`, which adds service pricing modes (`fixed`, `starting`, `range`, `varies`), max price, and price note
+6. `supabase/migrations/20261115_salon_media.sql`, which adds hero/artist/service/gallery media columns and `salon-media` Storage bucket policies
+7. `supabase/migrations/20261115_dev_logs_and_cap.sql`, which adds `dev_chat_logs` and a 1,000-row rolling cap trigger on `chat_logs` and `dev_chat_logs`
+8. `supabase/migrations/20261116_dev_cleanup_and_retention.sql`, which adds owner delete policies, session cleanup RPCs, and configurable auto-retention (`dev_auto_prune_days`, default 3 days)
 
-Both migrations are safe to re-run.
+Both the individual migrations and `supabase/setup_all.sql` are safe to re-run.
 
 ### 4. Create the owner account
 

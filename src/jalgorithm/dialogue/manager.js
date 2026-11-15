@@ -36,6 +36,22 @@ const FAQ_FIELDS = { contact: 'contact', portfolio: 'portfolio', payment: 'payme
 const FREE_TEXT_TAGS = new Set(['QUESTION', 'POSS', 'WANT', 'LOCATION', 'GENERAL', 'SERVICE', 'DATE', 'TIME'])
 const FIRST = new Set(['1', 'una', 'first', 'unang'])
 const SECOND = new Set(['2', 'pangalawa', 'second', 'ikalawa'])
+const INCLUSION_WORDS = new Set(['inclusion', 'inclusions', 'include', 'includes', 'included', 'kasama', 'kasali', 'pinagkaiba', 'kaibahan', 'difference', 'compare'])
+const HEAD_WORDS = new Set(['additional', 'dagdag', 'extra', 'head', 'heads', 'person', 'pax', 'kasabay', 'companion', 'bridesmaid', 'bridesmaids'])
+const ACK_EXTRA_WORDS = new Set(['noted', 'gets', 'cge', 'copy', 'alright', 'right', 'oh', 'ah', 'ahh', 'hmm', 'thank', 'thanks', 'ty', 'salamat'])
+const RESUME_PHRASES = [['resume'], ['continue'], ['ituloy'], ['tuloy'], ['tuloy', 'natin'], ['resume', 'booking'], ['resume', 'setup']]
+const DISCARD_DRAFT_PHRASES = [['discard', 'draft'], ['clear', 'draft'], ['delete', 'draft'], ['burahin', 'draft'], ['start', 'fresh']]
+
+const hasFilledSetup = (flow) => Boolean(flow?.slots && Object.values(flow.slots).some(Boolean))
+const matchesPhraseList = (words, phrases) => {
+  const clean = words.filter((x) => x !== 'po' && x !== '?' && x !== 'please')
+  return phrases.some((p) => p.length === clean.length && p.every((x, i) => clean[i] === x))
+}
+
+const hasWordIn = (words, set) => words.some((w) => set.has(w))
+const isTieredPolicy = (rules) =>
+  Boolean(rules?.weddingDownpaymentPercent != null || rules?.weddingCancelCutoffDays != null || rules?.eventDownpaymentPercent || rules?.eventCancelCutoffDays != null || rules?.sameDayRushNote)
+const hasTravelDetails = (biz) => Boolean(biz?.travelFeeNote || (biz?.freeTravelAreas && biz.freeTravelAreas.length > 0))
 
 export function yesNo(words) {
   const w = words.filter((x) => !YESNO_FILLER.has(x))
@@ -55,22 +71,63 @@ const flowSlots = (intent) => new Set([...(INTENTS[intent]?.flow?.required ?? []
 
 export function createDialogueManager({ analyzer, responder, actions, catalog, now = () => new Date() }) {
   const { business, services, faqTopics } = catalog
-  const { serviceName, serviceList } = responder
-  async function handle(text, prevState) {
+  const { serviceName, serviceList, serviceInclusionsList } = responder
+  async function handle(text, prevState, opts = {}) {
     const state = cloneState(prevState)
     state.turn += 1
     const nowDate = now()
+    const replyContext = opts?.replyContext || null
     const nlu = analyzer.analyze(text, { now: nowDate, expect: state.flow?.awaiting ?? null })
+    if (replyContext?.service && !nlu.entities?.service) {
+      const hasTopicCue =
+        nlu.intent === 'ASK_PRICE' ||
+        nlu.intent === 'BOOK_APPOINTMENT' ||
+        hasWordIn(nlu.words, INCLUSION_WORDS) ||
+        nlu.words.some((w) => ['price', 'magkano', 'book', 'include', 'includes', 'kasama', 'how', 'much'].includes(w))
+      if (hasTopicCue) nlu.entities.service = replyContext.service
+    }
     state.lang = replyLanguage(nlu.language, state.lang)
 
-    const ctx = { state, nlu, nowDate, out: [], action: null, resolvedIntent: nlu.intent }
+    const ctx = {
+      state,
+      nlu,
+      nowDate,
+      out: [],
+      action: null,
+      resolvedIntent: nlu.intent,
+      handoff: null,
+      appointment: null,
+      replyTo: replyContext,
+    }
     ctx.say = (key, vars) => ctx.out.push(responder.t(key, vars, { lang: state.lang, turn: state.turn }))
     ctx.label = (key) => responder.t(key, {}, { lang: state.lang })
 
     await route(ctx)
 
     state.lastIntent = ctx.resolvedIntent
-    return { reply: ctx.out.join('\n\n'), state, intent: ctx.resolvedIntent, nlu, action: ctx.action }
+    return {
+      reply: ctx.out.join('\n\n'),
+      state,
+      intent: ctx.resolvedIntent,
+      nlu,
+      action: ctx.action,
+      handoff: ctx.handoff,
+      appointment: ctx.appointment,
+      replyTo: ctx.replyTo,
+    }
+  }
+
+  function setHandoff(ctx, { reason, topic, draft }) {
+    ctx.handoff = {
+      reason,
+      topic,
+      draft,
+      businessName: business.name,
+      artist: business.artist,
+      messengerUrl: business.messengerUrl || null,
+      portfolioUrl: business.portfolio || null,
+      contact: business.contact || null,
+    }
   }
 
   // ── routing ────────────────────────────────────────────────────────────────
@@ -78,7 +135,35 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
   async function route(ctx) {
     const { state, nlu } = ctx
 
+    if (matchesPhraseList(nlu.words, DISCARD_DRAFT_PHRASES)) {
+      const hadAnything = Boolean(state.flow || state.pausedFlow || state.pending)
+      state.flow = null
+      state.pausedFlow = null
+      state.pending = null
+      ctx.resolvedIntent = 'RESET'
+      return ctx.say(hadAnything ? 'draft_discarded' : 'nothing_to_reset')
+    }
+
+    if (!state.flow && state.pausedFlow && matchesPhraseList(nlu.words, RESUME_PHRASES)) {
+      state.flow = state.pausedFlow
+      state.pausedFlow = null
+      state.pending = null
+      ctx.resolvedIntent = state.flow.intent
+      ctx.say('setup_resumed', { flow: ctx.label(`flow_${state.flow.intent}`) })
+      return advance(ctx)
+    }
+
     if (isReset(nlu.words)) {
+      const hadFilled = hasFilledSetup(state.flow)
+      if (hadFilled) {
+        const paused = state.flow
+        paused.confirming = false
+        state.pausedFlow = paused
+        state.flow = null
+        state.pending = null
+        ctx.resolvedIntent = 'RESET'
+        return ctx.say('setup_paused', { flow: ctx.label(`flow_${paused.intent}`) })
+      }
       const wasConfirming = state.flow?.confirming
       const hadSomething = state.flow || state.pending
       state.flow = null
@@ -229,6 +314,14 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
 
     if (f.awaiting === 'name') return ctx.say('invalid_name')
     if (f.awaiting === 'contact') return ctx.say('invalid_contact')
+    const isAck =
+      yesNo(nlu.words) === 'yes' ||
+      (nlu.words.length > 0 && nlu.words.length <= 4 && nlu.words.every((w) => YES_WORDS.has(w) || YESNO_FILLER.has(w) || ACK_EXTRA_WORDS.has(w)))
+    if (isAck) {
+      f.misses = 0
+      ctx.say('ack_prompt')
+      return advance(ctx)
+    }
     f.misses += 1
     ctx.say('not_understood')
     await advance(ctx)
@@ -404,6 +497,18 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
       f.appointment = r.data
       const appt = apptVars(ctx, r.data)
       if (f.intent === 'VIEW_APPOINTMENT') {
+        const svcObj = services.find((x) => x.key === r.data.service_key)
+        ctx.appointment = {
+          reference_code: r.data.reference_code,
+          service_key: r.data.service_key,
+          service_name: r.data.service_name ?? serviceName(r.data.service_key),
+          duration_minutes: r.data.duration_minutes ?? svcObj?.durationMinutes ?? 120,
+          date: r.data.date,
+          time: r.data.time,
+          client_name: r.data.client_name ?? null,
+          location: r.data.location ?? null,
+          status: r.data.status,
+        }
         ctx.state.flow = null
         return ctx.say('appointment_details', appt)
       }
@@ -464,6 +569,15 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     const r = await call(ctx, 'getAvailableSlots', { date, serviceKey: serviceKey ?? null })
     if (!r.ok) {
       sayReason(ctx, r)
+      if (r.reason === 'too_soon' && business.rules?.sameDayRushNote) {
+        ctx.say('rush_booking_note')
+        const svcLabel = serviceKey ? ` for ${serviceName(serviceKey)}` : ''
+        setHandoff(ctx, {
+          reason: 'rush_inquiry',
+          topic: 'Rush / short-notice slot inquiry',
+          draft: `Hi ${business.artist}! I want to ask if a rush or short-notice slot on ${fmtDate(ctx, date)}${svcLabel} is available.`,
+        })
+      }
       if (['too_soon', 'past_date', 'invalid_date'].includes(r.reason)) {
         f.slots.date = null
         f.slots.time = null
@@ -522,9 +636,39 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
         serviceKey: s.service, date: s.date, time: s.time, name: s.name, contact: s.contact, location: s.location,
       })
       if (r.ok) {
+        const svcObj = services.find((x) => x.key === s.service)
+        const svcTitle = serviceName(s.service)
+        const fDate = fmtDate(ctx, s.date)
+        const fTime = fmtTime(s.time)
+        ctx.appointment = {
+          reference_code: r.data.reference_code,
+          service_key: s.service,
+          service_name: svcTitle,
+          duration_minutes: svcObj?.durationMinutes ?? 120,
+          date: s.date,
+          time: s.time,
+          client_name: s.name,
+          client_contact: s.contact,
+          location: s.location || null,
+          status: 'confirmed',
+        }
         ctx.state.flow = null
-        ctx.say('booking_success', { ref: r.data.reference_code, service: serviceName(s.service), date: fmtDate(ctx, s.date), time: fmtTime(s.time) })
-        if (business.rules.reservationFee > 0 && business.rules.reservationFeeServices.includes(s.service)) ctx.say('reservation_fee_reminder')
+        ctx.state.pausedFlow = null
+        ctx.say('booking_success', { ref: r.data.reference_code, service: svcTitle, date: fDate, time: fTime })
+        if (isTieredPolicy(business.rules)) {
+          const isWedding = ['bridal', 'wedding_package'].includes(s.service)
+          const dpDetail = isWedding
+            ? `${business.rules.weddingDownpaymentPercent ?? 40}% down payment + contract`
+            : `${business.rules.eventDownpaymentPercent || '10% to 20%'} reservation fee`
+          ctx.say('downpayment_handoff_note', { dpDetail })
+        } else if (business.rules.reservationFee > 0 && business.rules.reservationFeeServices.includes(s.service)) {
+          ctx.say('reservation_fee_reminder')
+        }
+        setHandoff(ctx, {
+          reason: 'downpayment',
+          topic: 'Confirm down payment on Page',
+          draft: `Hi ${business.artist}! I booked ${svcTitle} on ${fDate} at ${fTime} (Ref: ${r.data.reference_code}, Name: ${s.name}, Mobile: ${s.contact}${s.location ? `, Venue: ${s.location}` : ''}). Sending this to confirm my down payment.`,
+        })
         return
       }
       return recoverFromFailure(ctx, f, r)
@@ -533,6 +677,19 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     if (f.intent === 'RESCHEDULE_APPOINTMENT') {
       const r = await call(ctx, 'rescheduleAppointment', { reference: s.reference, contact: s.contact, date: s.date, time: s.time })
       if (r.ok) {
+        const orig = f.appointment
+        const svcObj = services.find((x) => x.key === orig?.service_key)
+        ctx.appointment = {
+          reference_code: s.reference,
+          service_key: orig?.service_key ?? null,
+          service_name: orig?.service_name ?? serviceName(orig?.service_key),
+          duration_minutes: orig?.duration_minutes ?? svcObj?.durationMinutes ?? 120,
+          date: s.date,
+          time: s.time,
+          client_name: orig?.client_name ?? null,
+          location: orig?.location ?? null,
+          status: 'rescheduled',
+        }
         ctx.state.flow = null
         return ctx.say('reschedule_success', { ref: s.reference, date: fmtDate(ctx, s.date), time: fmtTime(s.time) })
       }
@@ -549,6 +706,14 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
 
   async function recoverFromFailure(ctx, f, r) {
     sayReason(ctx, r)
+    if (r.reason === 'too_soon' && business.rules?.sameDayRushNote) {
+      ctx.say('rush_booking_note')
+      setHandoff(ctx, {
+        reason: 'rush_inquiry',
+        topic: 'Rush / short-notice slot inquiry',
+        draft: `Hi ${business.artist}! I want to ask if a short-notice slot${f.slots?.service ? ` for ${serviceName(f.slots.service)}` : ''} is possible.`,
+      })
+    }
     const s = f.slots
     switch (r.reason) {
       case 'slot_taken':
@@ -584,27 +749,71 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
 
   // ── informational answers ──────────────────────────────────────────────────
 
+  function sayInclusions(ctx) {
+    const svc = services.find((x) => x.key === ctx.nlu.entities.service)
+    if (svc) {
+      ctx.say(svc.inclusions ? 'service_inclusions' : 'service_inclusions_none', {
+        service: svc.name,
+        price: responder.fmt.servicePrice(svc),
+        inclusions: svc.inclusions || '',
+      })
+      setHandoff(ctx, {
+        reason: 'custom_package',
+        topic: `Ask about ${svc.name} details on Page`,
+        draft: `Hi ${business.artist}! I would like to ask more about ${svc.name} (inclusions / custom requests).`,
+      })
+      return
+    }
+    ctx.say('package_inclusions_list', { list: serviceInclusionsList() })
+    setHandoff(ctx, {
+      reason: 'custom_package',
+      topic: 'Ask about package options on Page',
+      draft: `Hi ${business.artist}! I would like to ask about your hair and makeup package inclusions and custom rates.`,
+    })
+  }
+
+  function sayAdditionalHeads(ctx) {
+    ctx.say(business.additionalHeadPrice != null ? 'additional_heads_set' : 'additional_heads_unset')
+    setHandoff(ctx, {
+      reason: 'additional_heads',
+      topic: 'Get group / additional heads quote on Page',
+      draft: `Hi ${business.artist}! I would like to ask for a quote for additional heads / entourage members. Number of heads & event date: `,
+    })
+  }
+
   function answerInfo(ctx, intent) {
     const { nlu } = ctx
     switch (intent) {
       case 'ASK_PRICE': {
         if (nlu.words.includes('consultation')) return ctx.say(business.consultationFee != null ? 'consultation_fee_set' : 'consultation_fee', { list: serviceList() })
+        if (hasWordIn(nlu.words, HEAD_WORDS)) return sayAdditionalHeads(ctx)
+        if (hasWordIn(nlu.words, INCLUSION_WORDS)) return sayInclusions(ctx)
         const svc = services.find((x) => x.key === nlu.entities.service)
         if (svc) {
-          ctx.say('price_service', { service: svc.name, price: responder.fmt.price(svc.price) })
+          ctx.say('price_service', { service: svc.name, price: responder.fmt.servicePrice(svc) })
           if (business.rules.reservationFee > 0 && business.rules.reservationFeeServices.includes(svc.key)) ctx.say('reservation_fee_note')
           return
         }
         return ctx.say('price_list', { list: serviceList() })
       }
       case 'ASK_SERVICES':
+        if (hasWordIn(nlu.words, INCLUSION_WORDS)) return sayInclusions(ctx)
         return ctx.say('services', { list: serviceList() })
       case 'ASK_LOCATION':
+        if (hasTravelDetails(business)) {
+          ctx.say('location_with_travel_note')
+          setHandoff(ctx, {
+            reason: 'travel_quote',
+            topic: 'Request out-of-town / venue travel quote',
+            draft: `Hi ${business.artist}! I would like to check if an out-of-town travel fee applies to our event venue. Venue & date: `,
+          })
+          return
+        }
         return ctx.say('location')
       case 'ASK_OPERATING_HOURS':
         return ctx.say('hours')
       case 'ASK_BOOKING_POLICY':
-        return ctx.say('policy')
+        return ctx.say(isTieredPolicy(business.rules) ? 'policy_tiered' : 'policy')
       case 'GREETING':
         return ctx.say('greeting')
       case 'THANKS':
@@ -620,6 +829,38 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
           }
         }
         if (!best) return ctx.say('faq_default')
+        if (best.id === 'inclusions') return sayInclusions(ctx)
+        if (best.id === 'additional_heads') return sayAdditionalHeads(ctx)
+        if (best.id === 'travel_fee') {
+          ctx.say(hasTravelDetails(business) ? 'faq_travel_fee_note' : 'faq_travel_fee')
+          setHandoff(ctx, {
+            reason: 'travel_quote',
+            topic: 'Request out-of-town travel quote on Page',
+            draft: `Hi ${business.artist}! I want to ask for the out-of-town / transpo fee for my event venue. Venue & date: `,
+          })
+          return
+        }
+        if (best.id === 'home_service') {
+          ctx.say(hasTravelDetails(business) ? 'faq_home_service_note' : 'faq_home_service')
+          setHandoff(ctx, {
+            reason: 'travel_quote',
+            topic: 'Ask about on-location service & venue fee',
+            draft: `Hi ${business.artist}! I want to inquire about on-location service for our venue. Location & event date: `,
+          })
+          return
+        }
+        if (best.id === 'payment' && isTieredPolicy(business.rules)) {
+          ctx.say('faq_payment_tiered')
+          setHandoff(ctx, {
+            reason: 'downpayment',
+            topic: 'Send payment proof / inquire on Page',
+            draft: `Hi ${business.artist}! I would like to ask about payment details or send my reservation payment.`,
+          })
+          return
+        }
+        if (best.id === 'confirmation' && isTieredPolicy(business.rules)) {
+          return ctx.say('faq_confirmation_tiered')
+        }
         // contact / portfolio / payment answers use the owner's info when it has been filled in
         const field = FAQ_FIELDS[best.id]
         return ctx.say(field && business[field] ? `faq_${best.id}_set` : `faq_${best.id}`)

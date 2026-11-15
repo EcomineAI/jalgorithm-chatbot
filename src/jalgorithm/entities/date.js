@@ -29,7 +29,7 @@ const MONTH_WORDS = {
 }
 
 const NEXT_WORDS = new Set(['next', 'susunod', 'sunod'])
-const THIS_WORDS = new Set(['this', 'ngayong', 'ngayon'])
+const THIS_WORDS = new Set(['this', 'ngayong', 'ngayon', 'darating', 'coming'])
 const MAY_MONTH_CUES = new Set(['sa', 'on', 'ng', 'this', 'next', 'by', 'until', 'hanggang', 'of', 'month'])
 
 const dayNum = (w) => {
@@ -82,7 +82,7 @@ export function extractDate(words, { now = new Date(), expect } = {}) {
     if (w === 'today' || w === 'mamaya' || (w === 'ngayon' && WEEKDAY_WORDS[next] === undefined && next !== 'week')) {
       return found(today, w)
     }
-    if (w === 'tomorrow') return found(addDays(today, 1), w)
+    if (w === 'tomorrow' || w === 'kinabukasan') return found(addDays(today, 1), w)
     if (w === 'bukas') {
       // "bukas ba kayo" / "bukas kayo" = "are you open", not "tomorrow"
       const isOpenQuestion = next === 'kayo' || (next === 'ba' && words[i + 2] === 'kayo')

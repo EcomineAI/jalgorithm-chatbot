@@ -71,6 +71,10 @@ export const SIMPLE_SHORTCUTS = {
   cancl: 'cancel', cancle: 'cancel', cansel: 'cancel', kansel: 'cancel', kansela: 'cancel', cancelled: 'cancel', canceled: 'cancel', cncl: 'cancel', cancell: 'cancel',
   avl: 'available', availble: 'available', avaiable: 'available', availabe: 'available', avalable: 'available', bakante: 'available', bakanteng: 'available',
   magkno: 'magkano', mgkano: 'magkano', mkano: 'magkano', mgkno: 'magkano', magkanu: 'magkano', mgknu: 'magkano', mgkanu: 'magkano',
+  mutch: 'much', hmuch: 'how much', howmuch: 'how much',
+  byad: 'bayad', bayd: 'bayad',
+  downpayment: 'downpayment',
+  nagsasara: 'magsasara', ngsasara: 'magsasara', magsara: 'magsasara',
   presyo: 'price', prices: 'price', pricelist: 'price', rates: 'rate',
   cons: 'consultation', consult: 'consultation', konsulta: 'consultation', consultasyon: 'consultation', konsultasyon: 'consultation',
   loc: 'location', lokasyon: 'location', addr: 'address', adress: 'address', addres: 'address',
@@ -116,13 +120,24 @@ export const CONTEXT_SHORTCUTS = {
  * Ordered longest first. A prefix is only split off when the remainder is a known ROOT,
  * so ordinary words like "mahal" or "paano" are never split.
  */
+export const PREFIX_CANONICAL = {
+  mgpapa: 'magpapa',
+  mgpa: 'magpa',
+  ngpapa: 'nagpapa',
+  ngpa: 'nagpa',
+  pakipa: 'pakipa',
+  pki: 'paki',
+  mg: 'mag',
+}
+
 export const PREFIXES = [
-  'makapagpa', 'makapag', 'magpapa', 'nagpapa', 'pinapa', 'ipapa', 'mapapa', 'makaka', 'nakaka',
-  'magpa', 'nagpa', 'ipina', 'ipa', 'mag', 'nag', 'maka', 'naka', 'pa', 'ma', 'na', 'i',
+  'makapagpa', 'makapag', 'magpapa', 'nagpapa', 'mgpapa', 'ngpapa', 'pakipa', 'pinapa', 'ipapa', 'mapapa', 'makaka', 'nakaka',
+  'magpa', 'nagpa', 'mgpa', 'ngpa', 'ipina', 'paki', 'pki', 'ipa', 'mag', 'nag', 'maka', 'naka', 'mg', 'ika', 'pa', 'ma', 'na', 'i',
 ]
 
 export const PREFIX_ROOTS = new Set([
   'book', 'booking', 'schedule', 'reschedule', 'appointment', 'cancel', 'move', 'reserve', 'set',
   'available', 'avail', 'resched', 'sched', 'appoint', 'adjust', 'lipat', 'palit', 'usog', 'confirm',
   'makeup', 'ayos', 'check', 'change', 'update', 'postpone', 'hair', 'consult', 'consultation',
+  'bayad', 'inquire', 'tanong', 'gupit', 'kulay', 'retouch', 'sara', 'bukas', 'open', 'close',
 ])

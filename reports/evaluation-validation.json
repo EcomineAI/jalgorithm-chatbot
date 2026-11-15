@@ -1,6 +1,6 @@
 {
   "set": "validation",
-  "generatedAt": "2026-11-12T04:26:30.091Z",
+  "generatedAt": "2026-11-14T15:01:51.737Z",
   "fixedClock": "2026-11-12T02:00:00.000Z",
   "sizes": {
     "training": 291,
@@ -9,12 +9,12 @@
   },
   "overlapWithTraining": [],
   "jalgorithm": {
-    "accuracy": 0.9583333333333334,
-    "macroF1": 0.9612042927832402,
-    "accuracyExcludingSeenInDevelopment": 0.9583333333333334,
-    "macroF1ExcludingSeenInDevelopment": 0.9612042927832402,
-    "lenientAccuracy": 0.9722222222222222,
-    "outOfDomainRejectionRate": 0.7142857142857143,
+    "accuracy": 0.9861111111111112,
+    "macroF1": 0.9853479853479854,
+    "accuracyExcludingSeenInDevelopment": 0.9861111111111112,
+    "macroF1ExcludingSeenInDevelopment": 0.9853479853479854,
+    "lenientAccuracy": 1,
+    "outOfDomainRejectionRate": 0.8571428571428571,
     "inDomainFalseRejectionRate": 0,
     "perIntent": {
       "ASK_BOOKING_POLICY": {
@@ -24,9 +24,9 @@
         "support": 3
       },
       "ASK_LOCATION": {
-        "precision": 0.75,
+        "precision": 1,
         "recall": 1,
-        "f1": 0.8571428571428571,
+        "f1": 1,
         "support": 3
       },
       "ASK_OPERATING_HOURS": {
@@ -66,9 +66,9 @@
         "support": 3
       },
       "CHECK_AVAILABILITY": {
-        "precision": 0.9,
+        "precision": 1,
         "recall": 1,
-        "f1": 0.9473684210526316,
+        "f1": 1,
         "support": 9
       },
       "GENERAL_INQUIRY": {
@@ -85,8 +85,8 @@
       },
       "RESCHEDULE_APPOINTMENT": {
         "precision": 1,
-        "recall": 0.8571428571428571,
-        "f1": 0.923076923076923,
+        "recall": 1,
+        "f1": 1,
         "support": 7
       },
       "THANKS": {
@@ -97,8 +97,8 @@
       },
       "UNKNOWN_INTENT": {
         "precision": 1,
-        "recall": 0.7142857142857143,
-        "f1": 0.8333333333333333,
+        "recall": 0.8571428571428571,
+        "f1": 0.923076923076923,
         "support": 7
       },
       "VIEW_APPOINTMENT": {
@@ -115,11 +115,11 @@
       },
       "taglish": {
         "n": 17,
-        "accuracy": 0.9411764705882353
+        "accuracy": 1
       },
       "fil": {
         "n": 25,
-        "accuracy": 0.92
+        "accuracy": 0.96
       }
     },
     "perCategory": {
@@ -133,7 +133,7 @@
       },
       "taglish": {
         "n": 11,
-        "accuracy": 0.9090909090909091
+        "accuracy": 1
       },
       "tagalog": {
         "n": 15,
@@ -153,7 +153,7 @@
       },
       "unrelated": {
         "n": 6,
-        "accuracy": 0.6666666666666666
+        "accuracy": 0.8333333333333334
       },
       "unsupported": {
         "n": 1,
@@ -180,15 +180,15 @@
     }
   },
   "performance": {
-    "engineInitMs": 59.7118,
+    "engineInitMs": 201.21660000000003,
     "latencyMs": {
-      "mean": 0.6702388888888878,
-      "p50": 0.5456000000000074,
-      "p95": 1.8762000000000114,
-      "max": 2.684299999999979
+      "mean": 2.8903180555555568,
+      "p50": 2.4310999999997875,
+      "p95": 7.156999999999925,
+      "max": 12.889499999999998
     },
-    "heapIncreaseMB": 1.2600021362304688,
-    "heapUsedMB": 7.40130615234375,
+    "heapIncreaseMB": 2.0547103881835938,
+    "heapUsedMB": 9.141838073730469,
     "gcExposed": false,
     "node": "v22.16.0"
   },
@@ -398,10 +398,10 @@
       "BOOK_APPOINTMENT": 0,
       "CANCEL_APPOINTMENT": 0,
       "CANNOT_ATTEND": 0,
-      "CHECK_AVAILABILITY": 1,
+      "CHECK_AVAILABILITY": 0,
       "GENERAL_INQUIRY": 0,
       "GREETING": 0,
-      "RESCHEDULE_APPOINTMENT": 6,
+      "RESCHEDULE_APPOINTMENT": 7,
       "THANKS": 0,
       "UNKNOWN_INTENT": 0,
       "VIEW_APPOINTMENT": 0
@@ -425,7 +425,7 @@
     },
     "UNKNOWN_INTENT": {
       "ASK_BOOKING_POLICY": 0,
-      "ASK_LOCATION": 1,
+      "ASK_LOCATION": 0,
       "ASK_OPERATING_HOURS": 0,
       "ASK_PRICE": 0,
       "ASK_SERVICES": 1,
@@ -437,7 +437,7 @@
       "GREETING": 0,
       "RESCHEDULE_APPOINTMENT": 0,
       "THANKS": 0,
-      "UNKNOWN_INTENT": 5,
+      "UNKNOWN_INTENT": 6,
       "VIEW_APPOINTMENT": 0
     },
     "VIEW_APPOINTMENT": {
@@ -459,20 +459,6 @@
     }
   },
   "errors": [
-    {
-      "text": "pwede ba gawing sunday imbes na saturday",
-      "gold": "RESCHEDULE_APPOINTMENT",
-      "pred": "CHECK_AVAILABILITY",
-      "confidence": 0.53,
-      "acceptable": false
-    },
-    {
-      "text": "san ba masarap kumain dito",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "ASK_LOCATION",
-      "confidence": 0.437,
-      "acceptable": false
-    },
     {
       "text": "ano ginagawa mo",
       "gold": "UNKNOWN_INTENT",

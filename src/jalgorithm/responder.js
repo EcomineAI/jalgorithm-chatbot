@@ -4,18 +4,22 @@
 
 import { RESPONSES } from './config/responses.js'
 import { formatDate, formatTime } from './entities/calendar.js'
+import { formatServicePrice } from '../lib/ownerInsights.js'
 
 const peso = (n) => Number(n).toLocaleString('en-PH')
 
 export function createResponder(catalog) {
   const { business, services } = catalog
+  const city = business.location.split(',')[0]
 
   const baseVars = {
     business: business.name,
     artist: business.artist,
     location: business.location,
-    city: business.location.split(',')[0],
-    areas: business.travelAreas.length ? business.travelAreas.join(', ') : business.location.split(',')[0],
+    city,
+    areas: business.travelAreas.length ? business.travelAreas.join(', ') : city,
+    freeAreas: business.freeTravelAreas?.length ? business.freeTravelAreas.join(', ') : city,
+    travelFeeNote: business.travelFeeNote || '',
     open: formatTime(business.hours.open),
     close: formatTime(business.hours.close),
     days: business.hours.days,
@@ -29,8 +33,15 @@ export function createResponder(catalog) {
     cutoff: business.rules.cancelCutoffHours,
     contact: business.contact,
     portfolio: business.portfolio,
-    paymentMethods: business.paymentMethods,
+    paymentMethods: business.paymentMethods || 'GCash, bank transfer, or cash (confirmed on our Page)',
     consultationFee: business.consultationFee != null ? peso(business.consultationFee) : null,
+    additionalHeadPrice: business.additionalHeadPrice != null ? peso(business.additionalHeadPrice) : null,
+    additionalHeadNote: business.additionalHeadNote || '',
+    weddingDp: business.rules?.weddingDownpaymentPercent ?? 40,
+    weddingCutoff: business.rules?.weddingCancelCutoffDays ?? 30,
+    eventDp: business.rules?.eventDownpaymentPercent || '10% to 20%',
+    eventCutoff: business.rules?.eventCancelCutoffDays ?? Math.max(1, Math.round((business.rules?.cancelCutoffHours ?? 72) / 24)),
+    rushNote: business.rules?.sameDayRushNote || 'Same-day bookings depend on team availability and may carry a rush rate.',
   }
 
   function t(key, vars = {}, { lang = 'fil', turn = 0 } = {}) {
@@ -38,13 +49,23 @@ export function createResponder(catalog) {
     let template = table[key] ?? RESPONSES.en[key]
     if (template === undefined) throw new Error(`Missing response template: ${key}`)
     if (Array.isArray(template)) template = template[turn % template.length]
-    const all = { ...baseVars, ...vars }
+    const localized = lang === 'fil' && baseVars.days === 'daily' ? { days: 'araw-araw' } : {}
+    const all = { ...baseVars, ...localized, ...vars }
     return template.replace(/\{(\w+)\}/g, (m, name) => (all[name] !== undefined && all[name] !== null ? String(all[name]) : m))
   }
 
   const serviceName = (key) => services.find((s) => s.key === key)?.name ?? key
   const serviceList = ({ withPrices = true } = {}) =>
-    services.map((s) => (withPrices ? `• ${s.name}: PHP ${peso(s.price)}` : `• ${s.name}`)).join('\n')
+    services
+      .map((s) => (withPrices ? `• ${s.name}: ${formatServicePrice(s, { includePrefix: true, withNote: true })}` : `• ${s.name}`))
+      .join('\n')
+  const serviceInclusionsList = () =>
+    services
+      .map((s) => {
+        const inc = s.inclusions || s.description || 'Details confirmed via Page inquiry'
+        return `• ${s.name} (${formatServicePrice(s, { includePrefix: true, withNote: true })}): ${inc}`
+      })
+      .join('\n')
 
   /** Formatting helpers that respect the reply language. */
   const fmt = {
@@ -52,10 +73,11 @@ export function createResponder(catalog) {
     time: (hhmm) => formatTime(hhmm),
     slots: (list, max = 10) => {
       const shown = list.slice(0, max).map(formatTime).join(', ')
-      return list.length > max ? `${shown}, …` : shown
+      return list.length > max ? `${shown}, ...` : shown
     },
     price: peso,
+    servicePrice: (svc) => formatServicePrice(svc, { includePrefix: true, withNote: true }),
   }
 
-  return { t, fmt, serviceName, serviceList }
+  return { t, fmt, serviceName, serviceList, serviceInclusionsList }
 }

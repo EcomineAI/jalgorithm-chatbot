@@ -32,7 +32,12 @@ function containsSequence(words, seq) {
 // Domain tags: their presence is evidence that the message is about the salon at all.
 const DOMAIN_TAGS = new Set([
   'BOOK', 'APPT', 'MOVE', 'CANCEL', 'VIEW', 'AVAIL', 'FLEX', 'PRICE', 'SERVICE_Q', 'LOCATION', 'HOURS', 'POLICY',
-  'GREETING', 'THANKS', 'GENERAL', 'NEG_ATTEND', 'VIEW_Q', 'SERVICE', 'DATE', 'TIME',
+  'GREETING', 'THANKS', 'GENERAL', 'NEG_ATTEND', 'VIEW_Q', 'SERVICE',
+])
+
+const WEEKDAY_TOKENS = new Set([
+  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  'lunes', 'martes', 'miyerkules', 'miyerkoles', 'huwebes', 'biyernes', 'sabado', 'linggo',
 ])
 
 /**
@@ -46,6 +51,14 @@ export function extractFeatures(words, entities = {}) {
   if (words.includes('?')) tags.add('QUESTION')
   // "...or ako na lang mag-adjust": the client adjusting is flexibility, not moving a booking
   if (tags.has('FLEX') && !words.some((w) => ['reschedule', 'move', 'ilipat', 'lipat', 'palitan'].includes(w))) tags.delete('MOVE')
+  // "gawing sunday imbes na saturday" / "instead of": changing a slot is rescheduling, not availability
+  if (words.some((w) => w === 'imbes' || w === 'instead')) {
+    const dayMentions = words.filter((w) => WEEKDAY_TOKENS.has(w)).length
+    if (words.some((w) => w === 'gawing' || w === 'gawin') || dayMentions >= 2) {
+      tags.add('MOVE')
+      tags.delete('AVAIL')
+    }
+  }
 
   // Derived: negation shortly before an attendance verb → "can't make it"
   const negIdx = words.map((w, i) => (COMPILED.single.get(w)?.includes('NEG') ? i : -1)).filter((i) => i >= 0)

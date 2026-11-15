@@ -20,16 +20,17 @@ import { defaultCatalog } from './config/business.js'
  *                                 from Supabase (src/services/businessInfo.js), or the defaults
  */
 export function createJAlgorithm({ actions = null, now = () => new Date(), training, classifierConfig, catalog = defaultCatalog() } = {}) {
-  const analyzer = createAnalyzer({ training, classifierConfig, catalog })
-  const responder = createResponder(catalog)
-  const manager = createDialogueManager({ analyzer, responder, actions, catalog, now })
+  const resolvedCatalog = catalog ?? defaultCatalog()
+  const analyzer = createAnalyzer({ training, classifierConfig, catalog: resolvedCatalog })
+  const responder = createResponder(resolvedCatalog)
+  const manager = createDialogueManager({ analyzer, responder, actions, catalog: resolvedCatalog, now })
 
-  async function processMessage(text, state = initialState()) {
+  async function processMessage(text, state = initialState(), opts = {}) {
     if (typeof text !== 'string' || !text.trim()) {
       return { reply: '', state: state ?? initialState(), intent: null, nlu: null, action: null }
     }
     const started = typeof performance !== 'undefined' ? performance.now() : Date.now()
-    const result = await manager.handle(text, state)
+    const result = await manager.handle(text, state, opts)
     const ended = typeof performance !== 'undefined' ? performance.now() : Date.now()
     return { ...result, elapsedMs: Number((ended - started).toFixed(2)) }
   }
@@ -39,6 +40,11 @@ export function createJAlgorithm({ actions = null, now = () => new Date(), train
     initialState,
     welcome: (lang = 'fil') => responder.t('welcome', {}, { lang }),
     analyze: (text, opts) => analyzer.analyze(text, { now: now(), ...opts }),
+    stats: {
+      intentsCount: analyzer.labels.length,
+      trainingSize: analyzer.trainingSize,
+      intents: [...analyzer.labels],
+    },
   }
 }
 

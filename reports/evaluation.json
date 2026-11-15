@@ -1,6 +1,6 @@
 {
   "set": "test",
-  "generatedAt": "2026-11-12T04:26:30.677Z",
+  "generatedAt": "2026-11-14T13:48:15.426Z",
   "fixedClock": "2026-11-12T02:00:00.000Z",
   "sizes": {
     "training": 291,
@@ -9,48 +9,48 @@
   },
   "overlapWithTraining": [],
   "jalgorithm": {
-    "accuracy": 0.8828828828828829,
-    "macroF1": 0.8873575848653549,
-    "accuracyExcludingSeenInDevelopment": 0.8755980861244019,
-    "macroF1ExcludingSeenInDevelopment": 0.8845665563592943,
-    "lenientAccuracy": 0.9099099099099099,
-    "outOfDomainRejectionRate": 0.5714285714285714,
-    "inDomainFalseRejectionRate": 0.029850746268656716,
+    "accuracy": 0.9594594594594594,
+    "macroF1": 0.9622845926339793,
+    "accuracyExcludingSeenInDevelopment": 0.9569377990430622,
+    "macroF1ExcludingSeenInDevelopment": 0.9607911622798166,
+    "lenientAccuracy": 0.9684684684684685,
+    "outOfDomainRejectionRate": 0.9523809523809523,
+    "inDomainFalseRejectionRate": 0.004975124378109453,
     "perIntent": {
       "ASK_BOOKING_POLICY": {
         "precision": 1,
-        "recall": 0.625,
-        "f1": 0.7692307692307693,
+        "recall": 0.75,
+        "f1": 0.8571428571428571,
         "support": 8
       },
       "ASK_LOCATION": {
         "precision": 1,
-        "recall": 0.7272727272727273,
-        "f1": 0.8421052631578948,
+        "recall": 1,
+        "f1": 1,
         "support": 11
       },
       "ASK_OPERATING_HOURS": {
         "precision": 1,
-        "recall": 0.7777777777777778,
-        "f1": 0.8750000000000001,
+        "recall": 1,
+        "f1": 1,
         "support": 9
       },
       "ASK_PRICE": {
-        "precision": 0.9,
-        "recall": 0.9473684210526315,
-        "f1": 0.9230769230769231,
+        "precision": 0.95,
+        "recall": 1,
+        "f1": 0.9743589743589743,
         "support": 19
       },
       "ASK_SERVICES": {
-        "precision": 0.8888888888888888,
+        "precision": 1,
         "recall": 0.8888888888888888,
-        "f1": 0.8888888888888888,
+        "f1": 0.9411764705882353,
         "support": 9
       },
       "BOOK_APPOINTMENT": {
-        "precision": 0.8857142857142857,
+        "precision": 0.9117647058823529,
         "recall": 0.96875,
-        "f1": 0.9253731343283582,
+        "f1": 0.9393939393939394,
         "support": 32
       },
       "CANCEL_APPOINTMENT": {
@@ -66,15 +66,15 @@
         "support": 8
       },
       "CHECK_AVAILABILITY": {
-        "precision": 0.8235294117647058,
+        "precision": 0.9655172413793104,
         "recall": 0.9333333333333333,
-        "f1": 0.8749999999999999,
+        "f1": 0.9491525423728815,
         "support": 30
       },
       "GENERAL_INQUIRY": {
-        "precision": 0.6428571428571429,
-        "recall": 0.75,
-        "f1": 0.6923076923076924,
+        "precision": 0.9166666666666666,
+        "recall": 0.9166666666666666,
+        "f1": 0.9166666666666666,
         "support": 12
       },
       "GREETING": {
@@ -96,9 +96,9 @@
         "support": 6
       },
       "UNKNOWN_INTENT": {
-        "precision": 0.6666666666666666,
-        "recall": 0.5714285714285714,
-        "f1": 0.6153846153846153,
+        "precision": 0.9523809523809523,
+        "recall": 0.9523809523809523,
+        "f1": 0.9523809523809523,
         "support": 21
       },
       "VIEW_APPOINTMENT": {
@@ -111,15 +111,15 @@
     "perLanguage": {
       "en": {
         "n": 83,
-        "accuracy": 0.8795180722891566
+        "accuracy": 0.927710843373494
       },
       "fil": {
         "n": 62,
-        "accuracy": 0.8225806451612904
+        "accuracy": 0.9838709677419355
       },
       "taglish": {
         "n": 77,
-        "accuracy": 0.935064935064935
+        "accuracy": 0.974025974025974
       }
     },
     "perCategory": {
@@ -129,23 +129,23 @@
       },
       "paraphrase": {
         "n": 28,
-        "accuracy": 0.75
+        "accuracy": 0.7857142857142857
       },
       "tagalog": {
         "n": 34,
-        "accuracy": 0.9117647058823529
+        "accuracy": 1
       },
       "shortcuts": {
         "n": 33,
-        "accuracy": 0.9090909090909091
+        "accuracy": 1
       },
       "misspellings": {
         "n": 16,
-        "accuracy": 0.9375
+        "accuracy": 1
       },
       "taglish": {
         "n": 39,
-        "accuracy": 0.9743589743589743
+        "accuracy": 1
       },
       "incomplete": {
         "n": 16,
@@ -153,11 +153,11 @@
       },
       "unrelated": {
         "n": 15,
-        "accuracy": 0.6
+        "accuracy": 0.9333333333333333
       },
       "unsupported": {
         "n": 6,
-        "accuracy": 0.5
+        "accuracy": 1
       },
       "ambiguous": {
         "n": 8,
@@ -184,16 +184,16 @@
     }
   },
   "performance": {
-    "engineInitMs": 48.000399999999985,
+    "engineInitMs": 83.40610000000001,
     "latencyMs": {
-      "mean": 0.3394387387387381,
-      "p50": 0.26539999999999964,
-      "p95": 0.7991000000000099,
-      "max": 4.985000000000014
+      "mean": 0.5763783783783792,
+      "p50": 0.3815000000000168,
+      "p95": 1.5503999999999678,
+      "max": 4.404600000000016
     },
-    "heapIncreaseMB": 0.9732818603515625,
-    "heapUsedMB": 8.715545654296875,
-    "gcExposed": true,
+    "heapIncreaseMB": 2.05377197265625,
+    "heapUsedMB": 9.052490234375,
+    "gcExposed": false,
     "node": "v22.16.0"
   },
   "normalization": {
@@ -207,7 +207,7 @@
   },
   "confusion": {
     "ASK_BOOKING_POLICY": {
-      "ASK_BOOKING_POLICY": 5,
+      "ASK_BOOKING_POLICY": 6,
       "ASK_LOCATION": 0,
       "ASK_OPERATING_HOURS": 0,
       "ASK_PRICE": 0,
@@ -220,12 +220,12 @@
       "GREETING": 0,
       "RESCHEDULE_APPOINTMENT": 0,
       "THANKS": 0,
-      "UNKNOWN_INTENT": 1,
+      "UNKNOWN_INTENT": 0,
       "VIEW_APPOINTMENT": 0
     },
     "ASK_LOCATION": {
       "ASK_BOOKING_POLICY": 0,
-      "ASK_LOCATION": 8,
+      "ASK_LOCATION": 11,
       "ASK_OPERATING_HOURS": 0,
       "ASK_PRICE": 0,
       "ASK_SERVICES": 0,
@@ -233,23 +233,23 @@
       "CANCEL_APPOINTMENT": 0,
       "CANNOT_ATTEND": 0,
       "CHECK_AVAILABILITY": 0,
-      "GENERAL_INQUIRY": 1,
+      "GENERAL_INQUIRY": 0,
       "GREETING": 0,
       "RESCHEDULE_APPOINTMENT": 0,
       "THANKS": 0,
-      "UNKNOWN_INTENT": 2,
+      "UNKNOWN_INTENT": 0,
       "VIEW_APPOINTMENT": 0
     },
     "ASK_OPERATING_HOURS": {
       "ASK_BOOKING_POLICY": 0,
       "ASK_LOCATION": 0,
-      "ASK_OPERATING_HOURS": 7,
+      "ASK_OPERATING_HOURS": 9,
       "ASK_PRICE": 0,
       "ASK_SERVICES": 0,
       "BOOK_APPOINTMENT": 0,
       "CANCEL_APPOINTMENT": 0,
       "CANNOT_ATTEND": 0,
-      "CHECK_AVAILABILITY": 2,
+      "CHECK_AVAILABILITY": 0,
       "GENERAL_INQUIRY": 0,
       "GREETING": 0,
       "RESCHEDULE_APPOINTMENT": 0,
@@ -261,8 +261,8 @@
       "ASK_BOOKING_POLICY": 0,
       "ASK_LOCATION": 0,
       "ASK_OPERATING_HOURS": 0,
-      "ASK_PRICE": 18,
-      "ASK_SERVICES": 1,
+      "ASK_PRICE": 19,
+      "ASK_SERVICES": 0,
       "BOOK_APPOINTMENT": 0,
       "CANCEL_APPOINTMENT": 0,
       "CANNOT_ATTEND": 0,
@@ -369,11 +369,11 @@
       "CANCEL_APPOINTMENT": 0,
       "CANNOT_ATTEND": 0,
       "CHECK_AVAILABILITY": 0,
-      "GENERAL_INQUIRY": 9,
+      "GENERAL_INQUIRY": 11,
       "GREETING": 0,
       "RESCHEDULE_APPOINTMENT": 0,
       "THANKS": 0,
-      "UNKNOWN_INTENT": 3,
+      "UNKNOWN_INTENT": 1,
       "VIEW_APPOINTMENT": 0
     },
     "GREETING": {
@@ -431,17 +431,17 @@
       "ASK_BOOKING_POLICY": 0,
       "ASK_LOCATION": 0,
       "ASK_OPERATING_HOURS": 0,
-      "ASK_PRICE": 1,
+      "ASK_PRICE": 0,
       "ASK_SERVICES": 0,
-      "BOOK_APPOINTMENT": 1,
+      "BOOK_APPOINTMENT": 0,
       "CANCEL_APPOINTMENT": 0,
       "CANNOT_ATTEND": 0,
-      "CHECK_AVAILABILITY": 4,
-      "GENERAL_INQUIRY": 3,
+      "CHECK_AVAILABILITY": 1,
+      "GENERAL_INQUIRY": 0,
       "GREETING": 0,
       "RESCHEDULE_APPOINTMENT": 0,
       "THANKS": 0,
-      "UNKNOWN_INTENT": 12,
+      "UNKNOWN_INTENT": 20,
       "VIEW_APPOINTMENT": 0
     },
     "VIEW_APPOINTMENT": {
@@ -481,15 +481,8 @@
       "text": "What date did I book?",
       "gold": "VIEW_APPOINTMENT",
       "pred": "BOOK_APPOINTMENT",
-      "confidence": 0.749,
+      "confidence": 0.451,
       "acceptable": false
-    },
-    {
-      "text": "how mutch is the package",
-      "gold": "ASK_PRICE",
-      "pred": "ASK_SERVICES",
-      "confidence": 0.414,
-      "acceptable": true
     },
     {
       "text": "What can I book with you?",
@@ -499,143 +492,31 @@
       "acceptable": true
     },
     {
-      "text": "How do I get to your place?",
-      "gold": "ASK_LOCATION",
-      "pred": "GENERAL_INQUIRY",
-      "confidence": 0.486,
-      "acceptable": false
-    },
-    {
-      "text": "anong city kayo",
-      "gold": "ASK_LOCATION",
-      "pred": "UNKNOWN_INTENT",
-      "confidence": 0.253,
-      "acceptable": false
-    },
-    {
-      "text": "sakop nyo ba ang subic",
-      "gold": "ASK_LOCATION",
-      "pred": "UNKNOWN_INTENT",
-      "confidence": 0.238,
-      "acceptable": false
-    },
-    {
-      "text": "anong oras po kayo nagsasara",
-      "gold": "ASK_OPERATING_HOURS",
-      "pred": "CHECK_AVAILABILITY",
-      "confidence": 0.37,
-      "acceptable": false
-    },
-    {
-      "text": "bukas po ba kayo tuwing linggo",
-      "gold": "ASK_OPERATING_HOURS",
-      "pred": "CHECK_AVAILABILITY",
-      "confidence": 0.489,
-      "acceptable": false
-    },
-    {
       "text": "Do I need to pay a deposit to secure the date?",
       "gold": "ASK_BOOKING_POLICY",
       "pred": "GENERAL_INQUIRY",
-      "confidence": 0.314,
+      "confidence": 0.317,
       "acceptable": false
     },
     {
       "text": "How far ahead do I have to book?",
       "gold": "ASK_BOOKING_POLICY",
       "pred": "BOOK_APPOINTMENT",
-      "confidence": 0.804,
-      "acceptable": false
-    },
-    {
-      "text": "may dp po ba",
-      "gold": "ASK_BOOKING_POLICY",
-      "pred": "UNKNOWN_INTENT",
-      "confidence": 0.286,
+      "confidence": 0.55,
       "acceptable": false
     },
     {
       "text": "Will you remind me before my appointment?",
       "gold": "GENERAL_INQUIRY",
       "pred": "UNKNOWN_INTENT",
-      "confidence": 0.237,
-      "acceptable": false
-    },
-    {
-      "text": "pno mgbayad",
-      "gold": "GENERAL_INQUIRY",
-      "pred": "UNKNOWN_INTENT",
-      "confidence": 0.269,
-      "acceptable": false
-    },
-    {
-      "text": "may fb page po kayo",
-      "gold": "GENERAL_INQUIRY",
-      "pred": "UNKNOWN_INTENT",
-      "confidence": 0.284,
-      "acceptable": false
-    },
-    {
-      "text": "I'm so tired today",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "CHECK_AVAILABILITY",
-      "confidence": 0.394,
+      "confidence": 0.252,
       "acceptable": false
     },
     {
       "text": "anong oras na ngayon",
       "gold": "UNKNOWN_INTENT",
       "pred": "CHECK_AVAILABILITY",
-      "confidence": 0.453,
-      "acceptable": false
-    },
-    {
-      "text": "may pasok ba bukas",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "CHECK_AVAILABILITY",
-      "confidence": 0.575,
-      "acceptable": false
-    },
-    {
-      "text": "uulan ba mamaya",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "CHECK_AVAILABILITY",
-      "confidence": 0.528,
-      "acceptable": false
-    },
-    {
-      "text": "magkano ang bigas ngayon",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "ASK_PRICE",
-      "confidence": 0.807,
-      "acceptable": true
-    },
-    {
-      "text": "who is the president of the philippines",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "GENERAL_INQUIRY",
-      "confidence": 0.57,
-      "acceptable": true
-    },
-    {
-      "text": "hiring po ba kayo ng assistant",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "GENERAL_INQUIRY",
-      "confidence": 0.359,
-      "acceptable": false
-    },
-    {
-      "text": "pwede po ba magpagupit ng buhok ng lalaki",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "BOOK_APPOINTMENT",
-      "confidence": 0.45,
-      "acceptable": true
-    },
-    {
-      "text": "nagrerent din po ba kayo ng gown",
-      "gold": "UNKNOWN_INTENT",
-      "pred": "GENERAL_INQUIRY",
-      "confidence": 0.354,
+      "confidence": 0.454,
       "acceptable": false
     },
     {

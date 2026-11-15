@@ -36,4 +36,14 @@ describe('response templates', () => {
   it('every English template has a Filipino counterpart and vice versa', () => {
     expect(Object.keys(RESPONSES.fil).sort()).toEqual(Object.keys(RESPONSES.en).sort())
   })
+
+  it('matching response keys share the same {placeholders}', () => {
+    const placeholders = (val) => {
+      const str = Array.isArray(val) ? val.join('\n') : String(val)
+      return [...new Set([...str.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))].sort()
+    }
+    for (const key of Object.keys(RESPONSES.en)) {
+      expect(placeholders(RESPONSES.fil[key]), `placeholders mismatch for ${key}`).toEqual(placeholders(RESPONSES.en[key]))
+    }
+  })
 })

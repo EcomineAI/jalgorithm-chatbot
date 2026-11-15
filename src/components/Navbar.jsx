@@ -1,12 +1,18 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Sparkles, Menu, X, ChevronDown, MessageCircle, Scissors, Info, Phone, HelpCircle } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
-import { useBusinessInfo, formatPeso } from '../lib/useBusinessInfo.js'
+import { useBusinessInfo } from '../lib/useBusinessInfo.js'
+import { formatServicePrice, formatDuration } from '../lib/ownerInsights.js'
 
 export default function Navbar() {
   // Services and prices come from the Owner's panel (same data the chatbot uses).
   const { catalog } = useBusinessInfo()
-  const services = (catalog?.services ?? []).map((s) => ({ name: s.name, price: formatPeso(s.price) }))
+  const services = (catalog?.services ?? []).map((s) => ({
+    key: s.key,
+    name: s.name,
+    price: formatServicePrice(s),
+    duration: formatDuration(s.durationMinutes),
+  }))
   const { pathname } = useLocation()
   const isHome = pathname === '/'
   const [scrolled, setScrolled] = useState(false)
@@ -44,7 +50,7 @@ export default function Navbar() {
           <div className="w-7 h-7 bg-pink-500 rounded-lg flex items-center justify-center animate-pulse-glow">
             <Sparkles size={14} className="text-white animate-spin-slow" />
           </div>
-          Vicky's Parlor
+          {catalog?.business?.name ?? "Vicky's Parlor"}
         </Link>
 
         {/* Desktop links */}
@@ -64,18 +70,23 @@ export default function Navbar() {
             </button>
 
             {servicesOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-72 bg-white rounded-2xl shadow-xl border border-pink-100 overflow-hidden z-50">
                 <div className="p-1.5">
                   {services.map((svc) => (
-                    <a
-                      key={svc.name}
-                      href="#services"
+                    <Link
+                      key={svc.key || svc.name}
+                      to={`/chat?service=${encodeURIComponent(svc.key)}`}
                       onClick={() => setServicesOpen(false)}
-                      className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-pink-50 group transition-colors"
+                      className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl hover:bg-pink-50 group transition-colors"
                     >
-                      <span className="text-gray-700 group-hover:text-gray-900 text-sm font-medium">{svc.name}</span>
-                      <span className="text-pink-500 text-xs font-semibold">{svc.price}</span>
-                    </a>
+                      <div className="min-w-0">
+                        <div className="text-gray-800 group-hover:text-pink-600 text-sm font-medium truncate">
+                          {svc.name}
+                        </div>
+                        <div className="text-[11px] text-gray-400">{svc.duration}</div>
+                      </div>
+                      <span className="text-pink-500 text-xs font-semibold shrink-0">{svc.price}</span>
+                    </Link>
                   ))}
                 </div>
                 <div className="border-t border-gray-100 p-2">
@@ -140,15 +151,18 @@ export default function Navbar() {
             {mobileServicesOpen && (
               <div className="mx-3 mb-1 bg-pink-50/60 rounded-xl overflow-hidden border border-pink-100">
                 {services.map((svc, i) => (
-                  <a
-                    key={svc.name}
-                    href="#services"
+                  <Link
+                    key={svc.key || svc.name}
+                    to={`/chat?service=${encodeURIComponent(svc.key)}`}
                     onClick={() => { setMenuOpen(false); setMobileServicesOpen(false) }}
-                    className={`flex items-center justify-between px-4 py-3 hover:bg-pink-100/60 transition-colors ${i < services.length - 1 ? 'border-b border-pink-100' : ''}`}
+                    className={`flex items-center justify-between gap-2 px-4 py-3 hover:bg-pink-100/60 transition-colors ${i < services.length - 1 ? 'border-b border-pink-100' : ''}`}
                   >
-                    <span className="text-gray-700 text-sm">{svc.name}</span>
-                    <span className="text-pink-500 text-xs font-bold">{svc.price}</span>
-                  </a>
+                    <div className="min-w-0">
+                      <div className="text-gray-700 text-sm font-medium truncate">{svc.name}</div>
+                      <div className="text-[11px] text-gray-400">{svc.duration}</div>
+                    </div>
+                    <span className="text-pink-500 text-xs font-bold shrink-0">{svc.price}</span>
+                  </Link>
                 ))}
               </div>
             )}

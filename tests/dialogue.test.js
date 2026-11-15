@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createJAlgorithm } from '../src/jalgorithm/index.js'
+import { BENEFICIARY_PRESET_TREV_LUNA } from '../src/jalgorithm/config/business.js'
+import { toCatalog } from '../src/services/businessInfo.js'
 
 // Thursday 12 Nov 2026, 10:00 Manila. Earliest bookable date (3-day rule, enforced by the mock) = Nov 15.
 const NOW = new Date('2026-11-12T02:00:00Z')
@@ -213,5 +215,159 @@ describe('informational intents and fallbacks', () => {
   it('produces a JSON-serializable state', async () => {
     const { state } = await chat(['pa book po ng bridal'])
     expect(JSON.parse(JSON.stringify(state))).toEqual(state)
+  })
+})
+
+describe('beneficiary interview dialogue features (Trev Luna preset)', () => {
+  const trevCatalog = toCatalog({
+    profile: BENEFICIARY_PRESET_TREV_LUNA.profile,
+    services: BENEFICIARY_PRESET_TREV_LUNA.services,
+    settings: BENEFICIARY_PRESET_TREV_LUNA.settings,
+  })
+
+  it('answers service inclusions and attaches Page handoff metadata', async () => {
+    const bot = createJAlgorithm({ catalog: trevCatalog, now: () => NOW })
+    const r1 = await bot.processMessage('ano inclusion ng bridal makeup?', bot.initialState())
+    expect(r1.reply).toMatch(/Bridal Makeup/)
+    expect(r1.reply).toMatch(/Full skin prep/)
+    expect(r1.handoff?.topic).toMatch(/Bridal/)
+
+    const r2 = await bot.processMessage('what are the inclusions of your packages?', bot.initialState())
+    expect(r2.reply).toMatch(/Everyday Glam/)
+    expect(r2.reply).toMatch(/Special Events/)
+  })
+
+  it('quotes additional heads rate and triggers group quote handoff', async () => {
+    const bot = createJAlgorithm({ catalog: trevCatalog, now: () => NOW })
+    const r = await bot.processMessage('how much additional heads?', bot.initialState())
+    expect(r.reply).toMatch(/PHP 1,000/)
+    expect(r.handoff?.reason).toBe('additional_heads')
+  })
+
+  it('explains inclusive vs. out-of-town travel areas and triggers travel quote handoff', async () => {
+    const bot = createJAlgorithm({ catalog: trevCatalog, now: () => NOW })
+    const rLoc = await bot.processMessage('where are you located?', bot.initialState())
+    expect(rLoc.reply).toMatch(/Subic Bay/)
+    expect(rLoc.reply).toMatch(/Clark/)
+    expect(rLoc.handoff?.reason).toBe('travel_quote')
+
+    const rFee = await bot.processMessage('may travel fee ba sa clark?', bot.initialState())
+    expect(rFee.reply).toMatch(/Subic Bay/)
+    expect(rFee.reply).toMatch(/toll fees|out-of-town/i)
+    expect(rFee.handoff?.reason).toBe('travel_quote')
+  })
+
+  it('explains tiered wedding and event down payment and cancellation rules', async () => {
+    const bot = createJAlgorithm({ catalog: trevCatalog, now: () => NOW })
+    const r = await bot.processMessage('what is your booking policy?', bot.initialState())
+    expect(r.reply).toMatch(/7 days/)
+    expect(r.reply).toMatch(/40%/)
+    expect(r.reply).toMatch(/30 days/)
+    expect(r.reply).toMatch(/10% to 20%/)
+    expect(r.reply).toMatch(/3 days/)
+  })
+
+  it('returns appointment metadata and down payment handoff on booking success, and rush note when too soon', async () => {
+    const actions = mockActions({
+      getAvailableSlots: vi.fn(async ({ date }) =>
+        date < '2026-11-19' ? { ok: false, reason: 'too_soon', data: { min_date: '2026-11-19' } } : { ok: true, data: { slots: SLOTS } }),
+    })
+    const bot = createJAlgorithm({ catalog: trevCatalog, actions, now: () => NOW })
+
+    // Too soon triggers rush note and handoff
+    const rSoon = await bot.processMessage('check slots bukas', bot.initialState())
+    expect(rSoon.reply).toMatch(/Same-day or on-the-day rush bookings/i)
+    expect(rSoon.handoff?.reason).toBe('rush_inquiry')
+
+    // Full booking returns appointment & downpayment handoff
+    let state = bot.initialState()
+    const msgs = ['book bridal sa nov 20 ng 10am', 'Maria Santos', '09171234567', 'Subic Bay Harbor Hotel', 'yes']
+    let last = null
+    for (const m of msgs) {
+      last = await bot.processMessage(m, state)
+      state = last.state
+    }
+    expect(last.reply).toMatch(/JAL-ABCDE/)
+    expect(last.reply).toMatch(/40% down payment/)
+    expect(last.appointment).toMatchObject({
+      reference_code: 'JAL-ABCDE',
+      service_key: 'bridal',
+      date: '2026-11-20',
+      time: '10:00',
+      location: 'Subic Bay Harbor Hotel',
+    })
+    expect(last.handoff?.reason).toBe('downpayment')
+    expect(last.handoff?.draft).toContain('JAL-ABCDE')
+    expect(last.handoff?.draft).toContain('Subic Bay Harbor Hotel')
+  })
+
+  it('quotes range and price-may-vary service rates in ASK_PRICE replies', async () => {
+    const customCatalog = {
+      ...trevCatalog,
+      services: trevCatalog.services.map((s) =>
+        s.key === 'bridal'
+          ? { ...s, price: 3500, priceMode: 'range', priceMax: 5500, priceNote: 'Depending on peg' }
+          : s.key === 'event_makeup'
+            ? { ...s, price: 2000, priceMode: 'varies', priceNote: 'Rates vary by scope' }
+            : s,
+      ),
+    }
+    const bot = createJAlgorithm({ catalog: customCatalog, now: () => NOW })
+
+    const rRange = await bot.processMessage('magkano ang bridal makeup?', bot.initialState())
+    expect(rRange.reply).toMatch(/3,500 - 5,500/)
+    expect(rRange.reply).toMatch(/Depending on peg/)
+
+    const rVaries = await bot.processMessage('how much for debut makeup?', bot.initialState())
+    expect(rVaries.reply).toMatch(/Price varies.*PHP 2,000/i)
+    expect(rVaries.reply).toMatch(/Rates vary by scope/)
+  })
+
+  it('avoids duplicate PHP prefix when price is 0 (varies mode), handles mid-flow okay, pauses/resumes drafts, and uses replyContext', async () => {
+    const variesCatalog = {
+      ...trevCatalog,
+      services: trevCatalog.services.map((s) =>
+        s.key === 'bridal'
+          ? { ...s, price: 0, priceMode: 'varies', priceNote: '5000-7000 depending on scope' }
+          : s,
+      ),
+    }
+    const bot = createJAlgorithm({ catalog: variesCatalog, actions: mockActions(), now: () => NOW })
+
+    // 1. Price wording without "PHP varies"
+    const rZeroVaries = await bot.processMessage('how much bridal makeup?', bot.initialState())
+    expect(rZeroVaries.reply).not.toMatch(/PHP varies/i)
+    expect(rZeroVaries.reply).toMatch(/Price varies/i)
+
+    // 2. Mid-flow "okay" re-prompts cleanly without "Sorry, I didn't get that"
+    const rBookStart = await bot.processMessage('I want to book bridal makeup', bot.initialState())
+    expect(rBookStart.state.flow.awaiting).toBe('date')
+    const rAck = await bot.processMessage('okay', rBookStart.state)
+    expect(rAck.reply).not.toMatch(/Sorry, I didn't get that/i)
+    expect(rAck.state.flow.awaiting).toBe('date')
+
+    // 3. "ayaw ko na" pauses instead of deleting filled setup, then "resume" restores it, then "discard draft" clears it
+    const rPaused = await bot.processMessage('ayaw ko na', rAck.state)
+    expect(rPaused.state.flow).toBeNull()
+    expect(rPaused.state.pausedFlow).toBeTruthy()
+    expect(rPaused.state.pausedFlow.slots.service).toBe('bridal')
+
+    const rResumed = await bot.processMessage('resume', rPaused.state)
+    expect(rResumed.state.flow).toBeTruthy()
+    expect(rResumed.state.flow.slots.service).toBe('bridal')
+    expect(rResumed.state.pausedFlow).toBeNull()
+
+    const rPausedAgain = await bot.processMessage('pause', rResumed.state)
+    expect(rPausedAgain.state.pausedFlow).toBeTruthy()
+    const rDiscarded = await bot.processMessage('discard draft', rPausedAgain.state)
+    expect(rDiscarded.state.pausedFlow).toBeNull()
+
+    // 4. Replying "how much" to a Bridal message inherits service context
+    const rReplyPrice = await bot.processMessage('how much?', bot.initialState(), {
+      replyContext: { text: 'Bridal Makeup Full Package', serviceKey: 'bridal', intent: 'ASK_SERVICES' },
+    })
+    expect(rReplyPrice.intent).toBe('ASK_PRICE')
+    expect(rReplyPrice.reply).toMatch(/Bridal/i)
+    expect(rReplyPrice.reply).toMatch(/5000-7000/)
   })
 })

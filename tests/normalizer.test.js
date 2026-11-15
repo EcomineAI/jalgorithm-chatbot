@@ -18,6 +18,10 @@ describe('preprocess', () => {
   it('collapses elongations and normalizes am/pm and ampersands', () => {
     expect(preprocess('pleaseee hiii').text).toBe('please hi')
     expect(preprocess('3 p.m.').text).toBe('3 pm')
+    expect(preprocess('3.30pm').text).toBe('3:30pm')
+    expect(preprocess('3.30 pm').text).toBe('3:30pm')
+    expect(preprocess('330pm').text).toBe('3:30pm')
+    expect(preprocess('1030am').text).toBe('10:30am')
     expect(preprocess('hair & makeup').text).toBe('hair and makeup')
     expect(preprocess('hair+makeup').text).toBe('hair and makeup')
   })
@@ -80,5 +84,32 @@ describe('fuzzy matching', () => {
   it('refuses ties and different first letters', () => {
     expect(bestFuzzyMatch('xppointment', ['appointment'])).toBeNull()
     expect(bestFuzzyMatch('abcde', ['abcdf', 'abcdg'])).toBeNull()
+  })
+  it('allows adjacent first-two-letter transposition', () => {
+    expect(bestFuzzyMatch('papointment', ['appointment'])).toEqual({ target: 'appointment', distance: 1 })
+  })
+})
+
+describe('human-typing normalization enhancements', () => {
+  it('splits glued date, time, and enclitic tokens', () => {
+    expect(norm('nov20').words).toEqual(['nov', '20'])
+    expect(norm('alas3').words).toEqual(['alas', '3'])
+    expect(norm('3pmpo').words).toEqual(['3pm', 'po'])
+    expect(norm('magkanopo').words).toEqual(['magkano', 'po'])
+    expect(norm('bukasba').words).toEqual(['bukas', 'ba'])
+    expect(norm('cancelko').words).toEqual(['cancel', 'ko'])
+  })
+  it('splits abbreviated Filipino prefixes and fuzzy roots', () => {
+    expect(norm('mgbayad').words).toEqual(['mag', 'bayad'])
+    expect(norm('mgpabook').words).toEqual(['magpa', 'book'])
+    expect(norm('pkiresched').words).toEqual(['paki', 'reschedule'])
+    expect(norm('magpaapointmnt').words).toEqual(['magpa', 'appointment'])
+    expect(norm('pakireschdule').words).toEqual(['paki', 'reschedule'])
+  })
+  it('collapses duplicate-letter slips and includes owner service words in fuzzy targets', () => {
+    expect(norm('bukass').words).toEqual(['bukas'])
+    expect(norm('papointment').words).toEqual(['appointment'])
+    const custom = createNormalizer({ services: [{ key: 'airbrush', name: 'Airbrush Makeup', aliases: ['airbrush'] }] })
+    expect(custom.normalize(tokenize(preprocess('airbrsh').text)).words).toEqual(['airbrush'])
   })
 })

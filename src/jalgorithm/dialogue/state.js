@@ -5,6 +5,7 @@ export function initialState() {
     lang: 'fil', // reply language: 'en' | 'fil'
     turn: 0,
     flow: null, // active multi-turn task, see newFlow()
+    pausedFlow: null, // paused booking/reschedule setup preserved on Stop / "ayaw ko na"
     pending: null, // { type: 'clarify', options: [intentA, intentB], slots } | { type: 'offer_book', slots } | { type: 'cancel_or_abort' }
     lastIntent: null,
   }

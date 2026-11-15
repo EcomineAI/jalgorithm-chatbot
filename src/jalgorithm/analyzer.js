@@ -38,7 +38,7 @@ export function createAnalyzer({ training = trainingExamples(), classifierConfig
     const norm = normalizer.normalize(tokenize(text))
     const entities = extractEntities({ tokens: norm.tokens, words: norm.words, original, now, expect, serviceIndex })
     const { tags, domainTagCount } = extractFeatures(norm.words, entities)
-    const hasEntities = Boolean(entities.date || entities.time || entities.service || entities.contact || entities.reference || entities.dateInfo?.week)
+    const hasEntities = Boolean(entities.service || entities.contact || entities.reference || ((entities.date || entities.time || entities.dateInfo?.week) && domainTagCount > 0))
     const result = norm.words.length
       ? classifier.classify(featureTokens(norm.tokens, tags), tags, { hasEntities, domainTagCount })
       : { intent: 'UNKNOWN_INTENT', confidence: 0, reason: 'empty', ambiguous: false, candidates: [], ranked: [] }

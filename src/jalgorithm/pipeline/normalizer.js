@@ -7,10 +7,18 @@
 //   4. guarded fuzzy correction        "apointmint" → "appointment" (domain words only)
 // Every change is recorded so the original message can always be reconstructed/debugged.
 
-import { SIMPLE_SHORTCUTS, CONTEXT_SHORTCUTS, PREFIXES, PREFIX_ROOTS } from '../config/shortcuts.js'
+import { SIMPLE_SHORTCUTS, CONTEXT_SHORTCUTS, PREFIXES, PREFIX_ROOTS, PREFIX_CANONICAL } from '../config/shortcuts.js'
 import { KNOWN_WORDS, CONCEPTS, FUZZY_TARGETS } from '../config/lexicon.js'
 import { bestFuzzyMatch } from './fuzzy.js'
 import { defaultCatalog } from '../config/business.js'
+
+const GLUED_DATE_TIME_WORDS = new Set([
+  'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec',
+  'january', 'february', 'march', 'april', 'june', 'july', 'august', 'september', 'october', 'november', 'december',
+  'enero', 'pebrero', 'marso', 'abril', 'mayo', 'hunyo', 'hulyo', 'agosto', 'setyembre', 'oktubre', 'nobyembre', 'disyembre',
+  'alas', 'ika',
+])
+const ROOT_FUZZY_TARGETS = [...PREFIX_ROOTS].filter((r) => r.length >= 5)
 
 function buildVocabulary(extra = [], services = []) {
   const vocab = new Set(KNOWN_WORDS)
@@ -24,6 +32,18 @@ function buildVocabulary(extra = [], services = []) {
   for (const p of PREFIXES) vocab.add(p)
   for (const w of extra) vocab.add(w)
   return vocab
+}
+
+function buildFuzzyTargets(services = []) {
+  const targets = new Set(FUZZY_TARGETS)
+  for (const s of services) {
+    for (const a of [s.name, ...(s.aliases ?? [])]) {
+      for (const w of String(a).toLowerCase().split(/\s+/)) {
+        if (w.length >= 5 && /^[a-zñ]+$/.test(w)) targets.add(w)
+      }
+    }
+  }
+  return [...targets]
 }
 
 const isNumeric = (s) => /^\d+(?:st|nd|rd|th)?$/.test(s)
@@ -41,7 +61,7 @@ function canonicalStructured(token) {
 }
 
 // Filipino reduplication of the first syllable marks aspect: "bobook", "aadjust", "cacancel".
-function resolveRoot(candidate) {
+function resolveRoot(candidate, allowFuzzy = true) {
   const direct = SIMPLE_SHORTCUTS[candidate] ?? candidate
   if (PREFIX_ROOTS.has(direct)) return direct
   for (const k of [1, 2, 3]) {
@@ -51,6 +71,10 @@ function resolveRoot(candidate) {
       if (PREFIX_ROOTS.has(root)) return root
     }
   }
+  if (allowFuzzy && candidate.length >= 5) {
+    const fuzzy = bestFuzzyMatch(candidate, ROOT_FUZZY_TARGETS, 1)
+    if (fuzzy) return fuzzy.target
+  }
   return null
 }
 
@@ -58,8 +82,11 @@ function splitPrefix(word, vocab) {
   if (vocab.has(word)) return null
   for (const prefix of [...PREFIXES, '']) {
     if (!word.startsWith(prefix) || word.length - prefix.length < 3) continue
-    const root = resolveRoot(word.slice(prefix.length))
-    if (root) return prefix ? [prefix, root] : [root]
+    const root = resolveRoot(word.slice(prefix.length), Boolean(prefix))
+    if (root) {
+      const canon = PREFIX_CANONICAL[prefix] ?? prefix
+      return canon ? [canon, root] : [root]
+    }
   }
   return null
 }
@@ -67,16 +94,39 @@ function splitPrefix(word, vocab) {
 /** @param {{extraVocabulary?: string[], services?: {name: string, aliases?: string[]}[]}} [opts] */
 export function createNormalizer({ extraVocabulary = [], services = defaultCatalog().services } = {}) {
   let vocab = buildVocabulary(extraVocabulary, services)
+  const fuzzyTargets = buildFuzzyTargets(services)
 
   function normalize(rawTokens) {
     const changes = []
-    // Pass 1: hyphen split (keeps structured tokens intact)
+    // Pass 1: hyphen & glued date/time splits (keeps structured tokens intact)
     const expanded = []
     for (const t of rawTokens) {
       if (t.type === 'word' && t.text.includes('-')) {
         const parts = t.text.split('-').filter(Boolean)
         changes.push({ from: t.text, to: parts.join(' '), rule: 'hyphen-split' })
         for (const p of parts) expanded.push({ type: isNumeric(p) ? 'num' : 'word', text: p, original: t.text })
+      } else if (t.type === 'word') {
+        const timeGlued = /^(\d{1,2}(?::\d{2})?(?:am|pm))(po|ba|na|pa|sana|lang|nalang|pala)$/.exec(t.text)
+        const dtGlued = !timeGlued && t.text !== '2day'
+          ? /^(?:([a-zñ]+)(\d{1,2})|(\d{1,2})([a-zñ]+))$/.exec(t.text)
+          : null
+        if (timeGlued) {
+          changes.push({ from: t.text, to: `${timeGlued[1]} ${timeGlued[2]}`, rule: 'glued-split' })
+          expanded.push({ type: 'time', text: timeGlued[1], original: t.text })
+          expanded.push({ type: 'word', text: timeGlued[2], original: t.text })
+        } else if (dtGlued && GLUED_DATE_TIME_WORDS.has(dtGlued[1] || dtGlued[4])) {
+          if (dtGlued[1]) {
+            changes.push({ from: t.text, to: `${dtGlued[1]} ${dtGlued[2]}`, rule: 'glued-split' })
+            expanded.push({ type: 'word', text: dtGlued[1], original: t.text })
+            expanded.push({ type: 'num', text: dtGlued[2], original: t.text })
+          } else {
+            changes.push({ from: t.text, to: `${dtGlued[3]} ${dtGlued[4]}`, rule: 'glued-split' })
+            expanded.push({ type: 'num', text: dtGlued[3], original: t.text })
+            expanded.push({ type: 'word', text: dtGlued[4], original: t.text })
+          }
+        } else {
+          expanded.push({ ...t, original: t.text })
+        }
       } else {
         expanded.push({ ...t, original: t.text })
       }
@@ -110,6 +160,21 @@ export function createNormalizer({ extraVocabulary = [], services = defaultCatal
         }
       }
 
+      // Pass 2b: glued enclitic particle split ("magkanopo" → "magkano po")
+      if (!vocab.has(text)) {
+        const enclitic = /^([a-zñ]{4,}?)(nalang|pala|sana|lang|po|ba|ko|na)$/.exec(text)
+        if (enclitic) {
+          const stem = SIMPLE_SHORTCUTS[enclitic[1]] ?? enclitic[1]
+          const stemParts = vocab.has(stem) ? stem.split(' ') : splitPrefix(stem, vocab)
+          if (stemParts) {
+            changes.push({ from: text, to: `${stemParts.join(' ')} ${enclitic[2]}`, rule: 'enclitic-split' })
+            for (const part of stemParts) out.push({ type: 'word', text: part, original: t.original })
+            out.push({ type: 'word', text: enclitic[2], original: t.original })
+            continue
+          }
+        }
+      }
+
       // Pass 3: Filipino verbal prefix + domain root
       const split = splitPrefix(text, vocab)
       if (split) {
@@ -118,9 +183,25 @@ export function createNormalizer({ extraVocabulary = [], services = defaultCatal
         continue
       }
 
+      // Pass 3b: collapse duplicate letter slips ("bukass" → "bukas", "magkanoo" → "magkano")
+      if (!vocab.has(text) && /([a-zñ])\1/.test(text)) {
+        const candidates = [text.replace(/([a-zñ])\1$/, '$1'), text.replace(/([a-zñ])\1+/g, '$1')]
+        for (const c of candidates) {
+          if (c === text || c.length < 2) continue
+          const resolved = SIMPLE_SHORTCUTS[c] ?? c
+          if (vocab.has(resolved)) {
+            changes.push({ from: text, to: resolved, rule: 'dedup' })
+            for (const part of resolved.split(' ')) out.push({ type: 'word', text: part, original: t.original })
+            text = null
+            break
+          }
+        }
+        if (text === null) continue
+      }
+
       // Pass 4: fuzzy correction for out-of-vocabulary words only
       if (!vocab.has(text) && /^[a-zñ]+$/.test(text)) {
-        const match = bestFuzzyMatch(text, FUZZY_TARGETS)
+        const match = bestFuzzyMatch(text, fuzzyTargets)
         if (match) {
           changes.push({ from: text, to: match.target, rule: `fuzzy(d=${match.distance})` })
           text = match.target

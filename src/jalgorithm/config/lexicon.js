@@ -17,7 +17,8 @@ export const CONCEPTS = {
   WANT: ['gusto', 'want', 'sana', 'need', 'kailangan', ['would', 'like'], 'like', 'balak', 'plan', 'interested'],
   MOVE: [
     'reschedule', 'move', 'ilipat', 'lipat', 'ilipat', 'palitan', 'palit', 'change', 'adjust', 'usog', 'iusog', 'postpone',
-    'transfer', 'ipagpaliban', 'urong', 'iurong', 'imbes', 'instead', 'rebook', 'baguhin', ['ibang', 'araw'], ['ibang', 'oras'], ['ibang', 'date'], ['ibang', 'time'],
+    'transfer', 'ipagpaliban', 'urong', 'iurong', 'imbes', 'instead', 'rebook', 'baguhin', 'gawing', 'gawin',
+    ['imbes', 'na'], ['instead', 'of'], ['ibang', 'araw'], ['ibang', 'oras'], ['ibang', 'date'], ['ibang', 'time'],
     ['other', 'day'], ['different', 'day'], ['different', 'time'], ['another', 'day'], ['another', 'time'], ['later', 'date'],
     ['pa', 'move'], ['ipa', 'move'], ['pa', 'reschedule'], ['pa', 'lipat'], ['pa', 'usog'],
   ],
@@ -28,10 +29,12 @@ export const CONCEPTS = {
   VIEW: [
     'view', 'status', 'details', 'detail', 'reference', 'ref', 'lookup', ['check', 'my'], ['see', 'my'], ['look', 'up'],
     ['confirm', 'kung'], ['naka', 'book', 'ba'], ['nakabook', 'ba'], ['booked', 'ba'], ['did', 'my'], ['still', 'on'],
+    ['what', 'date', 'did', 'i'], ['when', 'did', 'i', 'book'], ['kailan', 'ako', 'nag', 'book'], ['anong', 'date', 'ko'],
   ],
   AVAIL: [
     'available', 'availability', 'vacant', 'free', 'vacancy', 'open', ['may', 'slot'], ['meron', 'slot'], ['may', 'available'],
-    ['meron', 'available'], ['fully', 'booked'], ['full', 'booked'], ['kaya', 'ba'], ['pwede', 'ba'], ['are', 'you', 'free'],
+    ['meron', 'available'], ['fully', 'booked'], ['full', 'booked'], ['kaya', 'ba'], ['kaya', 'ninyo', 'ba'], ['kaya', 'po', 'ba'],
+    ['have', 'time'], ['pwede', 'ba'], ['are', 'you', 'free'],
     ['may', 'bakante'], ['open', 'slot'], ['open', 'slots'], 'slot',
   ],
   // "...kaya ba or ako mag-adjust?": the CLIENT offers to adjust, i.e. asking if a time is possible.
@@ -52,18 +55,20 @@ export const CONCEPTS = {
   ],
   LOCATION: [
     'location', 'address', 'where', 'saan', 'nasaan', 'located', 'lugar', 'banda', 'direction', 'directions', 'map',
-    'pwesto', 'puwesto', 'area', 'areas', 'cover', 'coverage', 'located', ['taga', 'saan'], 'olongapo', 'zambales', 'branch',
+    'pwesto', 'puwesto', 'area', 'areas', 'cover', 'coverage', 'sakop', 'city', 'town', ['taga', 'saan'],
+    ['how', 'do', 'i', 'get', 'to'], ['paano', 'pumunta'], 'olongapo', 'zambales', 'branch',
   ],
   HOURS: [
-    'hours', 'opening', 'closing', 'close', 'sarado', 'operating', 'magsasara', 'nagbubukas', 'magbubukas',
-    ['bukas', 'ba', 'kayo'], ['bukas', 'kayo'], ['open', 'kayo'], ['open', 'ba', 'kayo'], ['are', 'you', 'open'],
+    'hours', 'opening', 'closing', 'close', 'sarado', 'operating', 'magsasara', 'nagsasara', 'nagbubukas', 'magbubukas',
+    'tuwing', ['bukas', 'ba', 'kayo'], ['bukas', 'kayo'], ['open', 'kayo'], ['open', 'ba', 'kayo'], ['are', 'you', 'open'],
     ['hanggang', 'anong', 'oras'], ['hanggang', 'ano', 'oras'], ['until', 'what', 'time'], ['working', 'hours'],
     ['business', 'hours'], ['store', 'hours'], ['open', 'hours'], ['what', 'time', 'you', 'open'], ['bukas', 'kayo', 'ng'],
     ['open', 'on'], ['open', 'every'], 'everyday', 'daily',
   ],
   POLICY: [
-    'policy', 'policies', 'rules', 'rule', 'refund', 'refundable', 'downpayment', 'deposit', 'requirement', 'requirements',
-    'penalty', 'terms', 'patakaran', ['reservation', 'fee'], ['ilang', 'araw'], ['how', 'many', 'days'], ['in', 'advance'],
+    'policy', 'policies', 'rules', 'rule', 'refund', 'refundable', 'downpayment', 'dp', 'deposit', 'requirement', 'requirements',
+    'penalty', 'terms', 'patakaran', ['reservation', 'fee'], ['ilang', 'araw'], ['ilang', 'araw', 'bago'], ['how', 'many', 'days'],
+    ['how', 'far', 'ahead'], ['secure', 'the', 'date'], ['in', 'advance'],
     ['advance', 'booking'], ['same', 'day'], ['late', 'cancellation'], ['walk', 'in'], 'walkin', 'advance',
   ],
   GREETING: [
@@ -82,17 +87,23 @@ export const CONCEPTS = {
   ],
   GENERAL: [
     'home', ['home', 'service'], 'travel', 'portfolio', 'gcash', 'payment', 'contact', 'number', 'facebook', 'instagram',
-    'artist', 'who', 'sino', 'reminder', 'remind', 'pay', 'bayad', 'magbayad', 'samples', 'sample', 'vicky', 'stylist',
-    'confirmation', 'transpo', 'pamasahe', 'venue', 'bahay', 'pumupunta', 'puntahan', 'onsite',
+    'fb', 'ig', ['fb', 'page'], 'artist', 'who', 'sino', 'reminder', 'remind', 'pay', 'bayad', 'magbayad',
+    ['mag', 'bayad'], ['paano', 'mag', 'bayad'], ['paano', 'magbayad'], 'samples', 'sample', 'vicky', 'trev', 'stylist',
+    'confirmation', 'transpo', 'pamasahe', 'venue', 'bahay', 'pumupunta', 'puntahan', 'onsite', 'messenger',
+    'inclusion', 'inclusions', 'include', 'includes', 'included', 'kasama', 'kasali', 'pinagkaiba', 'kaibahan', 'difference', 'compare',
+    'additional', 'dagdag', 'extra', 'head', 'heads', 'person', 'pax', 'kasabay', 'companion', 'bridesmaid', 'bridesmaids',
+    'clark', 'toll', 'contract',
   ],
   QUESTION: ['ba', 'paano', 'ano', 'how', 'what', 'can', 'pwede', 'is', 'are', 'do', 'does', '?', 'kaya', 'po'],
   // Clearly unrelated topics. Lets the rule layer vote for OUT_OF_SCOPE instead of letting
   // a stray "saan"/"ano" pull an off-topic message into a salon intent.
   OFFTOPIC: [
     'kumain', 'kain', 'kakain', 'ulam', 'pagkain', 'food', 'gutom', 'hungry', 'masarap', 'luto', 'cook',
-    'weather', 'ulan', 'panahon', 'movie', 'song', 'kanta', 'sing', 'crush', 'girlfriend', 'boyfriend',
+    'weather', 'ulan', 'uulan', 'panahon', 'movie', 'song', 'kanta', 'sing', 'crush', 'girlfriend', 'boyfriend',
     'homework', 'assignment', 'laptop', 'computer', 'load', 'pautang', 'utang', 'inom', 'tagay',
     'joke', 'robot', 'news', 'basketball', 'math', 'translate', 'bored', 'favorite', 'shoes',
+    'pasok', 'school', 'bigas', 'president', 'presidente', 'tired', 'pagod',
+    'hiring', 'apply', 'trabaho', 'gown', 'lalaki', 'barber',
   ],
 }
 
@@ -109,14 +120,16 @@ export const KNOWN_WORDS = new Set(`
   ay kasi sana kung kapag pag pero tapos saka at o eh ah hm hmm uy uhm kahit basta yung dito diyan doon jan
   ano anong paano bakit sino kailan saan nasaan ilan magkano gaano alin
   gusto ayaw kailangan pwede puwede kaya baka sige game tara teka wait
-  araw oras umaga tanghali hapon gabi linggo buwan taon ngayon bukas mamaya kahapon makalawa susunod sunod nakaraan
+  araw oras umaga tanghali hapon gabi linggo buwan taon ngayon bukas mamaya kahapon makalawa kinabukasan susunod sunod nakaraan
   morning afternoon evening night noon midnight week weekend month year day time date
   monday tuesday wednesday thursday friday saturday sunday lunes martes miyerkules miyerkoles huwebes biyernes sabado
   alas una dos tres kwatro kuwatro singko sais syete siyete otso nuwebe diyes onse dose medya y
   january february march april may june july august september october november december
   enero pebrero marso abril mayo hunyo hulyo agosto setyembre oktubre nobyembre disyembre
   makeup hair buhok bridal bride wedding kasal debut event party package personal styling hairstyle
-  salon parlor artist vicky olongapo subic castillejos san antonio zambales
+  salon parlor artist vicky trev luna olongapo subic bay castillejos san antonio zambales clark
+  inclusion inclusions include includes included kasama kasali pinagkaiba kaibahan difference compare
+  additional dagdag extra head heads person pax kasabay companion bridesmaid bridesmaids toll contract messenger rush
   kumain kain tubig weather panahon ulan init lamig love mahal crush joke biro game play song kanta movie
   name pangalan number contact phone cellphone cp email
   thanks salamat thank welcome bye paalam ingat
@@ -158,5 +171,6 @@ export const NO_WORDS = new Set(['hindi', 'no', 'nope', 'ayaw', 'wag', 'huwag', 
 export const RESET_PHRASES = [
   ['reset'], ['start', 'over'], ['ulit', 'tayo'], ['umpisa', 'ulit'], ['never', 'mind'], ['nevermind'], ['stop'],
   ['wag', 'na'], ['huwag', 'na'], ['wag', 'nalang'], ['huwag', 'nalang'], ['wag', 'na', 'lang'], ['wag', 'na', 'pala'],
-  ['huwag', 'na', 'lang'], ['hindi', 'na', 'lang'], ['hindi', 'na', 'pala'], ['forget', 'it'], ['quit'], ['exit'],
+  ['huwag', 'na', 'lang'], ['hindi', 'na', 'lang'], ['hindi', 'na', 'pala'], ['ayaw', 'ko', 'na'], ['ayaw', 'na'], ['pause'],
+  ['forget', 'it'], ['quit'], ['exit'],
 ]

@@ -7,11 +7,11 @@
 
 export const INTENTS = {
   BOOK_APPOINTMENT: {
-    rules: { BOOK: 3, WANT: 0.6, APPT: 0.9, SERVICE: 0.4, DATE: 0.2, MOVE: -2.5, CANCEL: -3, VIEW: -1.5, VIEW_Q: -2, PRICE: -1.2, NEG_ATTEND: -3, AVAIL: -0.4, POLICY: -1 },
+    rules: { BOOK: 3, WANT: 0.6, APPT: 0.9, SERVICE: 0.4, DATE: 0.2, MOVE: -2.5, CANCEL: -3, VIEW: -1.5, VIEW_Q: -2, PRICE: -1.2, NEG_ATTEND: -3, AVAIL: -0.4, POLICY: -1, OFFTOPIC: -4 },
     flow: { required: ['service', 'date', 'time', 'name', 'contact'], optional: ['location'] },
   },
   CHECK_AVAILABILITY: {
-    rules: { AVAIL: 2.5, FLEX: 3, QWHEN: 0.4, DATE: 0.9, TIME: 0.7, APPT: 0.2, BOOK: -0.6, MOVE: -1.5, CANCEL: -2.5, HOURS: -0.8, PRICE: -1, VIEW_Q: -1.5, NEG_ATTEND: -2.5, POLICY: -0.8 },
+    rules: { AVAIL: 2.5, FLEX: 3, QWHEN: 0.4, DATE: 0.9, TIME: 0.7, APPT: 0.2, BOOK: -0.6, MOVE: -1.5, CANCEL: -2.5, HOURS: -0.8, PRICE: -1, VIEW_Q: -1.5, NEG_ATTEND: -2.5, POLICY: -0.8, OFFTOPIC: -4 },
     flow: { required: ['date'], optional: ['time', 'service'] },
   },
   RESCHEDULE_APPOINTMENT: {
@@ -30,13 +30,13 @@ export const INTENTS = {
     rules: { NEG_ATTEND: 3.6, ABSENCE: 1.4, DATE: 0.2, MOVE: -2, CANCEL: -2 },
   },
   ASK_PRICE: {
-    rules: { PRICE: 3, SERVICE: 0.5, QUESTION: 0.1, BOOK: -1.2, POLICY: -0.6 },
+    rules: { PRICE: 3, SERVICE: 0.5, QUESTION: 0.1, BOOK: -1.2, POLICY: -0.6, OFFTOPIC: -4 },
   },
   ASK_SERVICES: {
-    rules: { SERVICE_Q: 2.6, QUESTION: 0.1, PRICE: -0.8, BOOK: -1 },
+    rules: { SERVICE_Q: 2.6, QUESTION: 0.1, PRICE: -0.8, BOOK: -1, OFFTOPIC: -4 },
   },
   ASK_LOCATION: {
-    rules: { LOCATION: 3, QUESTION: 0.1, HOURS: -0.8 },
+    rules: { LOCATION: 3, QUESTION: 0.1, HOURS: -0.8, OFFTOPIC: -4 },
   },
   ASK_OPERATING_HOURS: {
     rules: { HOURS: 3, QUESTION: 0.1, AVAIL: -0.4, APPT: -0.6, POSS: -0.8 },
@@ -51,7 +51,7 @@ export const INTENTS = {
     rules: { THANKS: 3, MANY_TAGS: -2 },
   },
   GENERAL_INQUIRY: {
-    rules: { GENERAL: 2.4, QUESTION: 0.15, BOOK: -1, PRICE: -0.6 },
+    rules: { GENERAL: 2.4, QUESTION: 0.15, BOOK: -1, PRICE: -0.6, OFFTOPIC: -4 },
   },
   OUT_OF_SCOPE: {
     rules: { OFFTOPIC: 4 },

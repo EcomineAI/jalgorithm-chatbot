@@ -32,19 +32,29 @@ export function allowedDistance(length) {
   return 2
 }
 
+const PHONETIC_PAIRS = new Set(['ck', 'kc', 'fp', 'pf', 'vb', 'bv', 'sc', 'cs'])
+
+function sameOrTransposedStart(word, target) {
+  if (target[0] === word[0]) return true
+  if (word.length >= 5 && target.length >= 5 && word[0] === target[1] && word[1] === target[0]) return true
+  return PHONETIC_PAIRS.has(word[0] + target[0])
+}
+
 /**
  * Returns the single best target within the allowed distance, or null when there is no
  * candidate or when two different targets tie (ambiguous correction is not applied).
- * Candidates must share the first letter, which removes most false corrections.
+ * Candidates must share the first letter (or first-two transposition / Filipino phonetic equivalent),
+ * which removes most false corrections.
  */
-export function bestFuzzyMatch(word, targets) {
-  const max = allowedDistance(word.length)
+export function bestFuzzyMatch(word, targets, maxOverride = null) {
+  const baseMax = allowedDistance(word.length)
+  const max = maxOverride != null ? Math.min(baseMax, maxOverride) : baseMax
   if (max === 0) return null
   let best = null
   let bestDist = Infinity
   let tie = false
   for (const t of targets) {
-    if (t[0] !== word[0]) continue
+    if (!sameOrTransposedStart(word, t)) continue
     const dist = editDistance(word, t, max)
     if (dist > max) continue
     if (dist < bestDist) {

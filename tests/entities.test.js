@@ -39,6 +39,9 @@ describe('date extraction', () => {
     ['jan 3', '2027-01-03'], // already passed this year → next year
     ['sa may 5', '2027-05-05'],
     ['ika-20', '2026-11-20'],
+    ['nov20', '2026-11-20'],
+    ['sa darating na sabado', '2026-11-14'],
+    ['kinabukasan', '2026-11-13'],
   ])('%s → %s', (text, date) => {
     expect(ent(text).date).toBe(date)
   })
@@ -76,6 +79,9 @@ describe('time extraction', () => {
     ['mga 4 ng hapon', '16:00', false],
     ['sa 2', '14:00', true],
     ['tanghali', '12:00', false],
+    ['alas3', '15:00', true],
+    ['330pm', '15:30', false],
+    ['3.30 pm', '15:30', false],
     ['12nn', null, null],
   ])('%s → %s', (text, time, assumed) => {
     const e = ent(text)
@@ -116,5 +122,12 @@ describe('other entities', () => {
     expect(ent('ako po si maria santos', 'name').name).toBe('Maria Santos')
     expect(ent('My name is Ana Cruz', 'name').name).toBe('Ana Cruz')
     expect(ent('maria santos').name).toBeUndefined()
+  })
+  it('picks the corrected entity after mid-sentence self-correction markers', () => {
+    const e1 = ent('pa book sa friday 2pm ay wait 3pm pala')
+    expect(e1.date).toBe('2026-11-13')
+    expect(e1.time).toBe('15:00')
+    expect(ent('bridal este debut pala').service).toBe('event_makeup')
+    expect(ent('2pm ay 3pm pala').time).toBe('15:00')
   })
 })

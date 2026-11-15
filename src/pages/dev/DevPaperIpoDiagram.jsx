@@ -43,7 +43,7 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
         title: 'Scheduling Database',
         subtitle: 'Available Slots and Existing Appointments',
         icon: Database,
-        tone: 'border-sky-200 bg-sky-50/60 text-sky-700',
+        tone: 'border-stone-200/80 bg-[#f8f6f2] text-stone-700',
         paperHeading: 'Input 2: Live Salon Schedule & Business Rules',
         paperSummary:
           'Real-time salon services, pricing, operating hours, advance-notice rules, and active bookings stored in Supabase Postgres are fed into both the website and the Dialogue Manager.',
@@ -58,7 +58,7 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
         title: 'Intent Classification',
         subtitle: 'Late Fusion NLU (Rules + NB + TF-IDF)',
         icon: GitBranch,
-        tone: 'border-purple-200 bg-purple-50/70 text-purple-700',
+        tone: 'border-stone-200/80 bg-[#f8f6f2] text-stone-700',
         paperHeading: 'Process 1: Hybrid Intent Classification (No External LLM)',
         paperSummary:
           'Instead of sending prompts to a cloud LLM or local LM Studio server, JAlgorithm runs a deterministic Late Fusion formula in the browser: 0.45 Rules + 0.35 Multinomial Naive Bayes + 0.20 TF-IDF Cosine Similarity.',
@@ -73,7 +73,7 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
         title: 'Dialogue Manager / Database Check',
         subtitle: 'Slot Filling & Supabase RPC Validation',
         icon: ShieldCheck,
-        tone: 'border-indigo-200 bg-indigo-50/70 text-indigo-700',
+        tone: 'border-stone-200/80 bg-[#f8f6f2] text-stone-700',
         paperHeading: 'Process 2: Finite-State Dialogue & Server Lock Check',
         paperSummary:
           'Tracks multi-step conversation memory (service, date, time, venue, name, mobile number, reference code) one missing item at a time, while calling Postgres SECURITY DEFINER RPCs to check real open slots and conflicts.',
@@ -88,7 +88,7 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
         title: 'Confirmation',
         subtitle: 'Explicit Yes / No Review Before Write',
         icon: CheckCircle2,
-        tone: 'border-amber-200 bg-amber-50/70 text-amber-700',
+        tone: 'border-stone-200/80 bg-[#f8f6f2] text-stone-700',
         paperHeading: 'Process 3: Summary Review & Atomic Write Confirmation',
         paperSummary:
           'Before any database write (`book`, `reschedule`, or `cancel`), JAL displays a structured summary and requires an explicit Yes/No reply (`oo`, `yes`, `sige` / `hindi`, `no`). Only after the RPC returns ok: true does JAL generate the booking code.',
@@ -103,7 +103,7 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
         title: 'Reminder Trigger',
         subtitle: 'Owner Prep & Client Reminder Scheduling',
         icon: BellRing,
-        tone: 'border-rose-200 bg-rose-50/70 text-rose-700',
+        tone: 'border-stone-200/80 bg-[#f8f6f2] text-stone-700',
         paperHeading: 'Process 4: Appointment Persistence & Reminder Preparation',
         paperSummary:
           'Once confirmed, the appointment enters the active schedule queue where Owner Studio computes 1-day-before artist preparation alerts and 1-to-2-day client confirmation reminders in Asia/Manila time.',
@@ -138,7 +138,7 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
         paperSummary:
           'JAL selects the matching English or Filipino/Taglish template with the exact database-confirmed reference, date, time, Add to Google Calendar button, Maps link, and optional Page Handoff card.',
         paperBasis:
-          'Because JAL is non-generative, output grammar and rates stay 100% controlled with zero AI hallucination risk.',
+          'Because JAL is non-generative, output grammar and rates stay 100% controlled with zero generative hallucination risk.',
         liveFact: 'Every reply key enforces placeholder parity between English & Filipino',
         files: ['app/src/jalgorithm/config/responses.js', 'app/src/components/ChatWidgets.jsx'],
       },
@@ -172,19 +172,19 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
         key={node.id}
         type="button"
         onClick={() => setSelectedNodeId(node.id)}
-        className={`w-full text-left p-3.5 rounded-xl border transition-all ${
+        className={`w-full text-left p-3.5 rounded-xl border transition-[background-color,border-color,box-shadow] ${
           isSelected
-            ? 'bg-white border-pink-500 ring-2 ring-pink-300/60 shadow-sm'
+            ? 'bg-white border-pink-500 ring-2 ring-pink-200 shadow-2xs'
             : `${node.tone} hover:bg-white hover:border-pink-300`
         }`}
       >
         <div className="flex items-start gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0 mt-0.5 text-gray-700">
-            <Icon size={14} />
+          <div className="w-7 h-7 rounded-lg bg-white border border-stone-200/80 flex items-center justify-center shrink-0 mt-0.5 text-stone-700">
+            <Icon size={14} strokeWidth={1.75} />
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-bold text-gray-900 leading-snug">{node.title}</div>
-            <div className="text-[11px] text-gray-600 leading-snug mt-0.5">{node.subtitle}</div>
+            <div className="text-xs font-semibold text-stone-900 leading-snug">{node.title}</div>
+            <div className="text-xs text-stone-500 leading-snug mt-0.5">{node.subtitle}</div>
           </div>
         </div>
       </button>
@@ -194,17 +194,17 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
   return (
     <div className="space-y-5">
       {/* IPO Figure Card matching Thesis Paper Diagram */}
-      <div className="bg-white rounded-2xl border border-pink-100 shadow-xs p-6 space-y-5">
+      <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs p-6 space-y-5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-pink-50 text-pink-600 border border-pink-200 flex items-center justify-center shrink-0">
-              <BookOpen size={17} />
+            <div className="w-9 h-9 rounded-lg bg-pink-50 text-pink-700 border border-pink-200 flex items-center justify-center shrink-0">
+              <BookOpen size={17} strokeWidth={1.75} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900">
+              <h3 className="text-sm font-semibold text-stone-900">
                 Paper Diagram 1: Input - Process - Output (IPO) Workflow
               </h3>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-stone-500">
                 Direct visual model from your thesis paper (`docs/JALGORITHM.md`). Click any block to read its explanation below.
               </p>
             </div>
@@ -215,12 +215,12 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
           {/* INPUT + PROCESS Column (Left 8 cols) */}
           <div className="col-span-8 flex flex-col gap-4">
             {/* INPUT Box */}
-            <div className="rounded-2xl border-2 border-dashed border-pink-200 bg-rose-50/20 p-4 space-y-3">
+            <div className="rounded-xl border border-dashed border-stone-300 bg-[#f8f6f2] p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-pink-600">
-                  INPUT
+                <span className="text-xs font-semibold text-pink-700">
+                  Input
                 </span>
-                <span className="text-[11px] text-gray-400">User Requests &amp; Live Salon Data</span>
+                <span className="text-xs text-stone-500">User Requests &amp; Live Salon Data</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {renderNodeButton(nodes.i1)}
@@ -229,37 +229,37 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
             </div>
 
             {/* Downward flow connectors from Input -> Process */}
-            <div className="grid grid-cols-2 px-12 text-pink-400">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+            <div className="grid grid-cols-2 px-12 text-stone-500">
+              <div className="flex items-center gap-1.5 text-xs font-medium">
                 <ArrowDown size={15} />
                 <span>Feeds into Intent Classification</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold justify-end">
+              <div className="flex items-center gap-1.5 text-xs font-medium justify-end">
                 <ArrowDown size={15} />
                 <span>Feeds into Database Check</span>
               </div>
             </div>
 
             {/* PROCESS Box */}
-            <div className="rounded-2xl border-2 border-purple-200 bg-purple-50/20 p-4 space-y-3">
+            <div className="rounded-xl border border-stone-200/80 bg-[#f8f6f2] p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-purple-700">
-                  PROCESS
+                <span className="text-xs font-semibold text-stone-800">
+                  Process
                 </span>
-                <span className="text-[11px] text-gray-400">In-Browser Engine + Server Validation</span>
+                <span className="text-xs text-stone-500">In-Browser Engine + Server Validation</span>
               </div>
               <div className="grid grid-cols-4 gap-2 items-center">
                 <div className="flex items-center gap-1.5">
                   <div className="flex-1">{renderNodeButton(nodes.p1)}</div>
-                  <ArrowRight size={14} className="text-purple-400 shrink-0" />
+                  <ArrowRight size={14} className="text-stone-400 shrink-0" />
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="flex-1">{renderNodeButton(nodes.p2)}</div>
-                  <ArrowRight size={14} className="text-purple-400 shrink-0" />
+                  <ArrowRight size={14} className="text-stone-400 shrink-0" />
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="flex-1">{renderNodeButton(nodes.p3)}</div>
-                  <ArrowRight size={14} className="text-purple-400 shrink-0" />
+                  <ArrowRight size={14} className="text-stone-400 shrink-0" />
                 </div>
                 <div>{renderNodeButton(nodes.p4)}</div>
               </div>
@@ -267,12 +267,12 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
           </div>
 
           {/* OUTPUT Column (Right 4 cols) */}
-          <div className="col-span-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50/20 p-4 flex flex-col justify-between space-y-3">
+          <div className="col-span-4 rounded-xl border border-emerald-200/80 bg-emerald-50/20 p-4 flex flex-col justify-between space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-700">
-                OUTPUT
+              <span className="text-xs font-semibold text-emerald-700">
+                Output
               </span>
-              <span className="text-[11px] text-gray-400">Verified Results</span>
+              <span className="text-xs text-stone-500">Verified Results</span>
             </div>
 
             <div className="space-y-3 flex-1 flex flex-col justify-center">
@@ -285,49 +285,49 @@ export default function DevPaperIpoDiagram({ catalog, engineStats, showTechDetai
       </div>
 
       {/* Paper-Aligned Deep Explanation Card */}
-      <div className="bg-white rounded-2xl border border-pink-100 shadow-xs p-6 grid grid-cols-12 gap-6">
+      <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 p-6 grid grid-cols-12 gap-6">
         <div className="col-span-7 space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-pink-50 border border-pink-200 text-pink-600 flex items-center justify-center">
-              <ActiveIcon size={17} />
+            <div className="w-9 h-9 rounded-lg bg-pink-50 border border-pink-200 text-pink-700 flex items-center justify-center">
+              <ActiveIcon size={17} strokeWidth={1.75} />
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-pink-500">
-                {active.zone} Block Explanation
+              <div className="text-xs font-medium text-pink-700">
+                {active.zone} block explanation
               </div>
-              <h4 className="text-base font-bold text-gray-900">{active.paperHeading}</h4>
+              <h4 className="text-base font-semibold text-stone-900">{active.paperHeading}</h4>
             </div>
           </div>
 
-          <p className="text-xs text-gray-700 leading-relaxed bg-rose-50/35 border border-pink-100 rounded-xl p-4">
+          <p className="text-xs text-stone-700 leading-relaxed bg-[#f8f6f2] border border-stone-200/80 rounded-xl p-4">
             {active.paperSummary}
           </p>
 
-          <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 border border-gray-100 rounded-xl p-4">
-            <strong className="text-gray-800">Thesis Rationale: </strong>
+          <p className="text-xs text-stone-600 leading-relaxed bg-stone-50 border border-stone-200/70 rounded-xl p-4">
+            <strong className="font-medium text-stone-800">Thesis rationale: </strong>
             {active.paperBasis}
           </p>
         </div>
 
         <div className="col-span-5 space-y-3">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-            Live System Verification
+          <div className="text-xs font-medium text-stone-500">
+            Live system verification
           </div>
-          <div className="px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
+          <div className="px-3.5 py-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-800">
             {active.liveFact}
           </div>
 
           {showTechDetails && (
-            <div className="space-y-2 pt-2 border-t border-pink-100">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+            <div className="space-y-2 pt-2 border-t border-stone-200/80">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-stone-600">
                 <Code2 size={12} />
-                Code &amp; Database Implementation
+                Code &amp; database implementation
               </div>
               <div className="space-y-1">
                 {active.files.map((f) => (
                   <div
                     key={f}
-                    className="font-mono text-[11px] text-gray-700 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg"
+                    className="font-mono text-xs text-stone-700 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-md"
                   >
                     {f}
                   </div>

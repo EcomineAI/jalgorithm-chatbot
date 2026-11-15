@@ -10,7 +10,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Info,
-  Sparkles,
+  SlidersHorizontal,
   RotateCcw,
   MapPin,
   ShieldCheck,
@@ -344,8 +344,8 @@ export default function BusinessInfoTab({ requestedSubTab = null, onWarningsChan
 
   if (!data) {
     return (
-      <div className="bg-white rounded-2xl border border-pink-100 p-10 flex items-center justify-center gap-2.5 text-sm text-gray-500">
-        <Loader2 size={18} className="animate-spin text-pink-500" />
+      <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 p-10 flex items-center justify-center gap-2.5 text-sm text-stone-500">
+        <Loader2 size={18} className="animate-spin text-pink-600" />
         Loading your salon profile and catalog...
       </div>
     )
@@ -355,26 +355,26 @@ export default function BusinessInfoTab({ requestedSubTab = null, onWarningsChan
   const completion = computeProfileCompletion(data)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header + Completion Readiness Banner */}
-      <div className="bg-white rounded-2xl border border-pink-100/90 shadow-sm p-6 space-y-5">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Business Studio Settings</h2>
-            <p className="text-sm text-gray-500 mt-1">
+      <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs p-4 sm:p-6 space-y-4 sm:space-y-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-stone-900">Business Studio Settings</h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1">
               Update your salon identity, services, hours, and booking policies. All changes sync immediately to your public website and JAL chatbot.
             </p>
           </div>
-          <div className="flex items-center gap-3 bg-rose-50/70 border border-pink-100 rounded-2xl px-4 py-3 shrink-0">
-            <div className="text-right">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
-                Profile Readiness
+          <div className="flex items-center justify-between sm:justify-start gap-3 bg-[#f8f6f2] border border-stone-200/80 rounded-xl px-3.5 py-2.5 sm:px-4 sm:py-3 shrink-0">
+            <div className="sm:text-right">
+              <p className="text-xs font-medium text-stone-500">
+                Profile readiness
               </p>
-              <p className="text-lg font-bold text-pink-600">{completion.percentage}% Ready</p>
+              <p className="text-base sm:text-lg font-semibold text-pink-700 tabular-nums">{completion.percentage}% Ready</p>
             </div>
-            <div className="w-24 h-2.5 rounded-full bg-pink-100 overflow-hidden">
+            <div className="w-24 h-2.5 rounded-full bg-stone-200 overflow-hidden">
               <div
-                className="h-full bg-pink-500 rounded-full transition-all"
+                className="h-full bg-pink-600 rounded-full transition-[width] duration-300"
                 style={{ width: `${completion.percentage}%` }}
               />
             </div>
@@ -382,7 +382,7 @@ export default function BusinessInfoTab({ requestedSubTab = null, onWarningsChan
         </div>
 
         {/* 4 Clean Workspace Tabs */}
-        <div className="flex flex-wrap gap-2 pt-1 border-t border-pink-100/70">
+        <div className="flex overflow-x-auto sm:flex-wrap gap-2 pt-2 pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0 border-t border-stone-200/70">
           {WORKSPACE_TABS.map((tab) => {
             const Icon = tab.icon
             const active = activeWorkspace === tab.id
@@ -392,10 +392,10 @@ export default function BusinessInfoTab({ requestedSubTab = null, onWarningsChan
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveWorkspace(tab.id)}
-                className={`inline-flex items-center gap-2 px-4 min-h-[42px] rounded-xl border text-xs sm:text-sm font-semibold transition-all ${
+                className={`inline-flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap px-3 sm:px-4 min-h-9 sm:min-h-10 rounded-lg border text-xs sm:text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-pink-500 border-pink-500 text-white shadow-sm shadow-pink-500/20'
-                    : 'bg-white border-pink-100 text-gray-700 hover:border-pink-300 hover:bg-rose-50/40'
+                    ? 'bg-pink-600 border-pink-600 text-white'
+                    : 'bg-[#fdfcfa] border-stone-200/80 text-stone-700 hover:border-stone-300 hover:bg-stone-100'
                 }`}
               >
                 <Icon size={15} />
@@ -423,7 +423,7 @@ export default function BusinessInfoTab({ requestedSubTab = null, onWarningsChan
             <button
               type="button"
               onClick={() => setActiveWorkspace(normalizeBusinessSectionTab(warnings[0].tab))}
-              className="text-xs font-bold text-pink-600 hover:underline shrink-0"
+              className="text-xs font-semibold text-pink-700 hover:underline shrink-0"
             >
               Fix in {WORKSPACE_TABS.find((t) => t.id === normalizeBusinessSectionTab(warnings[0].tab))?.label}
             </button>
@@ -651,7 +651,7 @@ function ProfileWorkspace({ profile, presetState, onRequestPreset, onSaved }) {
             disabled={presetState.busy}
             onClick={() => onRequestPreset(BENEFICIARY_PRESET_TREV_LUNA)}
           >
-            {presetState.busy ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+            {presetState.busy ? <Loader2 size={15} className="animate-spin" /> : <SlidersHorizontal size={15} />}
             Load Preset: Makeup and Hair by Trev Luna
           </PrimaryButton>
           <SecondaryButton
@@ -694,12 +694,12 @@ function ServicesAndPortfolioWorkspace({ profile, services, onSaved }) {
         }
       >
         {services.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-pink-200 bg-rose-50/30 p-8 text-center space-y-2">
-            <p className="text-sm font-semibold text-gray-800">No services added yet</p>
-            <p className="text-xs text-gray-500">Add your first service so clients can view rates and book slots.</p>
+          <div className="rounded-xl border border-dashed border-stone-200 bg-[#f8f6f2] p-8 text-center space-y-2">
+            <p className="text-sm font-semibold text-stone-800">No services added yet</p>
+            <p className="text-xs text-stone-500">Add your first service so clients can view rates and book slots.</p>
           </div>
         ) : (
-          <div className="divide-y divide-pink-100/70 border border-pink-100 rounded-2xl overflow-hidden">
+          <div className="divide-y divide-stone-200/70 border border-stone-200/80 rounded-xl overflow-hidden">
             {services.map((s) => {
               const thumb =
                 sanitizeImageUrl(s.image_url) ||
@@ -714,35 +714,35 @@ function ServicesAndPortfolioWorkspace({ profile, services, onSaved }) {
               return (
                 <div
                   key={s.key}
-                  className="p-4 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white hover:bg-rose-50/25 transition-colors"
+                  className="p-3.5 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-[#fdfcfa] hover:bg-stone-100/50 transition-colors"
                 >
-                  <div className="flex items-start gap-3.5 min-w-0">
+                  <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
                     <img
                       src={thumb}
                       alt={s.name}
-                      className="w-16 h-16 rounded-xl object-cover border border-pink-100 shrink-0 bg-rose-50"
+                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover border border-stone-200/80 shrink-0 bg-stone-100"
                     />
                     <div className="min-w-0 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-sm text-gray-900">{s.name}</span>
-                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 border border-pink-100">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="font-semibold text-sm text-stone-900">{s.name}</span>
+                        <span className="text-xs font-medium px-2 sm:px-2.5 py-0.5 rounded-md bg-pink-50 text-pink-700 border border-pink-200 tabular-nums">
                           {priceLabel}
                         </span>
-                        <span className="text-xs font-medium text-gray-500">
+                        <span className="text-xs font-medium text-stone-500 tabular-nums">
                           {formatDuration(s.duration_minutes)}
                         </span>
                         <StatusBadge status={s.active !== false ? 'active' : 'inactive'} />
                         {s.show_on_landing && (
-                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-50 text-pink-600 border border-pink-100">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 border border-stone-200/80">
                             Featured on site
                           </span>
                         )}
                       </div>
                       {s.description && (
-                        <p className="text-xs text-gray-600 line-clamp-1">{s.description}</p>
+                        <p className="text-xs text-stone-600 line-clamp-1">{s.description}</p>
                       )}
                       {s.aliases?.length > 0 && (
-                        <p className="text-[11px] text-gray-400 truncate">
+                        <p className="text-xs text-stone-400 truncate">
                           Chat keywords: {s.aliases.join(', ')}
                         </p>
                       )}
@@ -751,7 +751,7 @@ function ServicesAndPortfolioWorkspace({ profile, services, onSaved }) {
 
                   <SecondaryButton
                     onClick={() => setModalMode({ type: 'edit', service: s })}
-                    className="shrink-0 min-h-[38px] px-3.5 text-xs"
+                    className="w-full sm:w-auto shrink-0 min-h-9 px-3.5 text-xs"
                   >
                     <Pencil size={13} />
                     Edit Service
@@ -812,20 +812,20 @@ function ServiceEditorModal({ mode, service, existingServices, onClose, onSaved 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/45 backdrop-blur-xs p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/45 backdrop-blur-xs p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
     >
       <form
         onSubmit={submit}
-        className="bg-white rounded-3xl border border-pink-100 shadow-2xl max-w-2xl w-full overflow-hidden my-auto"
+        className="bg-[#fdfcfa] rounded-t-2xl sm:rounded-2xl border border-stone-200/80 shadow-2xl max-w-2xl w-full max-h-[92dvh] flex flex-col overflow-hidden sm:my-auto"
       >
-        <div className="px-6 py-5 border-b border-pink-100/80 bg-gradient-to-r from-rose-50 via-white to-pink-50/40 flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">
+        <div className="px-4 py-3.5 sm:px-6 sm:py-5 border-b border-stone-200/80 bg-[#f8f6f2] flex items-center justify-between gap-3 shrink-0">
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-lg font-semibold text-stone-900 truncate">
               {isEdit ? `Edit Service: ${service.name}` : 'Add New Service'}
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-stone-500 mt-0.5 truncate">
               Set pricing mode, session duration, inclusions, and chat recognition keywords.
             </p>
           </div>
@@ -833,16 +833,20 @@ function ServiceEditorModal({ mode, service, existingServices, onClose, onSaved 
             type="button"
             onClick={onClose}
             aria-label="Close service editor"
-            className="w-9 h-9 rounded-xl border border-pink-100 bg-white text-gray-500 hover:text-gray-800 hover:bg-rose-50 flex items-center justify-center"
+            className="w-9 h-9 rounded-lg border border-stone-200/80 bg-[#fdfcfa] text-stone-500 hover:text-stone-900 hover:bg-stone-100 flex items-center justify-center shrink-0"
           >
             <X size={16} />
           </button>
         </div>
 
-        <div className="p-6 max-h-[75vh] overflow-y-auto space-y-5">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-5">
           <ServiceFields form={form} setForm={setForm} disabled={save.busy} />
+        </div>
+
+        <div className="px-4 py-3 sm:px-6 sm:py-4 border-t border-stone-200/80 bg-[#fdfcfa] shrink-0">
           <SaveBar
             save={save}
+            sticky={false}
             label={isEdit ? 'Save Service Changes' : 'Create Service'}
             extra={
               <SecondaryButton onClick={onClose} disabled={save.busy}>
@@ -947,7 +951,7 @@ function ServiceFields({ form, setForm, disabled }) {
               value={hours}
               onChange={(e) => updateDuration(e.target.value, minutes)}
               disabled={disabled}
-              className="min-h-[44px] border border-pink-100 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
+              className="min-h-11 border border-stone-200/80 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
             >
               {DURATION_HOUR_OPTIONS.map((h) => (
                 <option key={h} value={h}>
@@ -960,7 +964,7 @@ function ServiceFields({ form, setForm, disabled }) {
               value={minutes}
               onChange={(e) => updateDuration(hours, e.target.value)}
               disabled={disabled}
-              className="min-h-[44px] border border-pink-100 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
+              className="min-h-11 border border-stone-200/80 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
             >
               {minuteChoices.map((m) => (
                 <option key={m} value={m}>
@@ -972,16 +976,16 @@ function ServiceFields({ form, setForm, disabled }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-pink-100 bg-rose-50/30 p-4 space-y-3">
-        <div className="text-xs font-bold text-gray-800">Pricing Format</div>
+      <div className="rounded-xl border border-stone-200/80 bg-[#f8f6f2] p-4 space-y-3">
+        <div className="text-xs font-semibold text-stone-800">Pricing Format</div>
         <div className="grid sm:grid-cols-3 gap-3">
           <label className="block">
-            <span className="text-xs font-semibold text-gray-600">Pricing display</span>
+            <span className="text-xs font-medium text-stone-600">Pricing display</span>
             <select
               value={priceMode}
               onChange={(e) => setField('price_mode', e.target.value)}
               disabled={disabled}
-              className="mt-1.5 w-full min-h-[44px] border border-pink-100 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
+              className="mt-1.5 w-full min-h-11 border border-stone-200/80 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
             >
               {PRICE_MODE_OPTIONS.map((opt) => (
                 <option key={opt.id} value={opt.id}>
@@ -1182,7 +1186,7 @@ function PortfolioGalleryCard({ profile, onSaved }) {
             className={`inline-flex items-center justify-center gap-2 text-xs font-semibold px-4 min-h-[42px] rounded-xl transition-colors cursor-pointer shrink-0 ${
               save.busy || galleryBusy || gallery.length >= 12
                 ? 'bg-pink-200 text-white cursor-not-allowed'
-                : 'bg-pink-500 hover:bg-pink-600 text-white shadow-sm shadow-pink-500/20'
+                : 'bg-pink-600 hover:bg-pink-700 text-white shadow-sm'
             }`}
           >
             {galleryBusy ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
@@ -1202,26 +1206,26 @@ function PortfolioGalleryCard({ profile, onSaved }) {
               value={newUrlInput}
               disabled={save.busy || gallery.length >= 12}
               onChange={(e) => setNewUrlInput(e.target.value)}
-              placeholder="Or paste an image URL (https://...)..."
-              className="flex-1 min-h-[42px] border border-pink-100 rounded-xl px-3.5 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
+              placeholder="Paste image URL"
+              className="flex-1 min-h-10 border border-stone-200/80 rounded-lg px-3.5 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
             />
             <SecondaryButton
               onClick={addGalleryUrl}
               disabled={save.busy || gallery.length >= 12 || !newUrlInput.trim()}
-              className="min-h-[42px] px-4 text-xs"
+              className="min-h-10 px-4 text-xs"
             >
               Add Link
             </SecondaryButton>
           </div>
         </div>
 
-        {galleryNote && <p className="text-xs text-pink-600 font-medium">{galleryNote}</p>}
+        {galleryNote && <p className="text-xs text-pink-700 font-medium">{galleryNote}</p>}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
           {gallery.map((url, idx) => (
             <div
               key={`${url.slice(0, 32)}-${idx}`}
-              className="group relative rounded-2xl overflow-hidden border border-pink-100 bg-rose-50/40 aspect-[4/3] shadow-xs"
+              className="group relative rounded-xl overflow-hidden border border-stone-200/80 bg-stone-100 aspect-[4/3] shadow-xs"
             >
               <img src={url} alt={`Portfolio ${idx + 1}`} className="w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/75 via-black/35 to-transparent flex items-center justify-between gap-1">
@@ -1498,8 +1502,8 @@ function PoliciesAndTravelWorkspace({ profile, services, onSaved }) {
         description="JAL shares these exact deposit and cancellation terms whenever clients ask or confirm bookings."
       >
         <div className="grid sm:grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-pink-100 bg-rose-50/40 p-4 space-y-3">
-            <div className="text-xs font-bold text-pink-700">Wedding Bookings</div>
+          <div className="rounded-xl border border-pink-200/80 bg-rose-50/30 p-4 space-y-3">
+            <div className="text-xs font-semibold text-pink-700">Wedding Bookings</div>
             <PresetSelectField
               label="Wedding down payment (%)"
               value={form.wedding_downpayment_percent}
@@ -1523,8 +1527,8 @@ function PoliciesAndTravelWorkspace({ profile, services, onSaved }) {
             />
           </div>
 
-          <div className="rounded-2xl border border-gray-200/80 bg-gray-50/60 p-4 space-y-3">
-            <div className="text-xs font-bold text-gray-800">Event & Debut Bookings</div>
+          <div className="rounded-xl border border-stone-200/80 bg-[#f8f6f2] p-4 space-y-3">
+            <div className="text-xs font-semibold text-stone-800">Event & Debut Bookings</div>
             <PresetSelectField
               label="Event / Debut reservation fee"
               value={form.event_downpayment_percent}
@@ -1569,18 +1573,18 @@ function PoliciesAndTravelWorkspace({ profile, services, onSaved }) {
           />
         </div>
 
-        <div className="space-y-2 border-t border-pink-100/70 pt-4">
+        <div className="space-y-2 border-t border-stone-200/70 pt-4">
           <label className="block">
-            <span className="text-xs font-semibold text-gray-700">Same-day / rush booking template</span>
+            <span className="text-xs font-medium text-stone-700">Same-day / rush booking template</span>
             <select
               value={RUSH_NOTE_PRESETS.some((p) => p.value === form.same_day_rush_note) ? form.same_day_rush_note : ''}
               onChange={(e) => {
                 if (e.target.value) setField('same_day_rush_note', e.target.value)
               }}
               disabled={save.busy}
-              className="mt-1.5 w-full min-h-[44px] border border-pink-100 rounded-xl px-3.5 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
+              className="mt-1.5 w-full min-h-11 border border-stone-200/80 rounded-lg px-3.5 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
             >
-              <option value="">Choose a quick template or customize below...</option>
+              <option value="">Choose a quick template or customize below</option>
               {RUSH_NOTE_PRESETS.map((p) => (
                 <option key={p.label} value={p.value}>
                   {p.label}
@@ -1594,12 +1598,12 @@ function PoliciesAndTravelWorkspace({ profile, services, onSaved }) {
             onChange={set('same_day_rush_note')}
             disabled={save.busy}
             rows={2}
-            placeholder="Explain whether rush bookings are accepted at a slightly higher rate..."
+            placeholder="Rush booking policy"
           />
         </div>
 
-        <div className="border-t border-pink-100/70 pt-4">
-          <div className="text-xs font-semibold text-gray-700 mb-2.5">
+        <div className="border-t border-stone-200/70 pt-4">
+          <div className="text-xs font-medium text-stone-700 mb-2.5">
             Services requiring down payment / reservation fee
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1608,7 +1612,7 @@ function PoliciesAndTravelWorkspace({ profile, services, onSaved }) {
               .map((s) => (
                 <label
                   key={s.key}
-                  className="inline-flex items-center gap-2 text-xs font-medium border border-pink-100 rounded-xl px-3 py-2 cursor-pointer bg-white hover:border-pink-300"
+                  className="inline-flex items-center gap-2 text-xs font-medium border border-stone-200/80 rounded-lg px-3 py-2 cursor-pointer bg-[#fdfcfa] hover:border-stone-300"
                 >
                   <input
                     type="checkbox"
@@ -1670,9 +1674,9 @@ function MediaPickerField({
   }
 
   return (
-    <div className="border border-pink-100 rounded-2xl p-4 bg-rose-50/25 space-y-3">
+    <div className="border border-stone-200/80 rounded-xl p-4 bg-[#f8f6f2] space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-bold text-gray-800">{label}</span>
+        <span className="text-xs font-semibold text-stone-800">{label}</span>
         {value && (
           <button
             type="button"
@@ -1681,7 +1685,7 @@ function MediaPickerField({
               onChange('')
               setUploadNotice('')
             }}
-            className="text-[11px] font-semibold text-gray-500 hover:text-pink-600"
+            className="text-xs font-medium text-stone-500 hover:text-pink-700"
           >
             Reset to showcase default
           </button>
@@ -1692,16 +1696,16 @@ function MediaPickerField({
         <img
           src={previewSrc}
           alt={label}
-          className={`${aspectClass} rounded-xl object-cover border border-pink-100 bg-white shrink-0`}
+          className={`${aspectClass} rounded-lg object-cover border border-stone-200/80 bg-white shrink-0`}
         />
 
         <div className="flex-1 space-y-2 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <label
-              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 min-h-[38px] rounded-xl transition-colors cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 text-xs font-medium px-3.5 min-h-9 rounded-lg transition-colors cursor-pointer ${
                 disabled || uploading
                   ? 'bg-pink-200 text-white cursor-not-allowed'
-                  : 'bg-pink-500 hover:bg-pink-600 text-white shadow-xs'
+                  : 'bg-pink-600 hover:bg-pink-700 text-white shadow-xs'
               }`}
             >
               {uploading ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
@@ -1714,7 +1718,7 @@ function MediaPickerField({
                 className="sr-only"
               />
             </label>
-            <span className="text-[11px] text-gray-400">or paste image link below</span>
+            <span className="text-xs text-stone-400">or paste image link below</span>
           </div>
 
           <input
@@ -1722,12 +1726,12 @@ function MediaPickerField({
             value={value}
             disabled={disabled || uploading}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="https://images.unsplash.com/..."
-            className="w-full min-h-[40px] border border-pink-100 rounded-xl px-3 py-1.5 text-xs bg-white focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-200"
+            placeholder="https://..."
+            className="w-full min-h-10 border border-stone-200/80 rounded-lg px-3 py-1.5 text-xs bg-white focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
           />
 
-          {hint && <p className="text-[11px] text-gray-500">{hint}</p>}
-          {uploadNotice && <p className="text-[11px] text-pink-600 font-semibold">{uploadNotice}</p>}
+          {hint && <p className="text-xs text-stone-500">{hint}</p>}
+          {uploadNotice && <p className="text-xs text-pink-700 font-medium">{uploadNotice}</p>}
         </div>
       </div>
     </div>
@@ -1753,7 +1757,7 @@ function PresetSelectField({
   return (
     <div className="space-y-1.5">
       <label className="block">
-        <span className="text-xs font-semibold text-gray-700">{label}</span>
+        <span className="text-xs font-medium text-stone-700">{label}</span>
         <select
           value={selectVal}
           disabled={disabled}
@@ -1765,7 +1769,7 @@ function PresetSelectField({
               onChange(e.target.value)
             }
           }}
-          className="mt-1.5 w-full min-h-[44px] border border-pink-100 rounded-xl px-3.5 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
+          className="mt-1.5 w-full min-h-11 border border-stone-200/80 rounded-lg px-3.5 py-2 text-sm bg-white focus:outline-none focus:border-pink-400"
         >
           {options.map((opt) => (
             <option key={opt.label} value={opt.value}>
@@ -1818,10 +1822,10 @@ function ChipMultiPicker({ label, value, suggestions, onChange, disabled, placeh
               type="button"
               disabled={disabled}
               onClick={() => toggleChip(tag)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+              className={`text-xs font-medium px-3 py-1.5 rounded-md border transition-colors ${
                 active
-                  ? 'bg-pink-500 border-pink-500 text-white'
-                  : 'bg-white border-pink-100 text-gray-600 hover:border-pink-300 hover:bg-rose-50/40'
+                  ? 'bg-pink-600 border-pink-600 text-white'
+                  : 'bg-[#fdfcfa] border-stone-200/80 text-stone-600 hover:border-stone-300 hover:bg-stone-100'
               }`}
             >
               {active ? `${tag} ✓` : `+ ${tag}`}
@@ -1835,7 +1839,7 @@ function ChipMultiPicker({ label, value, suggestions, onChange, disabled, placeh
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full min-h-[42px] border border-pink-100 rounded-xl px-3.5 py-2 text-xs text-gray-700 focus:outline-none focus:border-pink-400"
+        className="w-full min-h-10 border border-stone-200/80 rounded-lg px-3.5 py-2 text-xs text-stone-700 bg-white focus:outline-none focus:border-pink-400"
       />
     </div>
   )
@@ -1875,16 +1879,20 @@ function useSaver(onSaved) {
   return { busy, ok, message, run, fail }
 }
 
-function SaveBar({ save, label = 'Save Changes', extra = null }) {
+function SaveBar({ save, label = 'Save Changes', extra = null, sticky = true }) {
+  const layoutClass = sticky
+    ? 'sticky bottom-16 md:static z-20 -mx-4 px-4 py-3 sm:mx-0 sm:px-0 sm:py-0 sm:pt-4 bg-[#fdfcfa]/95 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none border-t border-stone-200/80 rounded-b-2xl'
+    : ''
+
   return (
-    <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-pink-100/70">
+    <div className={`flex flex-wrap items-center gap-2.5 sm:gap-3 ${layoutClass}`}>
       <PrimaryButton type="submit" disabled={save.busy}>
         {save.busy ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
         {label}
       </PrimaryButton>
       {extra}
       {save.message && (
-        <span className={`text-xs flex items-center gap-1.5 font-medium ${save.ok ? 'text-emerald-600' : 'text-rose-600'}`}>
+        <span className={`text-xs flex items-center gap-1.5 font-medium ${save.ok ? 'text-emerald-700' : 'text-rose-700'}`}>
           {save.ok ? <CheckCircle size={14} className="shrink-0" /> : <Info size={14} className="shrink-0" />}
           {save.message}
         </span>
@@ -1896,12 +1904,12 @@ function SaveBar({ save, label = 'Save Changes', extra = null }) {
 function Field({ label, hint, className = '', ...rest }) {
   return (
     <label className={`block ${className}`}>
-      <span className="block text-xs font-semibold text-gray-700 mb-1.5">{label}</span>
+      <span className="block text-xs font-medium text-stone-700 mb-1.5">{label}</span>
       <input
         {...rest}
-        className="w-full min-h-[44px] border border-pink-100 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-200 disabled:bg-gray-50 disabled:text-gray-500"
+        className="w-full min-h-11 border border-stone-200/80 rounded-lg px-3.5 py-2.5 text-sm text-stone-900 bg-white placeholder:text-stone-400 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 disabled:bg-stone-50 disabled:text-stone-500"
       />
-      {hint && <span className="block text-[11px] text-gray-500 mt-1">{hint}</span>}
+      {hint && <span className="block text-xs text-stone-500 mt-1">{hint}</span>}
     </label>
   )
 }
@@ -1909,12 +1917,12 @@ function Field({ label, hint, className = '', ...rest }) {
 function TextAreaField({ label, hint, className = '', ...rest }) {
   return (
     <label className={`block ${className}`}>
-      <span className="block text-xs font-semibold text-gray-700 mb-1.5">{label}</span>
+      <span className="block text-xs font-medium text-stone-700 mb-1.5">{label}</span>
       <textarea
         {...rest}
-        className="w-full border border-pink-100 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-200 disabled:bg-gray-50 disabled:text-gray-500"
+        className="w-full border border-stone-200/80 rounded-lg px-3.5 py-2.5 text-sm text-stone-900 bg-white placeholder:text-stone-400 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 disabled:bg-stone-50 disabled:text-stone-500"
       />
-      {hint && <span className="block text-[11px] text-gray-500 mt-1">{hint}</span>}
+      {hint && <span className="block text-xs text-stone-500 mt-1">{hint}</span>}
     </label>
   )
 }

@@ -66,12 +66,23 @@ function resolveWeekday(today, target, modifier) {
 
 /**
  * @param {string[]} words normalized words
- * @param {{now?: Date, expect?: string}} opts
- * @returns {{date?: string, week?: 'this'|'next', text?: string, invalid?: boolean, past?: boolean}|null}
+ * @param {{now?: Date, expect?: string, max?: number}} opts
+ * @returns {Array<{date?: string, week?: 'this'|'next', text?: string, invalid?: boolean, past?: boolean}>}
  */
-export function extractDate(words, { now = new Date(), expect } = {}) {
+export function extractDates(words, { now = new Date(), expect, max = 3 } = {}) {
   const today = manilaToday(now)
   const found = (date, text) => ({ date, text, past: compareIso(date, today) < 0 })
+  const results = []
+  const seenDates = new Set()
+  const pushResult = (item) => {
+    if (!item) return false
+    if (item.date) {
+      if (seenDates.has(item.date)) return false
+      seenDates.add(item.date)
+    }
+    results.push(item)
+    return results.length >= max
+  }
 
   for (let i = 0; i < words.length; i++) {
     const w = words[i]
@@ -80,30 +91,68 @@ export function extractDate(words, { now = new Date(), expect } = {}) {
     const next = words[i + 1]
 
     if (w === 'today' || w === 'mamaya' || (w === 'ngayon' && WEEKDAY_WORDS[next] === undefined && next !== 'week')) {
-      return found(today, w)
+      if (pushResult(found(today, w))) break
+      continue
     }
-    if (w === 'tomorrow' || w === 'kinabukasan') return found(addDays(today, 1), w)
+    if (w === 'tomorrow' || w === 'kinabukasan') {
+      if (pushResult(found(addDays(today, 1), w))) break
+      continue
+    }
     if (w === 'bukas') {
       // "bukas ba kayo" / "bukas kayo" = "are you open", not "tomorrow"
       const isOpenQuestion = next === 'kayo' || (next === 'ba' && words[i + 2] === 'kayo')
-      if (!isOpenQuestion) return found(addDays(today, 1), w)
+      if (!isOpenQuestion && pushResult(found(addDays(today, 1), w))) break
       continue
     }
-    if (w === 'makalawa') return found(addDays(today, 2), w)
-    if (w === 'day' && next === 'after' && words[i + 2] === 'tomorrow') return found(addDays(today, 2), 'day after tomorrow')
+    if (w === 'makalawa') {
+      if (pushResult(found(addDays(today, 2), w))) break
+      continue
+    }
+    if (w === 'day' && next === 'after' && words[i + 2] === 'tomorrow') {
+      if (pushResult(found(addDays(today, 2), 'day after tomorrow'))) break
+      i += 2
+      continue
+    }
+
+    // relative day counts: "in 3 days", "after 5 days", "4 araw mula ngayon"
+    if (/^\d{1,2}$/.test(w) && ['day', 'days', 'araw'].includes(next)) {
+      const n = Number(w)
+      const isOffset =
+        ['in', 'after', 'sa', 'pagkalipas'].includes(prev) ||
+        (prev === 'ng' && prev2 === 'pagkalipas') ||
+        (words[i + 2] === 'from' && words[i + 3] === 'now') ||
+        (words[i + 2] === 'mula' && words[i + 3] === 'ngayon')
+      if (isOffset && n >= 1 && n <= 90) {
+        if (pushResult(found(addDays(today, n), `${w} ${next}`))) break
+        i += 1
+        continue
+      }
+    }
+
+    // weekend shorthand: "this weekend" / "next weekend" / "weekend" -> Saturday
+    if (w === 'weekend') {
+      const before = words.slice(Math.max(0, i - 2), i)
+      const modifier = before.some((x) => NEXT_WORDS.has(x)) ? 'next' : before.some((x) => THIS_WORDS.has(x)) ? 'this' : null
+      if (pushResult(found(resolveWeekday(today, 6, modifier), w))) break
+      continue
+    }
 
     // week references (no specific day)
     if (w === 'week' || (w === 'linggo' && (NEXT_WORDS.has(prev) || NEXT_WORDS.has(prev2) || THIS_WORDS.has(prev) || prev === 'isang'))) {
       const weekday = words.slice(i + 1).find((x) => WEEKDAY_WORDS[x] !== undefined && x !== 'linggo')
-      if (weekday) continue // "next week friday" → resolved at the weekday token
+      if (weekday) continue // "next week friday" -> resolved at the weekday token
       const isNext = NEXT_WORDS.has(prev) || NEXT_WORDS.has(prev2)
-      if (isNext || THIS_WORDS.has(prev) || prev === 'isang') return { week: isNext ? 'next' : 'this', text: `${prev} ${w}` }
+      if (isNext || THIS_WORDS.has(prev) || prev === 'isang') {
+        if (pushResult({ week: isNext ? 'next' : 'this', text: `${prev} ${w}` })) break
+        continue
+      }
     }
 
     if (WEEKDAY_WORDS[w] !== undefined) {
       const before = words.slice(Math.max(0, i - 3), i)
       const modifier = before.some((x) => NEXT_WORDS.has(x)) ? 'next' : before.some((x) => THIS_WORDS.has(x)) ? 'this' : null
-      return found(resolveWeekday(today, WEEKDAY_WORDS[w], modifier), w)
+      if (pushResult(found(resolveWeekday(today, WEEKDAY_WORDS[w], modifier), w))) break
+      continue
     }
 
     if (MONTH_WORDS[w] !== undefined) {
@@ -115,31 +164,63 @@ export function extractDate(words, { now = new Date(), expect } = {}) {
         const yearWord = after != null ? words[i + 2] : null
         const year = /^\d{4}$/.test(yearWord ?? '') ? Number(yearWord) : null
         const r = resolveMonthDay(today, MONTH_WORDS[w], day, year)
-        if (r.invalid) return { invalid: true, text: `${w} ${day}` }
-        return found(r.date, `${w} ${day}`)
+        if (r.invalid) {
+          if (pushResult({ invalid: true, text: `${w} ${day}` })) break
+        } else {
+          if (pushResult(found(r.date, `${w} ${day}`))) break
+          // Handle "Nov 20 o 21" / "Nov 20 or 21" in the same month
+          if (after != null && ['or', 'o', 'and'].includes(words[i + 2])) {
+            const secondDay = dayNum(words[i + 3])
+            const afterSecond = words[i + 4]
+            if (secondDay != null && MONTH_WORDS[afterSecond] === undefined && !['am', 'pm'].includes(afterSecond)) {
+              const r2 = resolveMonthDay(today, MONTH_WORDS[w], secondDay, year)
+              if (!r2.invalid && pushResult(found(r2.date, `${w} ${secondDay}`))) break
+              i += 3
+              continue
+            }
+          }
+        }
+        if (after != null) i += year ? 2 : 1
+        continue
       }
     }
 
     const numeric = /^(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?$/.exec(w)
     if (numeric) {
       const r = resolveMonthDay(today, Number(numeric[1]), Number(numeric[2]), numeric[3] ? Number(numeric[3]) : null)
-      if (r.invalid) return { invalid: true, text: w }
-      return found(r.date, w)
+      if (r.invalid) {
+        if (pushResult({ invalid: true, text: w })) break
+      } else if (pushResult(found(r.date, w))) {
+        break
+      }
+      continue
     }
 
-    // "ika-20" / "on the 20th" → day of the current or next month
+    // "ika-20" / "on the 20th" -> day of the current or next month
     const n = dayNum(w)
     if (n != null && n >= 1 && n <= 31 && (prev === 'ika' || (prev === 'the' && /\d(st|nd|rd|th)$/.test(w)))) {
-      return resolveDayOfMonth(today, n, w, found)
+      if (pushResult(resolveDayOfMonth(today, n, w, found))) break
     }
   }
 
   // While the bot is waiting for a date, a lone number like "25" means the 25th.
-  if (expect === 'date') {
+  if (!results.length && expect === 'date') {
     const nums = words.filter((x) => dayNum(x) != null)
-    if (nums.length === 1 && words.length <= 3) return resolveDayOfMonth(today, dayNum(nums[0]), nums[0], found)
+    if (nums.length === 1 && words.length <= 3) {
+      const r = resolveDayOfMonth(today, dayNum(nums[0]), nums[0], found)
+      if (r) results.push(r)
+    }
   }
-  return null
+  return results
+}
+
+/**
+ * @param {string[]} words normalized words
+ * @param {{now?: Date, expect?: string}} opts
+ * @returns {{date?: string, week?: 'this'|'next', text?: string, invalid?: boolean, past?: boolean}|null}
+ */
+export function extractDate(words, { now = new Date(), expect } = {}) {
+  return extractDates(words, { now, expect, max: 1 })[0] ?? null
 }
 
 function resolveDayOfMonth(today, day, text, found) {

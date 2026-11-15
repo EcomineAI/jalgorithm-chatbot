@@ -1,6 +1,6 @@
-# JALgorithm - ML-Based Appointment Chatbot
+# JAL (JALgorithm) - Rule-Based & ML Appointment System
 
-**A MACHINE LEARNING-BASED CHATBOT FOR AUTOMATED APPOINTMENT BOOKING AND REMINDERS**
+**A RULE-BASED AND MACHINE LEARNING-BASED ALGORITHM FOR AUTOMATED APPOINTMENT BOOKING AND REMINDERS**
 
 By
 **June Vic M. Abello**
@@ -12,8 +12,8 @@ Olongapo City, Philippines
 
 ---
 
-A chatbot for automated appointment booking and reminders for small hair and makeup salons.
-The chatbot, **JAL**, is powered by **JAlgorithm**: a lightweight engine that runs in the browser and does not generate text. It understands English, Filipino, and Taglish chat, including shortcuts ("pwde b bukas?"), misspellings, and follow-up messages. It uses a rule-based + machine-learning (Naive Bayes) hybrid intent classifier and a rule-based dialogue manager. No LLM, no external AI API, no model download, and no GPU are required.
+An automated appointment booking and reminder system for small hair and makeup salons.
+The conversational engine, **JAL**, runs in the browser and does not generate text. It understands English, Filipino, and Taglish chat, including shortcuts ("pwde b bukas?"), misspellings, and follow-up messages. It uses a rule-based + machine-learning (Naive Bayes + TF-IDF) hybrid intent classifier and a deterministic dialogue state machine. No external LLM, no cloud inference API, no model download, and no GPU are required.
 
 ## Stack
 

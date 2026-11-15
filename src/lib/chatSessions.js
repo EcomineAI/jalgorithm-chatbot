@@ -11,7 +11,7 @@ export const DEFAULT_CHAT_SETTINGS = {
 }
 
 const WELCOME_CONTENT =
-  `Hi! I'm JAL, your appointment chatbot.\n\n` +
+  `Hi! I'm JAL.\n\n` +
   `I can help you:\n` +
   `• Book a new appointment\n` +
   `• Check available slots\n` +
@@ -470,7 +470,9 @@ export function saveChatSettings(settings, storage = defaultLocalStorage()) {
 }
 
 export function extractReferenceCodes(text) {
-  const matches = String(text ?? '').match(/\bJAL-[A-Z0-9]{5}\b/gi)
+  // Ignore prompt placeholders like "(e.g. JAL-7K3QX)" or "(hal. JAL-7K3QX)"
+  const scrubbed = String(text ?? '').replace(/\b(?:e\.g\.|hal\.)\s*,?\s*JAL-[A-Z0-9]{5}\b/gi, '')
+  const matches = scrubbed.match(/\bJAL-[A-Z0-9]{5}\b/gi)
   if (!matches) return []
   return [...new Set(matches.map((code) => code.toUpperCase()))]
 }

@@ -225,4 +225,18 @@ describe('devTools helpers', () => {
     expect(nlu.components.tfidf).toBeTruthy()
     expect(nlu.intent).toBe('ASK_PRICE')
   })
+
+  it('includes Conyo, Jeje, Indirect, and Salon Scenarios packs in BATCH_TEST_SUITES', () => {
+    const ids = BATCH_TEST_SUITES.map((s) => s.id)
+    expect(ids).toEqual(expect.arrayContaining(['conyo', 'jeje', 'indirect', 'scenarios']))
+
+    const bot = createJAlgorithm()
+    for (const id of ['conyo', 'jeje', 'indirect', 'scenarios']) {
+      const suite = BATCH_TEST_SUITES.find((s) => s.id === id)
+      expect(suite.phrases.length).toBeGreaterThanOrEqual(5)
+      const report = runBatchNluEvaluation(bot, suite.phrases)
+      expect(report.summary.total).toBe(suite.phrases.length)
+      expect(report.summary.unknown).toBe(0)
+    }
+  })
 })

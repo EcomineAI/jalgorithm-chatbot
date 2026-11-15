@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Bell,
@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
-  Sparkles,
   Phone,
   MapPin,
   Clock,
@@ -17,9 +16,13 @@ import {
   ExternalLink,
   X,
   Info,
+  CalendarClock,
+  Images,
+  HelpCircle,
 } from 'lucide-react'
 import Navbar from '../components/Navbar.jsx'
 import Footer from '../components/Footer.jsx'
+import StudioMark from '../components/StudioMark.jsx'
 import { useBusinessInfo } from '../lib/useBusinessInfo.js'
 import { formatServicePrice, formatDuration } from '../lib/ownerInsights.js'
 import { formatTime } from '../jalgorithm/entities/calendar.js'
@@ -43,35 +46,50 @@ function hasRealUrl(url) {
   ].includes(clean)
 }
 
-function landingServices(catalog) {
+function buildDynamicServices(catalog) {
   const all = catalog?.services ?? []
-  const flagged = all.filter((s) => s.showOnLanding)
-  return (flagged.length ? flagged : all.slice(0, 4)).map((s) => ({
+  return all.map((s) => ({
     key: s.key,
     name: s.name,
     desc: s.description,
     inclusions: s.inclusions,
     priceNote: s.priceNote,
+    featured: Boolean(s.showOnLanding),
+    durationMinutes: Number(s.durationMinutes) || 60,
     duration: formatDuration(s.durationMinutes),
     price: formatServicePrice(s),
     img: s.imageUrl || SHOWCASE_SERVICE_IMAGES[s.key] || DEFAULT_ARTIST_PHOTO_URL,
   }))
 }
 
-const steps = [
-  { icon: MessageCircle, title: 'Chat to Book', desc: 'Message JAL with your preferred service, date, and event.' },
-  { icon: CheckCircle, title: 'Get Confirmed', desc: 'Your slot is checked and confirmed instantly.' },
-  { icon: Bell, title: 'Get Reminded', desc: 'Automated reminders sent before your appointment.' },
+const BOOKING_FLOW_STEPS = [
+  {
+    icon: MessageCircle,
+    title: 'Chat with JAL',
+    desc: 'Pick your hair or makeup service, target date, time slot, and venue anytime 24/7.',
+  },
+  {
+    icon: CheckCircle,
+    title: 'Instant Slot Check & Ref Code',
+    desc: 'Your schedule is checked against studio availability and confirmed with a unique JAL reference code.',
+  },
+  {
+    icon: Bell,
+    title: 'Prep & Automated Reminders',
+    desc: 'Receive calendar links, travel guidance, and timely reminders before your event day.',
+  },
 ]
 
 export default function LandingPage() {
   const { catalog } = useBusinessInfo()
-  const services = landingServices(catalog)
+  const allServices = useMemo(() => buildDynamicServices(catalog), [catalog])
   const biz = catalog?.business
   const heroImg = biz?.heroPhotoUrl || DEFAULT_HERO_PHOTO_URL
   const artistImg = biz?.artistPhotoUrl || DEFAULT_ARTIST_PHOTO_URL
   const gallery = biz?.galleryUrls?.length ? biz.galleryUrls : SHOWCASE_GALLERY_URLS
 
+  const [serviceFilter, setServiceFilter] = useState('all')
+  const [openFaqId, setOpenFaqId] = useState('advance')
   const [selectedService, setSelectedService] = useState(null)
   const [lightboxIndex, setLightboxIndex] = useState(null)
 
@@ -101,13 +119,98 @@ export default function LandingPage() {
   const portfolioLink = hasRealUrl(biz?.portfolio) ? biz.portfolio : null
   const contactDigits = String(biz?.contact ?? '').replace(/[^\d+]/g, '')
   const telHref = contactDigits.length >= 7 ? `tel:${contactDigits}` : null
+  const studioHoursText = biz?.hours
+    ? `${formatTime(biz.hours.open)} - ${formatTime(biz.hours.close)}`
+    : 'Flexible Hours'
+
+  const serviceFilters = useMemo(() => {
+    const pills = [{ id: 'all', label: `All Services (${allServices.length})` }]
+    const featuredCount = allServices.filter((s) => s.featured).length
+    const quickCount = allServices.filter((s) => s.durationMinutes < 120).length
+    const longCount = allServices.filter((s) => s.durationMinutes >= 120).length
+    if (featuredCount > 0 && featuredCount < allServices.length) {
+      pills.push({ id: 'featured', label: `Featured (${featuredCount})` })
+    }
+    if (quickCount > 0 && quickCount < allServices.length) {
+      pills.push({ id: 'quick', label: `Under 2 Hours (${quickCount})` })
+    }
+    if (longCount > 0 && longCount < allServices.length) {
+      pills.push({ id: 'full', label: `2+ Hours (${longCount})` })
+    }
+    return pills
+  }, [allServices])
+
+  const visibleServices = useMemo(() => {
+    if (serviceFilter === 'featured') return allServices.filter((s) => s.featured)
+    if (serviceFilter === 'quick') return allServices.filter((s) => s.durationMinutes < 120)
+    if (serviceFilter === 'full') return allServices.filter((s) => s.durationMinutes >= 120)
+    return allServices
+  }, [allServices, serviceFilter])
+
+  const dynamicFaqs = useMemo(() => {
+    const items = [
+      {
+        id: 'advance',
+        question: 'How far in advance should I book my session?',
+        answer: `Appointments open at least ${minAdvanceDays} day${minAdvanceDays === 1 ? '' : 's'} in advance so schedules and kit prep are confirmed smoothly.${
+          biz?.rules?.sameDayRushNote ? ` ${biz.rules.sameDayRushNote}` : ''
+        }`,
+      },
+      {
+        id: 'travel',
+        question: 'Which areas qualify for free travel vs. out-of-town fees?',
+        answer: [
+          freeAreas.length > 0 ? `Free travel coverage: ${freeAreas.join(', ')}.` : null,
+          travelAreas.length > 0 ? `Out-of-town service areas: ${travelAreas.join(', ')}.` : null,
+          biz?.travelFeeNote || null,
+        ]
+          .filter(Boolean)
+          .join(' '),
+      },
+      {
+        id: 'deposits',
+        question: 'What are your down payment, reservation, and cancellation rules?',
+        answer: [
+          biz?.rules?.weddingDownpaymentPercent != null
+            ? `Weddings: ${biz.rules.weddingDownpaymentPercent}% down payment${
+                biz.rules.weddingCancelCutoffDays
+                  ? ` (${biz.rules.weddingCancelCutoffDays}-day cancellation cutoff)`
+                  : ''
+              }.`
+            : null,
+          biz?.rules?.eventDownpaymentPercent
+            ? `Events: ${biz.rules.eventDownpaymentPercent} reservation fee${
+                biz.rules.eventCancelCutoffDays
+                  ? ` (${biz.rules.eventCancelCutoffDays}-day cutoff)`
+                  : ''
+              }.`
+            : null,
+          paymentBadges.length > 0 ? `Accepted methods: ${paymentBadges.join(', ')}.` : null,
+        ]
+          .filter(Boolean)
+          .join(' '),
+      },
+    ]
+
+    if (biz?.additionalHeadPrice != null) {
+      items.push({
+        id: 'heads',
+        question: 'Can I add extra bridesmaids, family members, or entourage heads?',
+        answer: `Yes! Additional heads start from PHP ${Number(biz.additionalHeadPrice).toLocaleString(
+          'en-PH',
+        )} per person. You can ask JAL to estimate your group total or coordinate directly via our Page.`,
+      })
+    }
+
+    return items.filter((item) => item.answer)
+  }, [biz, freeAreas, travelAreas, minAdvanceDays, paymentBadges])
 
   return (
     <div className="min-h-screen bg-white text-gray-800 flex flex-col">
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-gray-950">
+      {/* Hero Section */}
+      <section className="relative min-h-[86svh] sm:min-h-[92vh] flex items-center overflow-hidden bg-gray-950">
         <img
           src={heroImg}
           alt={biz?.name ?? 'Hair and Makeup Studio'}
@@ -116,157 +219,258 @@ export default function LandingPage() {
             e.target.style.display = 'none'
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-950/95 via-gray-950/65 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/85 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-950/95 via-gray-950/70 to-gray-950/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/90 via-transparent to-transparent" />
 
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-6 pt-24 pb-24 grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="inline-flex items-center gap-1.5 shimmer-badge text-pink-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 border border-pink-500/20 animate-fade-up">
-              <Sparkles size={11} className="animate-spin-slow" />
-              Automated Appointment Booking
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-white leading-tight mb-5">
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-16 sm:pb-24 grid md:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <div className="md:col-span-7">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium text-white leading-[1.06] tracking-[-0.02em] mb-4 sm:mb-5">
               Look Good,
               <br />
-              Feel <span className="text-pink-400">Beautiful</span>
+              Feel <span className="text-pink-300">Beautiful</span>
             </h1>
-            <p className="text-white/65 text-base mb-8 leading-relaxed max-w-md">
-              Professional hair and makeup services in {biz?.location ?? 'Olongapo City'}. Reserve at least {minAdvanceDays} days ahead or chat with JAL anytime for availability, inclusions, and quotes.
+
+            <p className="text-white/80 text-sm sm:text-base mb-7 leading-relaxed max-w-lg">
+              Hair and makeup artistry in {biz?.location ?? 'Olongapo City'}. Reserve at least {minAdvanceDays} days ahead or ask JAL for open slots, package inclusions, and travel quotes.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 mb-10">
+
+            <div className="flex flex-col sm:flex-row gap-3 mb-7">
               <Link
                 to="/chat"
-                className="btn-press inline-flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-400 text-white font-semibold px-7 py-3.5 rounded-xl shadow-lg shadow-pink-900/40"
+                className="btn-press inline-flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-medium px-6 sm:px-7 min-h-12 rounded-lg text-sm sm:text-base"
               >
-                Book Appointment <ArrowRight size={16} />
+                Book Appointment
+                <ArrowRight size={16} strokeWidth={1.75} />
               </Link>
               <a
                 href="#services"
-                className="inline-flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 text-white/80 hover:text-white font-medium px-7 py-3.5 rounded-xl transition-all"
+                className="inline-flex items-center justify-center gap-2 border border-white/25 bg-white/5 hover:bg-white/10 hover:border-white/40 text-white/90 hover:text-white font-medium px-6 sm:px-7 min-h-12 rounded-lg transition-colors text-sm sm:text-base"
               >
                 Explore Services
               </a>
             </div>
+
+            <div className="flex flex-wrap items-center gap-3 text-xs text-white/75">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={14} strokeWidth={1.75} className="text-pink-300" />
+                {biz?.location ?? 'Olongapo City'}
+              </span>
+              <span className="text-white/30" aria-hidden="true">|</span>
+              <span className="inline-flex items-center gap-1.5 tabular-nums">
+                <Clock size={14} strokeWidth={1.75} className="text-pink-300" />
+                {studioHoursText} Daily
+              </span>
+            </div>
           </div>
 
-          {/* Floating chat preview card */}
-          <div className="hidden md:flex justify-end">
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-6 w-80 shadow-2xl animate-float animate-pulse-glow">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 bg-pink-500 rounded-xl flex items-center justify-center animate-pulse-glow">
-                  <Sparkles size={16} className="text-white animate-spin-slow" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">JAL</div>
-                  <div className="text-green-400 text-xs flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full inline-block" />
-                    Online 24/7
+          {/* White Frosted-Glass Hero Chat Preview Card */}
+          <div className="hidden md:flex md:col-span-5 justify-end">
+            <div className="bg-white/75 backdrop-blur-xl border border-white/60 ring-1 ring-black/5 rounded-2xl p-5 lg:p-6 w-80 lg:w-[21rem] shadow-2xl">
+              <div className="flex items-center justify-between gap-3 pb-3.5 mb-3.5 border-b border-stone-900/10">
+                <div className="flex items-center gap-3 min-w-0">
+                  <StudioMark size="md" />
+                  <div className="min-w-0">
+                    <div className="text-stone-900 font-medium text-sm truncate">JAL</div>
+                    <div className="text-stone-600 text-xs truncate">
+                      {biz?.name ?? "Vicky's Parlor"}
+                    </div>
                   </div>
                 </div>
+                <span className="text-xs font-mono text-stone-600 tabular-nums shrink-0">
+                  {studioHoursText}
+                </span>
               </div>
-              <div className="space-y-3">
-                <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-3 text-white/90 text-sm">
-                  Hi! I am JAL for {biz?.name ?? "Vicky's Parlor"}. Which hair or makeup service can I help you book?
+
+              <div className="space-y-2.5">
+                <div className="bg-white/65 backdrop-blur-sm border border-white/80 rounded-xl rounded-tl-sm px-3.5 py-2.5 text-stone-900 text-xs leading-relaxed shadow-2xs">
+                  Welcome to {biz?.name ?? "Vicky's Parlor"}. Which hair or makeup session can I help schedule for you?
                 </div>
-                <div className="bg-pink-500 rounded-2xl rounded-tr-sm px-4 py-3 text-white text-sm ml-8">
-                  How much is {services[0]?.name ?? 'Bridal Makeup'}?
+                <div className="bg-pink-600 rounded-xl rounded-tr-sm px-3.5 py-2.5 text-white text-xs ml-8 leading-relaxed shadow-xs">
+                  How much is {allServices[0]?.name ?? 'Bridal Makeup'}?
                 </div>
-                <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-3 text-white/90 text-sm">
-                  {services[0]?.name ?? 'Bridal Makeup'} is {services[0]?.price ?? 'PHP 3,500'} ({services[0]?.duration ?? '3 hrs'}). Want me to check open slots?
+                <div className="bg-white/65 backdrop-blur-sm border border-white/80 rounded-xl rounded-tl-sm px-3.5 py-2.5 text-stone-900 text-xs leading-relaxed shadow-2xs">
+                  {allServices[0]?.name ?? 'Bridal Makeup'} rate: {allServices[0]?.price ?? 'PHP 3,500'} ({allServices[0]?.duration ?? '3 hrs'}). Would you like to check open dates?
                 </div>
               </div>
+
               <Link
                 to="/chat"
-                className="mt-5 w-full bg-pink-500 hover:bg-pink-400 text-white text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                className="btn-press mt-4 w-full bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium min-h-10 rounded-lg flex items-center justify-center gap-2 shadow-sm"
               >
-                Start Chatting <ArrowRight size={14} />
+                Open Studio Chat
+                <ArrowRight size={14} strokeWidth={1.75} />
               </Link>
             </div>
           </div>
         </div>
-
-        <a
-          href="#services"
-          aria-label="Scroll to services"
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/40 hover:text-white/70 transition-colors z-10"
-        >
-          <ChevronDown size={24} className="animate-bounce" />
-        </a>
       </section>
 
-      {/* Services */}
-      <section id="services" className="py-20 px-6 bg-white scroll-mt-16">
+      {/* Studio Highlights Bar */}
+      <section id="highlights" className="bg-[#f8f6f2] border-y border-stone-200/80 px-4 sm:px-6 py-4">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white rounded-xl border border-stone-200/80 px-4 py-3 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
+              <MapPin size={16} strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-normal text-stone-500">Location</p>
+              <p className="text-xs sm:text-sm font-medium text-stone-900 truncate">
+                {biz?.location ?? 'Olongapo City'}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-stone-200/80 px-4 py-3 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
+              <Clock size={16} strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-normal text-stone-500">Studio hours</p>
+              <p className="text-xs sm:text-sm font-medium text-stone-900 truncate tabular-nums">
+                {studioHoursText}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-stone-200/80 px-4 py-3 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
+              <CalendarClock size={16} strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-normal text-stone-500">Booking notice</p>
+              <p className="text-xs sm:text-sm font-medium text-stone-900 truncate tabular-nums">
+                {minAdvanceDays}+ Days Ahead
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-stone-200/80 px-4 py-3 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
+              <MessageCircle size={16} strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-normal text-stone-500">Reservations</p>
+              <p className="text-xs sm:text-sm font-medium text-stone-900 truncate">
+                Live slot booking
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Showcase */}
+      <section id="services" className="py-14 sm:py-20 px-4 sm:px-6 bg-white scroll-mt-16">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-end justify-between mb-10 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
             <div>
-              <p className="text-pink-500 text-sm font-semibold mb-1">What We Offer</p>
-              <h2 className="text-3xl font-bold text-gray-900">Our Services</h2>
-              <p className="text-gray-400 text-sm mt-1">
-                Updated live from {biz?.name ?? 'our studio'}. Click any card to view full inclusions.
+              <p className="text-pink-700 text-xs sm:text-sm font-medium mb-1">
+                What we offer
+              </p>
+              <h2 className="font-display text-3xl sm:text-4xl font-medium text-gray-900 tracking-[-0.02em]">
+                Packages &amp; Studio Services
+              </h2>
+              <p className="text-gray-500 text-xs sm:text-sm mt-1">
+                Synced live from {biz?.name ?? 'our studio'}. Tap any card to view full package inclusions.
               </p>
             </div>
             <Link
               to="/chat"
-              className="text-pink-500 hover:text-pink-600 text-sm font-medium hidden sm:flex items-center gap-1 group shrink-0"
+              className="text-pink-700 hover:text-pink-800 text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 group shrink-0"
             >
-              Book via chat <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              Ask JAL for recommendations
+              <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {services.map((svc) => (
+          {/* Dynamic Quick-Filter Tabs */}
+          {serviceFilters.length > 1 && (
+            <div className="flex overflow-x-auto sm:flex-wrap gap-2 pb-2 mb-6 -mx-1 px-1 sm:mx-0 sm:px-0">
+              {serviceFilters.map((pill) => {
+                const active = serviceFilter === pill.id
+                return (
+                  <button
+                    key={pill.id}
+                    type="button"
+                    onClick={() => setServiceFilter(pill.id)}
+                    className={`shrink-0 whitespace-nowrap px-3.5 min-h-9 rounded-lg border text-xs font-medium transition-colors ${
+                      active
+                        ? 'bg-pink-600 border-pink-600 text-white'
+                        : 'bg-[#f8f6f2] border-stone-200 text-stone-700 hover:border-stone-300 hover:bg-stone-100'
+                    }`}
+                  >
+                    {pill.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {visibleServices.map((svc) => (
               <div
                 key={svc.key || svc.name}
-                className="group rounded-2xl overflow-hidden border border-pink-100/80 bg-white flex flex-col hover-lift-pink animate-scale-in"
+                className="group rounded-xl overflow-hidden border border-stone-200/80 bg-white flex flex-col hover-lift hover:border-stone-300"
               >
                 <button
                   type="button"
                   onClick={() => setSelectedService(svc)}
-                  className="relative h-48 overflow-hidden bg-pink-50 text-left w-full"
+                  className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100 text-left"
                 >
                   <img
                     src={svc.img}
                     alt={svc.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover transition-opacity duration-200 group-hover:opacity-95"
                     onError={(e) => {
-                      e.target.src = `https://placehold.co/400x300/fce7f3/ec4899?text=${encodeURIComponent(svc.name)}`
+                      e.target.src = `https://placehold.co/400x300/f5f5f4/db2777?text=${encodeURIComponent(svc.name)}`
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-                  <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 text-[11px] font-medium bg-black/60 backdrop-blur-xs text-white px-2.5 py-0.5 rounded-full">
-                    <Clock size={10} />
+                  {svc.featured && (
+                    <span className="absolute top-2.5 left-2.5 inline-flex items-center text-xs font-medium bg-pink-600 text-white px-2.5 py-0.5 rounded-md">
+                      Popular
+                    </span>
+                  )}
+                  <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 text-xs font-medium bg-black/60 backdrop-blur-xs text-white px-2.5 py-0.5 rounded-md tabular-nums">
+                    <Clock size={12} strokeWidth={1.75} />
                     {svc.duration}
                   </span>
                 </button>
 
                 <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="font-semibold text-gray-900 text-sm">{svc.name}</h3>
-                  {svc.desc && <p className="text-gray-400 text-xs mt-0.5 mb-2 line-clamp-2">{svc.desc}</p>}
+                  <h3 className="font-medium text-stone-900 text-sm sm:text-base">{svc.name}</h3>
+                  {svc.desc && (
+                    <p className="text-stone-500 text-xs mt-1 mb-2.5 line-clamp-2 leading-relaxed">
+                      {svc.desc}
+                    </p>
+                  )}
                   {svc.inclusions && (
-                    <div className="bg-rose-50/60 border border-pink-100/70 rounded-lg px-2.5 py-1.5 mb-3">
-                      <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
-                        Includes: {svc.inclusions}
+                    <div className="bg-[#f8f6f2] border border-stone-200/80 rounded-lg px-2.5 py-2 mb-3">
+                      <p className="text-xs text-stone-600 leading-relaxed line-clamp-2">
+                        <strong className="font-medium text-stone-800">Includes:</strong> {svc.inclusions}
                       </p>
                     </div>
                   )}
-                  <div className="mt-auto pt-2 flex items-center justify-between gap-2">
+
+                  <div className="mt-auto pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <span className="text-pink-600 font-bold text-sm block">{svc.price}</span>
+                      <span className="text-pink-700 font-medium text-sm sm:text-base block truncate tabular-nums">
+                        {svc.price}
+                      </span>
                       {svc.priceNote && (
-                        <span className="text-[11px] text-gray-400 line-clamp-1">{svc.priceNote}</span>
+                        <span className="text-xs text-stone-500 line-clamp-1">{svc.priceNote}</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         type="button"
                         onClick={() => setSelectedService(svc)}
-                        className="text-xs font-medium text-gray-600 hover:text-pink-600 border border-gray-200 hover:border-pink-200 px-2.5 py-1.5 rounded-lg transition-colors"
+                        className="text-xs font-medium text-stone-600 hover:text-stone-900 border border-stone-200 hover:border-stone-300 px-2.5 min-h-9 rounded-lg transition-colors"
                       >
                         Details
                       </button>
                       <Link
                         to={`/chat?service=${encodeURIComponent(svc.key)}`}
-                        className="bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors"
+                        className="btn-press bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium px-3 min-h-9 inline-flex items-center rounded-lg"
                       >
                         Book
                       </Link>
@@ -279,8 +483,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Gallery strip - infinite scroll + click to open Lightbox */}
-      <section id="gallery" className="bg-white py-4 overflow-hidden">
+      {/* Portfolio Lookbook Strip + Lightbox */}
+      <section id="gallery" className="bg-white py-10 sm:py-12 border-t border-stone-200/80 overflow-hidden scroll-mt-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-pink-700 text-xs font-medium mb-1">
+              Studio lookbook
+            </p>
+            <h2 className="font-display text-2xl sm:text-3xl font-medium text-stone-900 tracking-[-0.02em]">
+              Recent Hair &amp; Makeup Looks
+            </h2>
+          </div>
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 bg-[#f8f6f2] border border-stone-200 px-3 py-1 rounded-md tabular-nums">
+            <Images size={13} strokeWidth={1.75} className="text-stone-500" />
+            {gallery.length} looks
+          </span>
+        </div>
+
         <style>{`
           @keyframes marquee {
             0%   { transform: translateX(0); }
@@ -289,31 +508,20 @@ export default function LandingPage() {
           .marquee-track {
             display: flex;
             width: max-content;
-            animation: marquee 28s linear infinite;
+            animation: marquee 32s linear infinite;
           }
           .marquee-wrapper:hover .marquee-track {
             animation-play-state: paused;
           }
-          .gallery-tile {
-            perspective: 700px;
-          }
           .gallery-inner {
-            transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1),
-                        box-shadow 0.35s cubic-bezier(0.23, 1, 0.32, 1);
-            transform-style: preserve-3d;
-            border-radius: 12px;
+            transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+            border-radius: 16px;
             overflow: hidden;
           }
           .gallery-tile:hover .gallery-inner {
-            transform: rotateY(-12deg) rotateX(6deg) scale(1.06) translateY(-6px);
-            box-shadow: 0 24px 60px rgba(236, 72, 153, 0.45), 0 0 0 1px rgba(236, 72, 153, 0.3);
-          }
-          .gallery-glow {
-            opacity: 0;
-            transition: opacity 0.35s ease;
-          }
-          .gallery-tile:hover .gallery-glow {
-            opacity: 1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
           }
         `}</style>
         <div className="marquee-wrapper">
@@ -323,18 +531,17 @@ export default function LandingPage() {
                 type="button"
                 key={i}
                 onClick={() => setLightboxIndex(i % gallery.length)}
-                className="gallery-tile relative h-44 w-60 flex-shrink-0 mx-2 cursor-pointer text-left"
+                className="gallery-tile relative h-40 w-52 sm:h-48 sm:w-64 flex-shrink-0 mx-2 cursor-pointer text-left"
               >
-                <div className="gallery-inner w-full h-full">
+                <div className="gallery-inner w-full h-full border border-stone-200/80">
                   <img
                     src={img}
                     alt={`${biz?.name ?? 'Salon'} portfolio ${(i % gallery.length) + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.target.src = 'https://placehold.co/300x200/1f2937/ec4899?text=Photo'
+                      e.target.src = 'https://placehold.co/300x200/1f2937/db2777?text=Photo'
                     }}
                   />
-                  <div className="gallery-glow absolute inset-0 bg-gradient-to-t from-pink-500/50 via-pink-500/10 to-transparent" />
                 </div>
               </button>
             ))}
@@ -342,61 +549,82 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="py-20 px-6 bg-rose-50/70 scroll-mt-16">
+      {/* How It Works */}
+      <section id="how-it-works" className="py-14 sm:py-20 px-4 sm:px-6 bg-[#f8f6f2] border-t border-stone-200/80 scroll-mt-16">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-pink-500 text-sm font-semibold mb-1">Simple Process</p>
-            <h2 className="text-3xl font-bold text-gray-900">How It Works</h2>
-            <p className="text-gray-400 text-sm mt-2">3 steps to your confirmed appointment</p>
+          <div className="text-center mb-10 sm:mb-12">
+            <p className="text-pink-700 text-xs sm:text-sm font-medium mb-1">
+              Booking process
+            </p>
+            <h2 className="font-display text-3xl sm:text-4xl font-medium text-stone-900 tracking-[-0.02em]">How It Works</h2>
+            <p className="text-stone-500 text-xs sm:text-sm mt-1.5">
+              Three steps to reserve a studio or on-location session
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {steps.map((step, i) => (
-              <div key={step.title} className="bg-white rounded-2xl border border-pink-100/70 p-7 text-center shadow-xs hover-lift-pink animate-fade-up">
-                <div className="w-14 h-14 bg-pink-50 rounded-2xl flex items-center justify-center mx-auto mb-5 icon-hover-spin">
-                  <step.icon size={24} className="text-pink-500" />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {BOOKING_FLOW_STEPS.map((step, i) => (
+              <div
+                key={step.title}
+                className="bg-white rounded-xl border border-stone-200/80 p-6 sm:p-7 text-center hover-lift"
+              >
+                <div className="w-12 h-12 bg-stone-100 rounded-lg flex items-center justify-center mx-auto mb-4 border border-stone-200">
+                  <step.icon size={18} strokeWidth={1.75} className="text-stone-700" />
                 </div>
-                <div className="text-xs font-bold text-pink-300 mb-2 tracking-widest">STEP 0{i + 1}</div>
-                <h3 className="font-bold text-gray-900 mb-2">{step.title}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">{step.desc}</p>
+                <div className="text-xs font-mono font-medium text-pink-700 mb-1.5 tabular-nums">
+                  Step 0{i + 1}
+                </div>
+                <h3 className="font-medium text-stone-900 text-base mb-2">{step.title}</h3>
+                <p className="text-xs sm:text-sm text-stone-500 leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* About */}
-      <section id="about" className="py-20 px-6 bg-white scroll-mt-16">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="relative animate-float-subtle">
-            <div className="rounded-3xl overflow-hidden h-80 border border-pink-100 shadow-sm">
+      {/* About Artist */}
+      <section id="about" className="py-14 sm:py-20 px-4 sm:px-6 bg-white scroll-mt-16">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
+          <div className="relative">
+            <div className="rounded-xl overflow-hidden h-72 sm:h-84 border border-stone-200 bg-stone-100">
               <img
                 src={artistImg}
-                alt={`${biz?.artist ?? 'Artist'} - Hair and Makeup Artist`}
+                alt={`${biz?.artist ?? 'Artist'} Hair and Makeup Artist`}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.target.src = `https://placehold.co/600x400/fce7f3/ec4899?text=${encodeURIComponent(biz?.artist ?? 'Artist')}`
+                  e.target.src = `https://placehold.co/600x400/f5f5f4/db2777?text=${encodeURIComponent(biz?.artist ?? 'Artist')}`
                 }}
               />
             </div>
-            <div className="absolute -bottom-4 -right-4 bg-pink-500 text-white rounded-2xl px-5 py-3 shadow-lg hidden md:block">
-              <div className="text-xl font-bold">{biz?.experienceYears || '5+ yrs'}</div>
+            <div className="absolute -bottom-3 right-3 sm:-bottom-4 sm:-right-4 bg-pink-600 text-white rounded-lg px-4 py-2.5 sm:px-5 sm:py-3 shadow-md border border-pink-700">
+              <div className="text-base sm:text-xl font-medium tabular-nums">{biz?.experienceYears || '5+ yrs'}</div>
               <div className="text-xs text-pink-100">Experience</div>
             </div>
           </div>
+
           <div>
-            <p className="text-pink-500 text-sm font-semibold mb-2">Meet the Artist</p>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">About {biz?.artist ?? 'Our Artist'}</h2>
-            <p className="text-gray-500 text-sm leading-relaxed mb-4">
-              {biz?.aboutBio ||
-                `${biz?.artist ?? 'Our lead artist'} is a professional freelance hair and makeup artist based in ${biz?.location ?? 'Olongapo City, Zambales'}, specializing in bridal, debut, and event looks with a personalized touch.`}
+            <p className="text-pink-700 text-xs sm:text-sm font-medium mb-1.5">
+              Lead artist
             </p>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">
-              Available for on-location bookings and studio sessions across {biz?.location ?? 'Olongapo'} and nearby areas. Book through JAL, our appointment chatbot, anytime, 24/7.
+            <h2 className="font-display text-3xl sm:text-4xl font-medium text-stone-900 tracking-[-0.02em] mb-3.5">
+              About {biz?.artist ?? 'Our Lead Artist'}
+            </h2>
+            <p className="text-stone-600 text-sm leading-relaxed mb-3.5">
+              {biz?.aboutBio ||
+                `${biz?.artist ?? 'Our lead artist'} is a professional hair and makeup artist based in ${biz?.location ?? 'Olongapo City'}, specializing in bridal, debut, and event glam with personalized care.`}
+            </p>
+            <p className="text-stone-500 text-sm leading-relaxed mb-5">
+              Available for on-location bookings and studio appointments across {biz?.location ?? 'Olongapo'} and surrounding areas. Reserve anytime via JAL.
             </p>
             <div className="flex flex-wrap gap-2">
-              {(biz?.specialtyTags?.length ? biz.specialtyTags : ['Bridal', 'Debut', 'Events', 'Home Service', 'Hair Styling']).map((tag) => (
-                <span key={tag} className="bg-pink-50 text-pink-600 text-xs font-medium px-3 py-1.5 rounded-full border border-pink-100">
+              {(biz?.specialtyTags?.length
+                ? biz.specialtyTags
+                : ['Bridal', 'Debut', 'Events', 'Home Service', 'Hair Styling']
+              ).map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-[#f8f6f2] text-stone-700 text-xs font-medium px-3 py-1 rounded-md border border-stone-200"
+                >
                   {tag}
                 </span>
               ))}
@@ -405,54 +633,64 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Dynamic Policies, Travel Coverage & Direct Contact */}
-      <section id="contact" className="py-16 px-6 bg-gradient-to-b from-rose-50/50 to-white border-t border-pink-100/70 scroll-mt-20">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="text-center">
-            <p className="text-pink-500 text-xs font-semibold uppercase tracking-wider">Studio Info & Policies</p>
-            <h2 className="text-2xl font-bold text-gray-900 mt-1">Location, Travel & Booking Guide</h2>
+      {/* Studio Policies, Travel Coverage & Dynamic FAQ */}
+      <section
+        id="contact"
+        className="py-14 sm:py-18 px-4 sm:px-6 bg-[#f8f6f2] border-t border-stone-200/80 scroll-mt-16"
+      >
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="text-center max-w-2xl mx-auto">
+            <p className="text-pink-700 text-xs font-medium">
+              Studio info &amp; policies
+            </p>
+            <h2 className="font-display text-3xl sm:text-4xl font-medium text-stone-900 tracking-[-0.02em] mt-1">
+              Location, Travel &amp; Booking Guide
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-500 mt-1.5">
+              Live rates, travel areas, deposit rules, and direct contact details synced from the studio profile.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
             {/* Travel & Service Areas */}
-            <div className="bg-white rounded-2xl border border-pink-100 p-5 space-y-3 shadow-xs">
+            <div className="bg-white rounded-xl border border-stone-200/80 p-5 space-y-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 bg-pink-50 rounded-xl flex items-center justify-center shrink-0">
-                  <MapPin size={17} className="text-pink-500" />
+                <div className="w-9 h-9 bg-stone-100 rounded-lg flex items-center justify-center shrink-0">
+                  <MapPin size={16} strokeWidth={1.75} className="text-stone-700" />
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900">Service Area & Travel</h3>
-                  <p className="text-xs text-gray-400">{biz?.location ?? 'Olongapo City'}</p>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-medium text-stone-900">Service Area &amp; Travel</h3>
+                  <p className="text-xs text-stone-500 truncate">{biz?.location ?? 'Olongapo City'}</p>
                 </div>
               </div>
               {freeAreas.length > 0 && (
-                <div className="text-xs text-gray-600">
-                  <span className="font-semibold text-green-700">Free travel: </span>
+                <div className="text-xs text-stone-600">
+                  <span className="font-medium text-emerald-700">Free travel: </span>
                   {freeAreas.join(', ')}
                 </div>
               )}
               {travelAreas.length > 0 && (
-                <div className="text-xs text-gray-600">
-                  <span className="font-semibold text-gray-700">Out-of-town: </span>
+                <div className="text-xs text-stone-600">
+                  <span className="font-medium text-stone-800">Out-of-town: </span>
                   {travelAreas.join(', ')}
                 </div>
               )}
               {biz?.travelFeeNote && (
-                <p className="text-xs text-gray-500 leading-relaxed bg-gray-50 rounded-xl p-2.5 border border-gray-100">
+                <p className="text-xs text-stone-600 leading-relaxed bg-[#f8f6f2] rounded-lg p-3 border border-stone-200/80">
                   {biz.travelFeeNote}
                 </p>
               )}
             </div>
 
-            {/* Payments, Advance Notice & Deposits */}
-            <div className="bg-white rounded-2xl border border-pink-100 p-5 space-y-3 shadow-xs">
+            {/* Policies, Advance Notice & Deposits */}
+            <div className="bg-white rounded-xl border border-stone-200/80 p-5 space-y-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 bg-pink-50 rounded-xl flex items-center justify-center shrink-0">
-                  <ShieldCheck size={17} className="text-pink-500" />
+                <div className="w-9 h-9 bg-stone-100 rounded-lg flex items-center justify-center shrink-0">
+                  <ShieldCheck size={16} strokeWidth={1.75} className="text-stone-700" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Policies & Payments</h3>
-                  <p className="text-xs text-gray-400">
+                  <h3 className="text-sm font-medium text-stone-900">Policies &amp; Payments</h3>
+                  <p className="text-xs text-stone-500 tabular-nums">
                     Book at least {minAdvanceDays} day{minAdvanceDays === 1 ? '' : 's'} ahead
                   </p>
                 </div>
@@ -463,65 +701,66 @@ export default function LandingPage() {
                   {paymentBadges.map((method) => (
                     <span
                       key={method}
-                      className="inline-flex items-center gap-1 text-[11px] font-medium bg-pink-50 text-pink-700 border border-pink-100 px-2.5 py-0.5 rounded-full"
+                      className="inline-flex items-center gap-1 text-xs font-medium bg-[#f8f6f2] text-stone-700 border border-stone-200 px-2.5 py-0.5 rounded-md"
                     >
-                      <CreditCard size={10} />
+                      <CreditCard size={12} strokeWidth={1.75} />
                       {method}
                     </span>
                   ))}
                 </div>
               )}
 
-              <div className="space-y-1 text-xs text-gray-600">
+              <div className="space-y-1 text-xs text-stone-600 tabular-nums">
                 {biz?.rules?.weddingDownpaymentPercent != null && (
                   <p>
-                    <strong className="text-gray-800">Weddings:</strong> {biz.rules.weddingDownpaymentPercent}% down payment
+                    <strong className="font-medium text-stone-800">Weddings:</strong> {biz.rules.weddingDownpaymentPercent}% down payment
                     {biz.rules.weddingCancelCutoffDays ? ` (${biz.rules.weddingCancelCutoffDays}-day cutoff)` : ''}
                   </p>
                 )}
                 {biz?.rules?.eventDownpaymentPercent && (
                   <p>
-                    <strong className="text-gray-800">Events:</strong> {biz.rules.eventDownpaymentPercent} reservation fee
+                    <strong className="font-medium text-stone-800">Events:</strong> {biz.rules.eventDownpaymentPercent} reservation fee
                     {biz.rules.eventCancelCutoffDays ? ` (${biz.rules.eventCancelCutoffDays}-day cutoff)` : ''}
                   </p>
                 )}
                 {biz?.additionalHeadPrice != null && (
                   <p>
-                    <strong className="text-gray-800">Additional heads:</strong> From PHP {Number(biz.additionalHeadPrice).toLocaleString('en-PH')} per person
+                    <strong className="font-medium text-stone-800">Additional heads:</strong> From PHP{' '}
+                    {Number(biz.additionalHeadPrice).toLocaleString('en-PH')} per person
                   </p>
                 )}
               </div>
 
               {biz?.rules?.sameDayRushNote && (
-                <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-100 rounded-xl p-2.5 leading-relaxed">
+                <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 leading-relaxed">
                   {biz.rules.sameDayRushNote}
                 </p>
               )}
             </div>
 
             {/* Hours & Direct Contact */}
-            <div className="bg-white rounded-2xl border border-pink-100 p-5 space-y-3 shadow-xs">
+            <div className="bg-white rounded-xl border border-stone-200/80 p-5 space-y-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 bg-pink-50 rounded-xl flex items-center justify-center shrink-0">
-                  <Clock size={17} className="text-pink-500" />
+                <div className="w-9 h-9 bg-stone-100 rounded-lg flex items-center justify-center shrink-0">
+                  <Clock size={16} strokeWidth={1.75} className="text-stone-700" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Hours & Contact</h3>
-                  <p className="text-xs text-gray-400">
-                    {biz ? `${formatTime(biz.hours.open)} - ${formatTime(biz.hours.close)} (${biz.hours.days})` : 'Daily'}
+                  <h3 className="text-sm font-medium text-stone-900">Hours &amp; Contact</h3>
+                  <p className="text-xs text-stone-500 tabular-nums">
+                    {biz ? `${studioHoursText} (${biz.hours.days})` : 'Daily'}
                   </p>
                 </div>
               </div>
 
               {biz?.contact && (
-                <div className="text-xs text-gray-600 flex items-center gap-1.5">
-                  <Phone size={13} className="text-pink-500 shrink-0" />
+                <div className="text-xs text-stone-600 flex items-center gap-1.5">
+                  <Phone size={13} strokeWidth={1.75} className="text-stone-500 shrink-0" />
                   {telHref ? (
-                    <a href={telHref} className="font-mono font-semibold text-pink-600 hover:underline">
+                    <a href={telHref} className="font-mono font-medium text-pink-700 hover:underline tabular-nums">
                       {biz.contact}
                     </a>
                   ) : (
-                    <span>{biz.contact}</span>
+                    <span className="tabular-nums">{biz.contact}</span>
                   )}
                 </div>
               )}
@@ -532,11 +771,11 @@ export default function LandingPage() {
                     href={messengerLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-3.5 py-2 rounded-xl transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-3.5 min-h-9 rounded-lg transition-colors"
                   >
-                    <MessageCircle size={13} />
+                    <MessageCircle size={13} strokeWidth={1.75} />
                     Message on Facebook Page
-                    <ExternalLink size={11} />
+                    <ExternalLink size={12} />
                   </a>
                 )}
                 {portfolioLink && (
@@ -544,45 +783,104 @@ export default function LandingPage() {
                     href={portfolioLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-pink-50 text-gray-700 hover:text-pink-600 border border-gray-200 hover:border-pink-200 px-3.5 py-2 rounded-xl transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-stone-50 text-stone-700 hover:text-stone-900 border border-stone-200 px-3.5 min-h-9 rounded-lg transition-colors"
                   >
                     View Portfolio
-                    <ExternalLink size={11} />
+                    <ExternalLink size={12} />
                   </a>
                 )}
                 {!messengerLink && !portfolioLink && (
                   <Link
                     to="/chat"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-3.5 py-2 rounded-xl transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-3.5 min-h-9 rounded-lg transition-colors"
                   >
-                    <MessageCircle size={13} />
-                    Chat with JAL 24/7
+                    <MessageCircle size={13} strokeWidth={1.75} />
+                    Chat with JAL
                   </Link>
                 )}
               </div>
             </div>
           </div>
+
+          {/* Expandable Booking Guide FAQ Accordion */}
+          {dynamicFaqs.length > 0 && (
+            <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden">
+              <div className="px-4 sm:px-6 py-4 border-b border-stone-200/80 bg-[#fdfcfa] flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <HelpCircle size={16} strokeWidth={1.75} className="text-stone-500 shrink-0" />
+                  <h3 className="text-sm sm:text-base font-medium text-stone-900">
+                    Booking Quick Answers
+                  </h3>
+                </div>
+                <Link
+                  to="/chat"
+                  className="text-xs font-medium text-pink-700 hover:text-pink-800 whitespace-nowrap"
+                >
+                  Ask JAL directly
+                </Link>
+              </div>
+              <div className="divide-y divide-stone-100">
+                {dynamicFaqs.map((item) => {
+                  const isOpen = openFaqId === item.id
+                  return (
+                    <div key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaqId(isOpen ? null : item.id)}
+                        className="w-full px-4 sm:px-6 py-3.5 text-left flex items-center justify-between gap-3 hover:bg-stone-50 transition-colors"
+                      >
+                        <span className="text-xs sm:text-sm font-medium text-stone-900">
+                          {item.question}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-stone-400 shrink-0 transition-transform duration-200 ${
+                            isOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      {isOpen && (
+                        <div className="px-4 sm:px-6 pb-4 text-xs sm:text-sm text-stone-600 leading-relaxed space-y-2">
+                          <p>{item.answer}</p>
+                          <Link
+                            to="/chat"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-pink-700 hover:underline"
+                          >
+                            Verify availability with JAL
+                            <ArrowRight size={12} />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 px-6 bg-gray-950">
+      {/* Closing Dark Studio CTA Banner */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-stone-950">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <p className="text-pink-400 text-sm font-semibold mb-2">Ready to Glow?</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Book Your Appointment
+            <p className="text-pink-300 text-xs sm:text-sm font-medium mb-2">
+              Studio reservations
+            </p>
+            <h2 className="font-display text-3xl sm:text-4xl font-medium text-white mb-3.5 leading-tight tracking-[-0.02em]">
+              Reserve Your Session
               <br />
-              with {biz?.artist ?? 'Us'} Today
+              with {biz?.artist ?? 'Our Studio'}
             </h2>
-            <p className="text-white/50 text-sm mb-8 leading-relaxed">
-              Chat with JAL, our appointment chatbot, and get your appointment confirmed in minutes. Available anytime, no waiting needed.
+            <p className="text-white/70 text-xs sm:text-sm mb-7 leading-relaxed max-w-md">
+              Check open dates, travel estimates, and package inclusions with JAL.
             </p>
             <Link
               to="/chat"
-              className="inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-400 text-white font-semibold px-8 py-4 rounded-xl transition-all hover:shadow-lg hover:shadow-pink-900/40 hover:-translate-y-0.5"
+              className="btn-press inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium px-6 sm:px-8 min-h-12 rounded-lg"
             >
-              Start Chatting with JAL <ArrowRight size={16} />
+              Open Studio Chat
+              <ArrowRight size={16} strokeWidth={1.75} />
             </Link>
           </div>
           <div className="hidden md:block">
@@ -592,14 +890,16 @@ export default function LandingPage() {
                   type="button"
                   key={i}
                   onClick={() => setLightboxIndex(i)}
-                  className={`rounded-2xl overflow-hidden text-left ${i === 0 ? 'row-span-2 h-64' : 'h-[7.5rem]'}`}
+                  className={`rounded-xl overflow-hidden text-left border border-white/10 ${
+                    i === 0 ? 'row-span-2 h-64' : 'h-[7.5rem]'
+                  }`}
                 >
                   <img
                     src={img}
                     alt="Portfolio showcase"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover hover:opacity-90 transition-opacity duration-200"
                     onError={(e) => {
-                      e.target.src = 'https://placehold.co/300x300/1f2937/ec4899?text=Photo'
+                      e.target.src = 'https://placehold.co/300x300/1f2937/db2777?text=Photo'
                     }}
                   />
                 </button>
@@ -611,32 +911,32 @@ export default function LandingPage() {
 
       <Footer />
 
-      {/* Mobile Sticky CTA Bar */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-pink-100 px-4 py-2.5 flex items-center justify-between gap-3 shadow-lg">
+      {/* Mobile Sticky Bottom CTA Bar */}
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-[#fdfcfa]/95 backdrop-blur-md border-t border-stone-200 px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-3 shadow-md">
         <div className="min-w-0">
-          <div className="text-xs font-bold text-gray-900 truncate">Ready to book?</div>
-          <div className="text-[11px] text-gray-400 truncate">Check open slots with JAL</div>
+          <div className="text-xs font-medium text-stone-900 truncate">Ready to reserve</div>
+          <div className="text-xs text-stone-500 truncate">Check open dates with JAL</div>
         </div>
         <Link
           to="/chat"
-          className="inline-flex items-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold px-4 py-2 rounded-xl shrink-0 shadow-xs"
+          className="inline-flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium px-3.5 min-h-10 rounded-lg shrink-0 whitespace-nowrap"
         >
-          Chat with JAL
-          <ArrowRight size={13} />
+          Open Chat
+          <ArrowRight size={14} strokeWidth={1.75} />
         </Link>
       </div>
 
-      {/* Service Detail Quick-View Modal */}
+      {/* Service Detail Quick-View Modal (Mobile Bottom Sheet + Desktop Dialog) */}
       {selectedService && (
         <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-stone-950/55 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setSelectedService(null)}
         >
           <div
-            className="bg-white rounded-3xl border border-pink-100 shadow-2xl max-w-md w-full overflow-hidden animate-scale-in"
+            className="bg-white rounded-t-2xl sm:rounded-2xl border border-stone-200 shadow-2xl max-w-md w-full max-h-[90dvh] flex flex-col overflow-hidden animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative h-56 bg-pink-50">
+            <div className="relative h-48 sm:h-56 bg-stone-100 shrink-0">
               <img
                 src={selectedService.img}
                 alt={selectedService.name}
@@ -646,59 +946,60 @@ export default function LandingPage() {
                 type="button"
                 onClick={() => setSelectedService(null)}
                 aria-label="Close service details"
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center transition-colors"
+                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center transition-colors"
               >
                 <X size={16} />
               </button>
             </div>
-            <div className="p-5 space-y-3">
+
+            <div className="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">{selectedService.name}</h3>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                    <Clock size={12} className="text-pink-500" />
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-medium text-stone-900">{selectedService.name}</h3>
+                  <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-1 tabular-nums">
+                    <Clock size={12} strokeWidth={1.75} className="text-stone-400" />
                     <span>{selectedService.duration}</span>
                   </div>
                 </div>
-                <span className="text-sm font-bold bg-pink-50 text-pink-600 border border-pink-100 px-3 py-1 rounded-full shrink-0">
+                <span className="text-xs sm:text-sm font-medium bg-pink-50 text-pink-700 border border-pink-100 px-2.5 py-1 rounded-md shrink-0 tabular-nums">
                   {selectedService.price}
                 </span>
               </div>
 
               {selectedService.desc && (
-                <p className="text-xs text-gray-600 leading-relaxed">{selectedService.desc}</p>
+                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">{selectedService.desc}</p>
               )}
 
               {selectedService.inclusions && (
-                <div className="bg-rose-50/60 border border-pink-100 rounded-xl p-3 space-y-1">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-pink-600">
-                    <Info size={12} />
-                    Package Inclusions
+                <div className="bg-[#f8f6f2] border border-stone-200/80 rounded-xl p-3 space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-stone-800">
+                    <Info size={12} strokeWidth={1.75} />
+                    Package inclusions
                   </div>
-                  <p className="text-xs text-gray-700 leading-relaxed">{selectedService.inclusions}</p>
+                  <p className="text-xs text-stone-600 leading-relaxed">{selectedService.inclusions}</p>
                 </div>
               )}
 
               {selectedService.priceNote && (
-                <p className="text-[11px] text-gray-500">{selectedService.priceNote}</p>
+                <p className="text-xs text-stone-500">{selectedService.priceNote}</p>
               )}
+            </div>
 
-              <div className="pt-2 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedService(null)}
-                  className="px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50"
-                >
-                  Close
-                </button>
-                <Link
-                  to={`/chat?service=${encodeURIComponent(selectedService.key)}`}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-colors"
-                >
-                  Book This Service
-                  <ArrowRight size={14} />
-                </Link>
-              </div>
+            <div className="px-4 py-3 sm:px-5 sm:py-4 border-t border-stone-200/80 bg-[#fdfcfa] flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedService(null)}
+                className="px-4 min-h-11 rounded-lg border border-stone-200 text-xs font-medium text-stone-700 hover:bg-stone-50"
+              >
+                Close
+              </button>
+              <Link
+                to={`/chat?service=${encodeURIComponent(selectedService.key)}`}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium min-h-11 px-4 rounded-lg transition-colors"
+              >
+                Book This Service
+                <ArrowRight size={14} strokeWidth={1.75} />
+              </Link>
             </div>
           </div>
         </div>
@@ -733,7 +1034,10 @@ export default function LandingPage() {
             </button>
           )}
 
-          <div className="max-w-3xl max-h-[82vh] w-full flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="max-w-3xl max-h-[82vh] w-full flex flex-col items-center gap-3"
+            onClick={(e) => e.stopPropagation()}
+          >
             <img
               src={gallery[lightboxIndex]}
               alt={`Portfolio look ${lightboxIndex + 1}`}

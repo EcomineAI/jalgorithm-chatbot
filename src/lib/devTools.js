@@ -225,6 +225,61 @@ export const BATCH_TEST_SUITES = [
       'pagod na ako sa school',
     ],
   },
+  {
+    id: 'conyo',
+    label: 'Conyo & Gen-Z Styles',
+    description: 'Short Gen-Z/Conyo Taglish fragments and slang booking/inquiry cues',
+    phrases: [
+      'g ba this sat?',
+      'avail p b tom?',
+      'hm bridal sis?',
+      'bet ko hair + makeup',
+      'push natin sa dec 5',
+      'move q nlng to sunday',
+      'pass muna sis cancel nlng',
+      'tysm bestie',
+    ],
+  },
+  {
+    id: 'jeje',
+    label: 'Jeje & Compressed SMS',
+    description: 'No-vowel SMS shorthand, dropped letters, and quick Tagalog texting typos',
+    phrases: [
+      'pbook nmn aq ng bridal s dec',
+      'mron p b slot bks?',
+      'd aq mkkpunta',
+      'pki check nmn ng book q',
+      'mgkno po pg hair lng',
+      'pkicancel nlng ung slot q bks',
+      'sn loc ng salon nyo',
+    ],
+  },
+  {
+    id: 'indirect',
+    label: 'Indirect & Polite Phrasing',
+    description: 'Soft, hesitant, or multi-clause customer inquiries',
+    phrases: [
+      'just asking around for my sister wedding next month, how do your packages work?',
+      'ask ko lang po sana kung sakaling hindi matuloy pwede ba ilipat?',
+      'magtatanong lang po if required ba downpayment bago ma-lock ang schedule',
+      'gusto ko po sanang magpa schedule para sa nanay ko this coming friday',
+      'ask ko lang po kung nag hohome service din kayo pag subic area',
+      'magpapacheck lang po sana ako kung tuloy at confirmed na yung pina book ko',
+    ],
+  },
+  {
+    id: 'scenarios',
+    label: 'Real-World Salon Scenarios',
+    description: 'Single-turn NLU prompts for forgot ref, dual dates, booking for others, hesitation, and early call-time',
+    phrases: [
+      'nakalimutan ko ref code ko pa-check ng booking',
+      'May available ba sa Dec 5 o Dec 6?',
+      'pwede pa-book bridal para kay Maria Santos?',
+      'wait lang check ko muna sched bago mag book',
+      'pwede ba 4am call time sa bridal?',
+      'call time 5am pwede ba?',
+    ],
+  },
 ]
 
 export function parseBatchInput(rawText) {

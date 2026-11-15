@@ -14,18 +14,35 @@ import { createClassifier } from './classifier/ensemble.js'
 import { trainingExamples } from './data/training.js'
 import { defaultCatalog } from './config/business.js'
 
-export function createAnalyzer({ training = trainingExamples(), classifierConfig, catalog = defaultCatalog() } = {}) {
+const DEFAULT_PREPARE_CACHE = new Map()
+
+function servicesCacheKey(services = []) {
+  return services
+    .map((s) => `${s.key}:${s.name}:${(s.aliases ?? []).join(',')}`)
+    .join('|')
+}
+
+export function createAnalyzer({ training, classifierConfig, catalog = defaultCatalog() } = {}) {
+  const isDefaultTraining = training === undefined
+  const resolvedTraining = isDefaultTraining ? trainingExamples() : training
   const normalizer = createNormalizer({ services: catalog.services })
   const serviceIndex = buildServiceIndex(catalog.services)
 
   // Normalize the training data with the same pipeline used at runtime, then
   // protect its vocabulary from fuzzy correction and train the classifiers.
-  const prepared = training.map(({ text, label }) => {
-    const norm = normalizer.normalize(tokenize(preprocess(text).text))
-    const entities = extractEntities({ tokens: norm.tokens, words: norm.words, original: text, now: new Date(), expect: null, serviceIndex })
-    const { tags } = extractFeatures(norm.words, entities)
-    return { label, words: norm.words, features: featureTokens(norm.tokens, tags) }
-  })
+  let prepared
+  const cacheKey = isDefaultTraining ? servicesCacheKey(catalog.services) : null
+  if (cacheKey && DEFAULT_PREPARE_CACHE.has(cacheKey)) {
+    prepared = DEFAULT_PREPARE_CACHE.get(cacheKey)
+  } else {
+    prepared = resolvedTraining.map(({ text, label }) => {
+      const norm = normalizer.normalize(tokenize(preprocess(text).text))
+      const entities = extractEntities({ tokens: norm.tokens, words: norm.words, original: text, now: new Date(), expect: null, serviceIndex })
+      const { tags } = extractFeatures(norm.words, entities)
+      return { label, words: norm.words, features: featureTokens(norm.tokens, tags) }
+    })
+    if (cacheKey) DEFAULT_PREPARE_CACHE.set(cacheKey, prepared)
+  }
   normalizer.extendVocabulary(prepared.flatMap((p) => p.words).filter((w) => /^[a-zñ]+$/.test(w)))
   const classifier = createClassifier(prepared, classifierConfig)
 

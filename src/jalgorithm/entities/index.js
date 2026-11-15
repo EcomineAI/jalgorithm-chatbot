@@ -1,7 +1,7 @@
 // Entity extraction façade: dates, times, services, contact numbers, booking references,
 // and (only when the bot asked for them) names and event locations.
 
-import { extractDate } from './date.js'
+import { extractDate, extractDates } from './date.js'
 import { extractTime } from './time.js'
 
 /** Builds the alias index for the owner's current services (longest alias first). */
@@ -45,12 +45,15 @@ export function extractReference(tokens, expect) {
   return null
 }
 
-const NAME_LEADS = /^(?:(?:ako\s+(?:po\s+)?si|si|ako\s+po\s+ay|ako\s+ay|my\s+name\s+is|name\s+ko\s+(?:po\s+)?(?:ay\s+)?|pangalan\s+ko\s+(?:po\s+)?(?:ay\s+)?|i\s*'?\s*am|i'm|im|this\s+is|it's|its|name:?)\s+)/i
-const NAME_TRAIL = /\s+(?:po|lang|nga|pala)$/i
+const NAME_LEADS = /^(?:(?:ako\s+(?:po\s+)?si|si|ako\s+po\s+ay|ako\s+ay|my\s+name\s+is|name\s+(?:ko|ni|ng)\s+(?:(?:my|sister|brother|mom|mother|mama|nanay|friend|bride|kapatid|ate|kuya|client)\s+)?(?:ko\s+)?(?:po\s+)?(?:ay\s+|si\s+)?|pangalan\s+(?:ko|ni|ng)\s+(?:(?:kapatid|ate|nanay|mama|kaibigan|client)\s+)?(?:ko\s+)?(?:po\s+)?(?:ay\s+|si\s+)?|i\s*'?\s*am|i'm|im|this\s+is|it's|its|name:?)\s+)/i
+const NAME_FOR_OTHERS = /^(?:(?:this\s+)?(?:booking\s+)?(?:is\s+)?)?(?:para\s+(?:kay|sa)|for)\s+(?:(?:my|the)\s+)?(?:(?:elder|older|younger|little)?\s*(?:sister|brother|mom|mother|mama|nanay|dad|father|papa|tatay|friend|bestie|bestfriend|cousin|pinsan|aunt|tita|bride|debutante|client|kapatid|ate|kuya|anak|gf|wife|asawa)(?:\s+ko)?(?:\s+(?:po|named|si|ay))?\s+|(?:po\s+)?(?:si\s+)?)?/i
+const NAME_TRAIL_PAREN = /\s*\((?:for|para|bride|sister|mom|mother|mama|kapatid|ate|friend)[^)]{0,40}\)\s*$/i
+const NAME_TRAIL = /(?:\s+(?:po|lang|nga|pala|na\s+lang|nalang))+$/i
 
 export function extractName(original) {
   let s = original.trim().replace(/[.!?,]+$/g, '')
-  s = s.replace(NAME_LEADS, '').replace(NAME_TRAIL, '').trim()
+  s = s.replace(NAME_TRAIL_PAREN, '').replace(NAME_TRAIL, '').trim()
+  s = s.replace(NAME_LEADS, '').replace(NAME_FOR_OTHERS, '').replace(NAME_TRAIL, '').trim()
   if (!/^[\p{L}][\p{L} .'-]{1,59}$/u.test(s)) return null
   if (s.split(/\s+/).length > 5) return null
   return s.replace(/\b\p{L}/gu, (c) => c.toUpperCase())
@@ -95,6 +98,37 @@ function pickWithCorrection(words, extractor, hasValue) {
   return extractor(words)
 }
 
+const HEAD_NOUNS = new Set([
+  'head', 'heads', 'person', 'persons', 'people', 'pax', 'kasabay', 'companion', 'companions',
+  'bridesmaid', 'bridesmaids', 'entourage',
+])
+const HEAD_ADDITIONAL_CUES = new Set([
+  'additional', 'dagdag', 'extra', 'plus', 'with', 'may', 'meron', 'kasabay', 'companion', 'companions',
+  'bridesmaid', 'bridesmaids', 'entourage',
+])
+const WORD_NUMBERS = {
+  one: 1, isa: 1, isang: 1, two: 2, dalawa: 2, dalawang: 2, three: 3, tatlo: 3, tatlong: 3,
+  four: 4, apat: 4, five: 5, lima: 5, limang: 5, six: 6, anim: 6, seven: 7, pito: 7, pitong: 7,
+  eight: 8, walo: 8, walong: 8, nine: 9, siyam: 9, ten: 10, sampu: 10, sampung: 10,
+}
+
+export function extractHeadCount(words) {
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i]
+    const n = /^\d{1,2}$/.test(w) ? Number(w) : WORD_NUMBERS[w] ?? null
+    if (n == null || n < 1 || n > 40) continue
+    const window = words.slice(Math.max(0, i - 1), Math.min(words.length, i + 4))
+    const hasHeadNoun = window.some((x) => HEAD_NOUNS.has(x))
+    const hasAddAdj = window.some((x) => ['additional', 'dagdag', 'extra'].includes(x))
+    if (hasHeadNoun || (hasAddAdj && words[i + 1] !== 'day' && words[i + 1] !== 'days' && words[i + 1] !== 'araw')) {
+      const wideWindow = words.slice(Math.max(0, i - 2), Math.min(words.length, i + 4))
+      const kind = wideWindow.some((x) => HEAD_ADDITIONAL_CUES.has(x)) ? 'additional' : 'total'
+      return { count: n, kind, text: `${w} ${words[i + 1] ?? ''}`.trim() }
+    }
+  }
+  return null
+}
+
 /**
  * @param {object} p
  * @param {{type: string, text: string}[]} p.tokens normalized tokens
@@ -105,15 +139,27 @@ function pickWithCorrection(words, extractor, hasValue) {
  * @param {object} p.serviceIndex output of buildServiceIndex()
  */
 export function extractEntities({ tokens, words, original, now, expect, serviceIndex }) {
-  const date = pickWithCorrection(words, (ws) => extractDate(ws, { now, expect }), (d) => Boolean(d?.date || d?.week || d?.invalid))
+  const dateList = pickWithCorrection(
+    words,
+    (ws) => {
+      const list = extractDates(ws, { now, expect })
+      return list.length ? list : null
+    },
+    (list) => Array.isArray(list) && list.some((d) => Boolean(d?.date || d?.week || d?.invalid))
+  )
+  const date = dateList?.[0] ?? null
+  const dates = (dateList ?? []).filter((d) => d?.date).map((d) => d.date)
   const time = pickWithCorrection(words, (ws) => extractTime(ws, { expect }), (t) => Boolean(t?.time || t?.anyTime || t?.invalid))
   const service = pickWithCorrection(words, (ws) => extractService(ws, serviceIndex), (s) => Boolean(s?.key))
   const entities = {
     date: date?.date ?? null,
     dateInfo: date,
+    dates,
+    dateInfos: dateList ?? [],
     time: time?.time ?? null,
     timeInfo: time,
     service: service?.key ?? null,
+    headCount: extractHeadCount(words),
     contact: extractContact(tokens),
     reference: extractReference(tokens, expect),
   }

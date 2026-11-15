@@ -435,6 +435,174 @@
    "accept": [
     "ASK_SERVICES"
    ]
+  },
+  {
+   "text": "bet ko magpa debut makeup this sat sis",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "conyo"
+  },
+  {
+   "text": "avail p b kayo sa nov 28 sis",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "conyo"
+  },
+  {
+   "text": "g ba ng 2pm sa sunday",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "taglish",
+   "category": "conyo"
+  },
+  {
+   "text": "hm for bridesmaids makeup bestie",
+   "intent": "ASK_PRICE",
+   "lang": "en",
+   "category": "conyo"
+  },
+  {
+   "text": "pwede pa move nlng yung appt q to sunday",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "taglish",
+   "category": "conyo"
+  },
+  {
+   "text": "pass muna pala sa reservation ko sis cancel nlng",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "taglish",
+   "category": "conyo"
+  },
+  {
+   "text": "push na natin yung personal glam sa dec 14",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "taglish",
+   "category": "conyo"
+  },
+  {
+   "text": "tysm bestie",
+   "intent": "THANKS",
+   "lang": "en",
+   "category": "conyo"
+  },
+  {
+   "text": "pbook aq hairstyling s sabado",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "jeje"
+  },
+  {
+   "text": "mron p b bakante s linggo",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "jeje"
+  },
+  {
+   "text": "d aq mkkpunta s wed",
+   "intent": "CANNOT_ATTEND",
+   "lang": "fil",
+   "category": "jeje"
+  },
+  {
+   "text": "pki check nmn status ng appt q",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "fil",
+   "category": "jeje"
+  },
+  {
+   "text": "mgkno pg graduation glam lng",
+   "intent": "ASK_PRICE",
+   "lang": "fil",
+   "category": "jeje"
+  },
+  {
+   "text": "pkicancel nlng ung slot q bks",
+   "intent": "CANCEL_APPOINTMENT",
+   "lang": "fil",
+   "category": "jeje"
+  },
+  {
+   "text": "pki lipat nmn sched q ng 3pm",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "fil",
+   "category": "jeje"
+  },
+  {
+   "text": "sn loc ng salon nyo",
+   "intent": "ASK_LOCATION",
+   "lang": "fil",
+   "category": "jeje"
+  },
+  {
+   "text": "just inquiring for my cousin wedding, what packages do you include",
+   "intent": "ASK_SERVICES",
+   "lang": "en",
+   "category": "indirect"
+  },
+  {
+   "text": "tanong ko lang po sana kung sakaling magbago isip namin pwede ba ilipat sa ibang date",
+   "intent": "RESCHEDULE_APPOINTMENT",
+   "lang": "fil",
+   "category": "indirect"
+  },
+  {
+   "text": "magtatanong lang po if required ba downpayment bago ma-lock ang schedule",
+   "intent": "ASK_BOOKING_POLICY",
+   "lang": "fil",
+   "category": "indirect"
+  },
+  {
+   "text": "gusto ko po sanang magpa schedule para sa nanay ko this coming friday",
+   "intent": "BOOK_APPOINTMENT",
+   "lang": "fil",
+   "category": "indirect"
+  },
+  {
+   "text": "itanong ko lang po sana kung may open slot pa kayo sa nov 29",
+   "intent": "CHECK_AVAILABILITY",
+   "lang": "fil",
+   "category": "indirect"
+  },
+  {
+   "text": "ask ko lang po kung nag hohome service din kayo pag subic area",
+   "intent": "GENERAL_INQUIRY",
+   "lang": "fil",
+   "category": "indirect"
+  },
+  {
+   "text": "could you let me know what hours your studio is usually open on weekends",
+   "intent": "ASK_OPERATING_HOURS",
+   "lang": "en",
+   "category": "indirect"
+  },
+  {
+   "text": "magpapacheck lang po sana ako kung tuloy at confirmed na yung pina book ko",
+   "intent": "VIEW_APPOINTMENT",
+   "lang": "fil",
+   "category": "indirect"
+  },
+  {
+   "text": "bored af tara ml",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unrelated"
+  },
+  {
+   "text": "nagtitinda ba kayo ng fake eyelashes per box",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unsupported"
+  },
+  {
+   "text": "san masarap mag kape malapit dyan",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unrelated"
+  },
+  {
+   "text": "pwede mag apply bilang cashier",
+   "intent": "UNKNOWN_INTENT",
+   "lang": "fil",
+   "category": "unsupported"
   }
  ]
 }

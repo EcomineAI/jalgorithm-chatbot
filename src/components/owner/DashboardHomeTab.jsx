@@ -12,7 +12,7 @@ import {
   ExternalLink,
   MapPin,
   MessageSquare,
-  Sparkles,
+  SlidersHorizontal,
   Wrench,
 } from 'lucide-react';
 import {
@@ -35,7 +35,7 @@ import {
   SHOWCASE_SERVICE_IMAGES,
 } from '../../jalgorithm/config/business';
 
-const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
@@ -157,24 +157,22 @@ export function DashboardHomeTab({
   }
 
   const timelineTintClasses = [
-    'bg-rose-50/70 border-pink-100',
-    'bg-amber-50/70 border-amber-100',
-    'bg-sky-50/70 border-sky-100',
-    'bg-emerald-50/70 border-emerald-100',
+    'bg-[#f8f6f2] border-stone-200/80',
+    'bg-[#fdfcfa] border-stone-200/80',
   ];
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 items-start">
       {/* Main Left Workspace */}
-      <div className="xl:col-span-8 space-y-6 min-w-0">
-        {/* Greeting Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-[26px] font-bold text-gray-900 tracking-tight">
-              Welcome back, {greetingName}
+      <div className="xl:col-span-8 space-y-4 sm:space-y-6 min-w-0">
+        {/* Contextual Studio Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl sm:text-3xl font-medium text-gray-900 tracking-[-0.02em] truncate">
+              {bizName} Overview
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Here is what is happening at {bizName} for {formatDisplayDate(todayIso)}.
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5 tabular-nums">
+              {formatDisplayDate(todayIso)} | Signed in as {greetingName}
             </p>
           </div>
 
@@ -182,13 +180,13 @@ export function DashboardHomeTab({
             <button
               type="button"
               onClick={() => onOpenBusinessTab(setupWarnings[0]?.tab || 'profile')}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50/90 hover:bg-amber-100/70 text-xs font-semibold text-amber-800 transition-colors"
+              className="inline-flex items-center gap-2 min-h-9 px-3.5 py-2 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100/70 text-xs font-medium text-amber-800 transition-colors tabular-nums"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              {setupWarnings.length} setup {setupWarnings.length === 1 ? 'tip' : 'tips'} remaining
+              <SlidersHorizontal className="w-3.5 h-3.5 text-amber-700" />
+              {setupWarnings.length} setup {setupWarnings.length === 1 ? 'item' : 'items'} left
             </button>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-700">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-200 bg-emerald-50 text-xs font-medium text-emerald-700 tabular-nums">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Studio profile 100% ready
             </span>
@@ -196,7 +194,7 @@ export function DashboardHomeTab({
         </div>
 
         {/* 4 KPI Sparkline Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           <StatKpiCard
             label="Total Bookings"
             value={metrics.totalBookings}
@@ -246,11 +244,11 @@ export function DashboardHomeTab({
         {/* Quick Actions */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider">
-              Quick Actions
+            <h2 className="text-xs font-medium text-gray-500">
+              Quick actions
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
             <ActionTileButton
               icon={CalendarPlus}
               label="New Booking"
@@ -283,18 +281,18 @@ export function DashboardHomeTab({
         </section>
 
         {/* Recent Bookings Card */}
-        <section className="bg-white rounded-2xl border border-pink-100/90 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-pink-100/70 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-base font-bold text-gray-900">Recent Bookings</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+        <section className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
+          <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200/70 flex items-center justify-between gap-2.5 sm:gap-3">
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base font-semibold text-stone-900">Recent Bookings</h2>
+              <p className="text-xs text-stone-500 mt-0.5 truncate">
                 Latest client appointments with quick calendar actions
               </p>
             </div>
             <button
               type="button"
               onClick={() => onNavigateTab('appointments')}
-              className="px-3.5 py-2 rounded-xl border border-pink-100 bg-rose-50/40 hover:bg-pink-50 text-xs font-semibold text-pink-600 transition-colors"
+              className="min-h-9 px-3 sm:px-3.5 py-2 rounded-lg border border-stone-200/80 bg-[#f8f6f2] hover:bg-stone-100 text-xs font-medium text-pink-700 transition-colors shrink-0 whitespace-nowrap"
             >
               View All
             </button>
@@ -309,7 +307,7 @@ export function DashboardHomeTab({
               <button
                 type="button"
                 onClick={onOpenNewBooking}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold"
+                className="inline-flex items-center gap-2 min-h-9 px-4 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium"
               >
                 <CalendarPlus className="w-4 h-4" />
                 Add First Booking
@@ -335,40 +333,40 @@ export function DashboardHomeTab({
                 return (
                   <div
                     key={appt.id}
-                    className="px-5 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-rose-50/25 transition-colors"
+                    className="px-3.5 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 hover:bg-stone-100/60 transition-colors"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
                       <img
                         src={thumb}
                         alt={appt.service_type || 'Salon service'}
-                        className="w-12 h-12 rounded-xl object-cover border border-pink-100 shrink-0 bg-rose-50"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover border border-stone-200/80 shrink-0 bg-stone-100"
                       />
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
+                        <p className="text-sm font-semibold text-stone-900 truncate">
                           {appt.service_type}
                         </p>
-                        <p className="text-xs font-mono text-gray-500 mt-0.5">
+                        <p className="text-xs font-mono text-stone-500 mt-0.5 truncate tabular-nums">
                           {appt.reference_code || 'NO-REF'}
                         </p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-4 sm:gap-6 text-xs">
-                      <div className="min-w-[120px]">
-                        <p className="font-semibold text-gray-800 truncate">{appt.client_name}</p>
+                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-2.5 sm:gap-6 text-xs">
+                      <div className="min-w-0 sm:min-w-[120px]">
+                        <p className="font-medium text-stone-800 truncate">{appt.client_name}</p>
                         <a
                           href={`tel:${appt.client_contact}`}
-                          className="text-gray-500 hover:text-pink-600 transition-colors"
+                          className="text-stone-500 hover:text-pink-700 transition-colors block truncate tabular-nums"
                         >
                           {appt.client_contact}
                         </a>
                       </div>
 
-                      <div className="min-w-[130px]">
-                        <p className="font-semibold text-gray-800">
+                      <div className="min-w-0 sm:min-w-[130px]">
+                        <p className="font-medium text-stone-800 truncate tabular-nums">
                           {manila ? formatDisplayDate(manila.date) : '-'}
                         </p>
-                        <p className="text-gray-500">
+                        <p className="text-stone-500 truncate tabular-nums">
                           {manila ? formatDisplayTime(manila.time) : '-'}
                           {appt.duration_minutes ? ` · ${appt.duration_minutes}m` : ''}
                         </p>
@@ -382,7 +380,7 @@ export function DashboardHomeTab({
                             target="_blank"
                             rel="noreferrer"
                             title="Add to Google Calendar"
-                            className="w-8 h-8 rounded-lg border border-pink-100 bg-white hover:bg-pink-50 text-gray-500 hover:text-pink-600 flex items-center justify-center"
+                            className="w-8 h-8 rounded-lg border border-stone-200/80 bg-[#fdfcfa] hover:bg-stone-100 text-stone-500 hover:text-pink-700 flex items-center justify-center"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </a>
@@ -400,9 +398,9 @@ export function DashboardHomeTab({
       {/* Sticky Right Rail: Mini Calendar + Selected Day Schedule + Summary */}
       <aside className="xl:col-span-4 space-y-5 xl:sticky xl:top-24">
         {/* Monthly Mini Calendar */}
-        <section className="bg-white rounded-2xl border border-pink-100/90 shadow-sm p-5">
+        <section className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs p-3.5 sm:p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-gray-900">
+            <h2 className="text-base font-semibold text-stone-900">
               {MONTH_NAMES[calCursor.monthIndex]} {calCursor.year}
             </h2>
             <div className="flex items-center gap-1.5">
@@ -427,7 +425,7 @@ export function DashboardHomeTab({
 
           <div className="grid grid-cols-7 gap-1 text-center mb-1.5">
             {WEEKDAYS.map((wd) => (
-              <span key={wd} className="text-[10px] font-bold text-gray-400 tracking-wider py-1">
+              <span key={wd} className="text-xs font-medium text-stone-400 py-1">
                 {wd}
               </span>
             ))}
@@ -444,21 +442,21 @@ export function DashboardHomeTab({
                   key={cell.iso}
                   type="button"
                   onClick={() => setSelectedDate(cell.iso)}
-                  className={`relative h-9 rounded-xl text-xs font-semibold flex flex-col items-center justify-center transition-all ${
+                  className={`relative h-9 rounded-lg text-xs font-medium tabular-nums flex flex-col items-center justify-center transition-colors ${
                     isSelected
-                      ? 'bg-pink-500 text-white shadow-sm shadow-pink-500/25'
+                      ? 'bg-pink-600 text-white'
                       : isToday
                         ? 'bg-pink-50 text-pink-700 border border-pink-200'
                         : cell.inMonth
-                          ? 'text-gray-700 hover:bg-rose-50'
-                          : 'text-gray-300 hover:bg-gray-50'
+                          ? 'text-stone-700 hover:bg-stone-100'
+                          : 'text-stone-300 hover:bg-stone-50'
                   }`}
                 >
                   <span>{cell.day}</span>
                   {count > 0 ? (
                     <span
                       className={`w-1.5 h-1.5 rounded-full mt-0.5 ${
-                        isSelected ? 'bg-white' : 'bg-pink-500'
+                        isSelected ? 'bg-white' : 'bg-pink-600'
                       }`}
                     />
                   ) : null}
@@ -469,13 +467,13 @@ export function DashboardHomeTab({
         </section>
 
         {/* Day Schedule Timeline */}
-        <section className="bg-white rounded-2xl border border-pink-100/90 shadow-sm p-5 space-y-4">
+        <section className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs p-3.5 sm:p-5 space-y-3.5 sm:space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <div>
-              <h2 className="text-sm font-bold text-gray-900">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-stone-900 truncate">
                 {selectedDate === todayIso ? "Today's Schedule" : `Schedule · ${formatDisplayDate(selectedDate)}`}
               </h2>
-              <p className="text-[11px] text-gray-500 mt-0.5">
+              <p className="text-xs text-stone-500 mt-0.5 tabular-nums">
                 {daySchedule.length} active {daySchedule.length === 1 ? 'session' : 'sessions'}
               </p>
             </div>
@@ -486,18 +484,18 @@ export function DashboardHomeTab({
                   ? onSelectDateSchedule(selectedDate)
                   : onNavigateTab('reminders')
               }
-              className="px-2.5 py-1.5 rounded-lg border border-pink-100 bg-rose-50/40 hover:bg-pink-50 text-[11px] font-semibold text-pink-600"
+              className="px-2.5 py-1.5 rounded-lg border border-stone-200/80 bg-[#f8f6f2] hover:bg-stone-100 text-xs font-medium text-pink-700 shrink-0 whitespace-nowrap"
             >
               View Full Schedule
             </button>
           </div>
 
           {daySchedule.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-pink-200 bg-rose-50/30 p-5 text-center space-y-1.5">
-              <Clock className="w-5 h-5 text-pink-400 mx-auto" />
-              <p className="text-xs font-semibold text-gray-700">No bookings on this date</p>
-              <p className="text-[11px] text-gray-500">
-                Pick a marked date on the calendar or click + New Booking.
+            <div className="rounded-xl border border-dashed border-stone-200 bg-[#f8f6f2] p-5 text-center space-y-1.5">
+              <Clock className="w-5 h-5 text-stone-400 mx-auto" strokeWidth={1.75} />
+              <p className="text-xs font-medium text-stone-700">No bookings on this date</p>
+              <p className="text-xs text-stone-500">
+                Pick a marked date on the calendar or click New Booking.
               </p>
             </div>
           ) : (
@@ -506,26 +504,26 @@ export function DashboardHomeTab({
                 const tint = timelineTintClasses[idx % timelineTintClasses.length];
                 const mapsUrl = prep?.venue ? buildGoogleMapsUrl(prep.venue) : null;
                 return (
-                  <div key={appt.id} className="flex items-stretch gap-3">
-                    <div className="w-16 shrink-0 pt-2 text-[11px] font-semibold text-gray-500">
+                  <div key={appt.id} className="flex items-stretch gap-2.5 sm:gap-3">
+                    <div className="w-14 sm:w-16 shrink-0 pt-2 text-xs font-medium text-stone-500 tabular-nums">
                       {prep?.callTimeFormatted || '-'}
                     </div>
                     <div className={`flex-1 rounded-xl border p-3 min-w-0 ${tint}`}>
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-bold text-gray-900 truncate">
+                        <p className="text-xs font-semibold text-stone-900 truncate">
                           {appt.service_type}
                         </p>
-                        <span className="text-[10px] font-mono text-gray-500 shrink-0">
+                        <span className="text-xs font-mono text-stone-500 shrink-0 tabular-nums">
                           {appt.reference_code}
                         </span>
                       </div>
-                      <p className="text-[11px] text-gray-700 mt-0.5 truncate">
+                      <p className="text-xs text-stone-700 mt-0.5 truncate">
                         {appt.client_name} · {appt.client_contact}
                       </p>
                       {prep?.venue ? (
-                        <div className="flex items-center justify-between gap-2 mt-1.5 text-[11px] text-gray-600">
+                        <div className="flex items-center justify-between gap-2 mt-1.5 text-xs text-stone-600">
                           <span className="inline-flex items-center gap-1 truncate">
-                            <MapPin className="w-3 h-3 text-pink-500 shrink-0" />
+                            <MapPin className="w-3 h-3 text-stone-500 shrink-0" />
                             {prep.venue}
                           </span>
                           {mapsUrl ? (
@@ -533,7 +531,7 @@ export function DashboardHomeTab({
                               href={mapsUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-pink-600 font-semibold shrink-0 hover:underline"
+                              className="text-pink-700 font-medium shrink-0 hover:underline"
                             >
                               Map
                             </a>
@@ -549,23 +547,23 @@ export function DashboardHomeTab({
         </section>
 
         {/* Studio Summary 3-tile Footer */}
-        <section className="bg-white rounded-2xl border border-pink-100/90 shadow-sm p-5 space-y-3">
+        <section className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs p-3.5 sm:p-5 space-y-2.5 sm:space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-gray-900">Studio Summary</h2>
-            <span className="text-[11px] font-medium text-gray-400">Live status</span>
+            <h2 className="text-sm font-semibold text-stone-900">Studio Summary</h2>
+            <span className="text-xs font-medium text-stone-500">Live status</span>
           </div>
-          <div className="grid grid-cols-3 gap-2.5">
-            <div className="rounded-xl bg-rose-50/70 border border-pink-100 p-3 text-center">
-              <p className="text-lg font-bold text-pink-700">{setupPercent}%</p>
-              <p className="text-[11px] font-medium text-gray-600 mt-0.5">Setup</p>
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5 tabular-nums">
+            <div className="rounded-xl bg-[#f8f6f2] border border-stone-200/80 p-2.5 sm:p-3 text-center">
+              <p className="text-base sm:text-lg font-semibold text-stone-900">{setupPercent}%</p>
+              <p className="text-xs font-medium text-stone-500 mt-0.5">Setup</p>
             </div>
-            <div className="rounded-xl bg-amber-50/70 border border-amber-100 p-3 text-center">
-              <p className="text-lg font-bold text-amber-700">{upcomingSchedule.length}</p>
-              <p className="text-[11px] font-medium text-gray-600 mt-0.5">Upcoming</p>
+            <div className="rounded-xl bg-[#f8f6f2] border border-stone-200/80 p-2.5 sm:p-3 text-center">
+              <p className="text-base sm:text-lg font-semibold text-stone-900">{upcomingSchedule.length}</p>
+              <p className="text-xs font-medium text-stone-500 mt-0.5">Upcoming</p>
             </div>
-            <div className="rounded-xl bg-emerald-50/70 border border-emerald-100 p-3 text-center">
-              <p className="text-lg font-bold text-emerald-700">{metrics.remindersDueTotal}</p>
-              <p className="text-[11px] font-medium text-gray-600 mt-0.5">Due Soon</p>
+            <div className="rounded-xl bg-[#f8f6f2] border border-stone-200/80 p-2.5 sm:p-3 text-center">
+              <p className="text-base sm:text-lg font-semibold text-pink-700">{metrics.remindersDueTotal}</p>
+              <p className="text-xs font-medium text-stone-500 mt-0.5">Due Soon</p>
             </div>
           </div>
         </section>

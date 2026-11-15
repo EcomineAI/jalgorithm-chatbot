@@ -71,6 +71,17 @@ export function extractFeatures(words, entities = {}) {
     tags.add('VIEW_Q')
   }
 
+  // Conversational smalltalk guard: "ano(ng) ginagawa mo" without plural/salon nouns asks what the bot is doing, not services
+  const hasPluralOrDomain = words.some((w) => ['ninyo', 'kayo', 'nyo', 'service', 'services', 'salon', 'parlor', 'makeup', 'hair', 'package', 'offer'].includes(w))
+  if (!hasPluralOrDomain && containsSequence(words, ['ano', 'ginagawa', 'mo']) >= 0) {
+    tags.delete('SERVICE_Q')
+    tags.add('OFFTOPIC')
+  }
+  if (!hasPluralOrDomain && containsSequence(words, ['anong', 'ginagawa', 'mo']) >= 0) {
+    tags.delete('SERVICE_Q')
+    tags.add('OFFTOPIC')
+  }
+
   if (entities.date) tags.add('DATE')
   if (entities.time) tags.add('TIME')
   if (entities.service) tags.add('SERVICE')

@@ -9,7 +9,7 @@ import {
   Layers,
   Lock,
   ShieldCheck,
-  Sparkles,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { createJAlgorithm } from '../../jalgorithm/index.js'
 import { CLASSIFIER_CONFIG } from '../../jalgorithm/config/intents.js'
@@ -63,9 +63,9 @@ export default function DevSystemMapTab() {
         step: 'Step 2',
         title: 'Taglish Cleanup & Entities',
         subtitle: 'Normalizer & Keyword Extractor',
-        icon: Sparkles,
-        tone: 'bg-rose-50 border-rose-200 text-rose-700',
-        activeRing: 'ring-2 ring-rose-400 border-rose-400',
+        icon: SlidersHorizontal,
+        tone: 'bg-stone-100 border-stone-200/80 text-stone-700',
+        activeRing: 'ring-2 ring-pink-500 border-pink-400',
         plainWhat:
           'Before guessing what the client means, JAL cleans texting shortcuts, typos, and Taglish phrases (like "hm", "pwde", "bukas"), then pulls out key details: which service, target date, time, contact number, and JAL-XXXXX reference code.',
         plainWhy:
@@ -86,15 +86,15 @@ export default function DevSystemMapTab() {
       {
         id: 'brain',
         step: 'Step 3',
-        title: 'JAL Brain (No External AI)',
+        title: 'JAL Brain',
         subtitle: `${Math.round(CLASSIFIER_CONFIG.weights.rules * 100)}% Rules + ${Math.round(CLASSIFIER_CONFIG.weights.naiveBayes * 100)}% NB + ${Math.round(CLASSIFIER_CONFIG.weights.tfidf * 100)}% TF-IDF`,
         icon: Brain,
-        tone: 'bg-purple-50 border-purple-200 text-purple-700',
-        activeRing: 'ring-2 ring-purple-400 border-purple-400',
+        tone: 'bg-stone-100 border-stone-200/80 text-stone-700',
+        activeRing: 'ring-2 ring-pink-500 border-pink-400',
         plainWhat:
-          'JAlgorithm scores every message using three lightweight models inside your browser, blends their votes together (Late Fusion), and manages multi-step booking memory (service -> date -> time -> venue -> name -> contact -> confirm).',
+          'JAL scores every message using three lightweight mathematical models inside your browser, blends their votes together (Late Fusion), and manages multi-step booking memory (service -> date -> time -> venue -> name -> contact -> confirm).',
         plainWhy:
-          'Unlike ChatGPT or external LLM APIs, JAlgorithm is 100% deterministic, works offline with zero monthly AI API bills, never hallucinates salon prices, and replies in a few milliseconds.',
+          'Unlike external LLM or generative cloud APIs, JAL is 100% deterministic, works offline with zero monthly cloud API bills, never invents salon prices, and replies in a few milliseconds.',
         liveMetrics: [
           `Total Intents: ${engineStats.intentsCount}`,
           `Training Phrases: ${engineStats.trainingSize}`,
@@ -147,16 +147,16 @@ export default function DevSystemMapTab() {
   return (
     <div className="space-y-5">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl border border-pink-100 shadow-xs p-5 flex items-center justify-between gap-4">
+      <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs p-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gray-900 text-pink-300 flex items-center justify-center shrink-0">
-            <Layers size={18} />
+          <div className="w-10 h-10 rounded-lg bg-stone-900 text-pink-300 flex items-center justify-center shrink-0">
+            <Layers size={18} strokeWidth={1.75} />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-gray-900">
+            <h2 className="text-sm font-semibold text-stone-900">
               System Map &amp; Paper Architecture (Localhost Only)
             </h2>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-stone-500">
               Click any box in the Paper IPO workflow or architecture layers below to read thesis-aligned explanations. Switch to Animated NLU Flow for the moving NLU pipeline.
             </p>
           </div>
@@ -165,10 +165,10 @@ export default function DevSystemMapTab() {
         <button
           type="button"
           onClick={() => setShowTechDetails((v) => !v)}
-          className={`inline-flex items-center gap-2 px-3.5 min-h-[38px] rounded-xl text-xs font-semibold border transition-colors ${
+          className={`inline-flex items-center gap-2 px-3.5 min-h-9 rounded-lg text-xs font-medium border transition-colors ${
             showTechDetails
-              ? 'bg-gray-900 text-pink-300 border-gray-900'
-              : 'bg-white text-gray-700 border-pink-200 hover:bg-pink-50'
+              ? 'bg-stone-900 text-pink-300 border-stone-900'
+              : 'bg-[#fdfcfa] text-stone-700 border-stone-200/80 hover:bg-stone-100'
           }`}
         >
           <Code2 size={14} />
@@ -184,13 +184,13 @@ export default function DevSystemMapTab() {
       />
 
       {/* Interactive 4-Layer System Architecture */}
-      <div className="bg-white rounded-2xl border border-pink-100 shadow-xs p-6 space-y-4">
+      <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-gray-900">
+            <h3 className="text-sm font-semibold text-stone-900">
               System Architecture Layers (Tech Stack &amp; Separation of Concerns)
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-stone-500">
               How React, JAlgorithm (browser JS), and Supabase Postgres separate UI, language understanding, and server-enforced rules.
             </p>
           </div>
@@ -204,25 +204,25 @@ export default function DevSystemMapTab() {
                 <button
                   type="button"
                   onClick={() => setSelectedId(node.id)}
-                  className={`flex-1 h-full text-left p-4 rounded-2xl border transition-all space-y-2 ${
+                  className={`flex-1 h-full text-left p-4 rounded-xl border transition-[background-color,border-color,box-shadow] space-y-2 ${
                     isSelected
-                      ? `bg-white shadow-sm ${node.activeRing}`
-                      : 'bg-rose-50/20 border-pink-100 hover:bg-white hover:border-pink-300'
+                      ? `bg-[#fdfcfa] shadow-xs ${node.activeRing}`
+                      : 'bg-[#f8f6f2] border-stone-200/80 hover:bg-[#fdfcfa] hover:border-stone-300'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    <span className="text-xs font-medium text-stone-500">
                       {node.step}
                     </span>
                     <div className={`w-7 h-7 rounded-lg border flex items-center justify-center ${node.tone}`}>
-                      <Icon size={14} />
+                      <Icon size={14} strokeWidth={1.75} />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-gray-900">{node.title}</div>
-                  <div className="text-[11px] text-gray-500 leading-snug">{node.subtitle}</div>
+                  <div className="text-sm font-semibold text-stone-900">{node.title}</div>
+                  <div className="text-xs text-stone-500 leading-snug">{node.subtitle}</div>
                 </button>
                 {index < nodes.length - 1 && (
-                  <ArrowRight size={16} className="text-pink-300 shrink-0" />
+                  <ArrowRight size={16} className="text-stone-400 shrink-0" />
                 )}
               </div>
             )
@@ -232,43 +232,43 @@ export default function DevSystemMapTab() {
 
       {/* Selected Stage Deep-Dive */}
       <div className="grid grid-cols-12 gap-5">
-        <div className="col-span-7 bg-white rounded-2xl border border-pink-100 shadow-xs p-6 space-y-4">
+        <div className="col-span-7 bg-[#fdfcfa] rounded-2xl border border-stone-200/80 p-6 space-y-4">
           <div className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${activeNode.tone}`}>
-              <activeNode.icon size={17} />
+            <div className={`w-9 h-9 rounded-lg border flex items-center justify-center ${activeNode.tone}`}>
+              <activeNode.icon size={17} strokeWidth={1.75} />
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-pink-500">
-                {activeNode.step} Explained Simply
+              <div className="text-xs font-medium text-pink-700">
+                {activeNode.step} explained
               </div>
-              <h3 className="text-base font-bold text-gray-900">{activeNode.title}</h3>
+              <h3 className="text-base font-semibold text-stone-900">{activeNode.title}</h3>
             </div>
           </div>
 
           <div className="space-y-3 text-xs leading-relaxed">
-            <div className="p-4 rounded-xl bg-rose-50/40 border border-pink-100 space-y-1">
-              <div className="font-bold text-gray-900">What happens here</div>
-              <p className="text-gray-600">{activeNode.plainWhat}</p>
+            <div className="p-4 rounded-xl bg-[#f8f6f2] border border-stone-200/80 space-y-1">
+              <div className="font-semibold text-stone-900">What happens here</div>
+              <p className="text-stone-600">{activeNode.plainWhat}</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 space-y-1">
-              <div className="font-bold text-gray-900">Why we built it this way</div>
-              <p className="text-gray-600">{activeNode.plainWhy}</p>
+            <div className="p-4 rounded-xl bg-stone-50 border border-stone-200/70 space-y-1">
+              <div className="font-semibold text-stone-900">Why we built it this way</div>
+              <p className="text-stone-600">{activeNode.plainWhy}</p>
             </div>
           </div>
         </div>
 
-        <div className="col-span-5 bg-white rounded-2xl border border-pink-100 shadow-xs p-6 space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-gray-900">
-            <Cpu size={15} className="text-pink-500" />
+        <div className="col-span-5 bg-[#fdfcfa] rounded-2xl border border-stone-200/80 p-6 space-y-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-stone-900">
+            <Cpu size={15} className="text-pink-700" />
             Live System Readings
           </div>
 
-          <ul className="space-y-2 text-xs text-gray-700">
+          <ul className="space-y-2 text-xs text-stone-700">
             {activeNode.liveMetrics.map((item) => (
               <li
                 key={item}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-50/30 border border-pink-100"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#f8f6f2] border border-stone-200/80"
               >
                 <ShieldCheck size={13} className="text-emerald-600 shrink-0" />
                 <span>{item}</span>
@@ -277,14 +277,14 @@ export default function DevSystemMapTab() {
           </ul>
 
           <div className="space-y-2 pt-1">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              Technologies Used in This Layer
+            <div className="text-xs font-medium text-stone-500">
+              Technologies used in this layer
             </div>
             <div className="flex flex-wrap gap-1.5">
               {activeNode.techStack.map((tech) => (
                 <span
                   key={tech}
-                  className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 text-[11px] font-semibold"
+                  className="px-2.5 py-1 rounded-md bg-stone-100 text-stone-700 text-xs font-medium"
                 >
                   {tech}
                 </span>
@@ -293,16 +293,16 @@ export default function DevSystemMapTab() {
           </div>
 
           {showTechDetails && (
-            <div className="space-y-2 pt-2 border-t border-pink-100">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+            <div className="space-y-2 pt-2 border-t border-stone-200/80">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-stone-600">
                 <Lock size={12} />
-                Source Files
+                Source files
               </div>
               <div className="space-y-1">
                 {activeNode.files.map((filePath) => (
                   <div
                     key={filePath}
-                    className="font-mono text-[11px] text-gray-700 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg"
+                    className="font-mono text-xs text-stone-700 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-md"
                   >
                     {filePath}
                   </div>

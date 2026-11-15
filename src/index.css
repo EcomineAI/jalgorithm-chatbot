@@ -1,16 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap');
 @import "tailwindcss";
 
 @theme {
   --color-blush: #f9a8c9;
   --color-blush-light: #fce7f3;
-  --color-blush-dark: #ec4899;
+  --color-blush-dark: #db2777;
   --color-charcoal: #1f2937;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Newsreader", ui-serif, Georgia, serif;
+}
+
+:root {
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+  --surface-page: #f8f6f2;
+  --surface-card: #fdfcfa;
+  --surface-inset: #f2eee8;
+  --hairline-warm: rgba(31, 27, 22, 0.09);
 }
 
 body {
   font-family: var(--font-sans);
+  background-color: var(--surface-page);
+  color: #1f1b16;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display);
 }
 
 /* Smooth scroll */
@@ -18,149 +34,92 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Idle float - apply to hero card, step cards, etc. */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
-}
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-5px); }
-}
-@keyframes float-subtle {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50%       { transform: translateY(-4px) rotate(0.5deg); }
-}
-
-/* Pulse glow - pink ring breathe */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
-  50%       { box-shadow: 0 0 0 8px rgba(236, 72, 153, 0.12); }
-}
-
-/* Shimmer - skeleton/badge shine */
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
-}
-
-/* Sparkle spin */
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* Fade up entrance */
+/* Single calm entrance curves */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Scale in entrance */
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.92); }
+  from { opacity: 0; transform: scale(0.97); }
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* Chat animations: typing dots and gentle message/control entrance */
+/* Chat live animations: typing dots and gentle message/control entrance */
 @keyframes typing-dot {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30%           { transform: translateY(-4px); opacity: 1; }
 }
 @keyframes msg-enter {
-  from { opacity: 0; transform: translateY(8px) scale(0.985); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes controls-enter {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Utility classes */
-.animate-float        { animation: float 4s ease-in-out infinite; }
-.animate-float-slow   { animation: float-slow 6s ease-in-out infinite; }
-.animate-float-subtle { animation: float-subtle 5s ease-in-out infinite; }
-.animate-pulse-glow   { animation: pulse-glow 2.5s ease-in-out infinite; }
-.animate-spin-slow    { animation: spin-slow 8s linear infinite; }
-.animate-fade-up      { animation: fade-up 0.6s ease-out both; }
-.animate-scale-in     { animation: scale-in 0.5s ease-out both; }
-.animate-typing-dot   { animation: typing-dot 1.15s ease-in-out infinite; }
-.animate-msg-in       { animation: msg-enter 0.24s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-controls-in  { animation: controls-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up      { animation: fade-up 0.4s var(--ease-editorial) both; }
+.animate-scale-in     { animation: scale-in 0.35s var(--ease-editorial) both; }
+.animate-typing-dot   { animation: typing-dot 1.15s var(--ease-editorial) infinite; }
+.animate-msg-in       { animation: msg-enter 0.24s var(--ease-editorial) both; }
+.animate-controls-in  { animation: controls-enter 0.26s var(--ease-editorial) both; }
 
-/* Dev NLU Pipeline flow animations */
+/* Dev NLU Pipeline active simulation flow */
 @keyframes flow-dash {
   to { stroke-dashoffset: -24; }
 }
 @keyframes packet-slide {
-  0%   { left: 0%; opacity: 0; transform: translate(-50%, -50%) scale(0.75); }
+  0%   { left: 0%; opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
   15%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   85%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { left: 100%; opacity: 0; transform: translate(-50%, -50%) scale(0.75); }
+  100% { left: 100%; opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
 }
 .animate-flow-dash {
   stroke-dasharray: 6 6;
   animation: flow-dash 0.9s linear infinite;
 }
 .animate-packet-slide {
-  animation: packet-slide 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: packet-slide 1.15s var(--ease-editorial) infinite;
 }
 
-/* Global hover lift */
-.hover-lift {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.25s ease;
-}
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.10);
-}
-
-/* Pink hover lift (for cards on light bg) */
+/* Quiet editorial hover elevation (neutral hairline shadow, single easing) */
+.hover-lift,
 .hover-lift-pink {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.25s ease;
+  transition: transform 0.18s var(--ease-editorial),
+              box-shadow 0.18s var(--ease-editorial),
+              border-color 0.18s var(--ease-editorial);
 }
+.hover-lift:hover,
 .hover-lift-pink:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 16px 40px rgba(236, 72, 153, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.06);
 }
 
-/* Button press */
+/* Restrained tactile button press */
 .btn-press {
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.14s var(--ease-editorial),
+              background-color 0.14s var(--ease-editorial),
+              border-color 0.14s var(--ease-editorial);
 }
-.btn-press:hover  { transform: translateY(-2px); }
-.btn-press:active { transform: scale(0.96) translateY(0px); }
+.btn-press:active { transform: scale(0.98); }
 
-/* Shimmer badge */
-.shimmer-badge {
-  background: linear-gradient(
-    90deg,
-    rgba(236,72,153,0.15) 0%,
-    rgba(236,72,153,0.35) 40%,
-    rgba(236,72,153,0.15) 80%
-  );
-  background-size: 200% auto;
-  animation: shimmer 2.5s linear infinite;
-}
-
-/* Icon hover spin */
-.icon-hover-spin {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.icon-hover-spin:hover { transform: rotate(20deg) scale(1.2); }
-
-/* Link underline slide */
+/* Link underline slide using GPU transform */
 .link-underline {
   position: relative;
 }
 .link-underline::after {
   content: '';
   position: absolute;
-  bottom: -2px; left: 0;
-  width: 0; height: 1.5px;
-  background: #ec4899;
-  transition: width 0.25s ease;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: #db2777;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s var(--ease-editorial);
 }
-.link-underline:hover::after { width: 100%; }
+.link-underline:hover::after {
+  transform: scaleX(1);
+}

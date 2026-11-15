@@ -9,7 +9,6 @@ import {
   HardDrive,
   RefreshCw,
   Search,
-  Sparkles,
   Trash2,
 } from 'lucide-react'
 import {
@@ -188,16 +187,16 @@ export default function DevCleanupTab({
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 flex items-start gap-3">
           <AlertTriangle size={16} className="shrink-0 mt-0.5 text-amber-600" />
           <div className="space-y-1">
-            <div className="font-bold">Supabase cleanup migration needed for database deletes</div>
+            <div className="font-semibold">Supabase cleanup migration needed for database deletes</div>
             <p className="text-amber-800">
-              Run <span className="font-mono font-semibold">20261115_dev_logs_and_cap.sql</span> + <span className="font-mono font-semibold">20261116_dev_cleanup_and_retention.sql</span> (or <span className="font-mono font-semibold">setup_all.sql</span>) in your Supabase SQL Editor so Dev Studio can read raw dev logs, delete trash sessions, and enforce the 3-day auto-clean rule.
+              Run <span className="font-mono font-medium">20261115_dev_logs_and_cap.sql</span> + <span className="font-mono font-medium">20261116_dev_cleanup_and_retention.sql</span> (or <span className="font-mono font-medium">setup_all.sql</span>) in your Supabase SQL Editor so Dev Studio can read raw dev logs, delete trash sessions, and enforce the 3-day auto-clean rule.
             </p>
           </div>
         </div>
       )}
 
       {autoPruneSummary && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 flex items-center gap-2">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 flex items-center gap-2">
           <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
           <span>{autoPruneSummary}</span>
         </div>
@@ -205,9 +204,9 @@ export default function DevCleanupTab({
 
       {feedback && (
         <div
-          className={`rounded-2xl border px-4 py-3 text-xs flex items-center justify-between gap-3 ${
+          className={`rounded-xl border px-4 py-3 text-xs flex items-center justify-between gap-3 ${
             feedback.tone === 'error'
-              ? 'border-red-200 bg-red-50 text-red-700'
+              ? 'border-rose-200 bg-rose-50 text-rose-700'
               : feedback.tone === 'warning'
                 ? 'border-amber-200 bg-amber-50 text-amber-800'
                 : 'border-emerald-200 bg-emerald-50 text-emerald-800'
@@ -217,7 +216,7 @@ export default function DevCleanupTab({
           <button
             type="button"
             onClick={() => setFeedback(null)}
-            className="font-semibold underline hover:no-underline"
+            className="font-medium underline hover:no-underline"
           >
             Dismiss
           </button>
@@ -226,50 +225,50 @@ export default function DevCleanupTab({
 
       {/* Top Row: DB Meters + Auto-Cleanup Control + Local Browser Cache */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-xs space-y-3">
+        <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 p-5 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gray-900 text-pink-300 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-stone-900 text-pink-300 flex items-center justify-center">
                 <Database size={15} />
               </div>
               <div>
-                <div className="text-xs font-bold text-gray-900">Supabase Log Capacity</div>
-                <div className="text-[11px] text-gray-500">Auto-capped at {maxRows} rows per table</div>
+                <div className="text-xs font-semibold text-stone-900">Supabase Log Capacity</div>
+                <div className="text-xs text-stone-500 tabular-nums">Auto-capped at {maxRows} rows per table</div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-2.5 pt-1">
+          <div className="space-y-2.5 pt-1 tabular-nums">
             <div>
-              <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
+              <div className="flex justify-between text-xs font-medium text-stone-700 mb-1">
                 <span>Raw Dev Logs (dev_chat_logs)</span>
                 <span>{stats?.devLogsCount ?? devLogs.length} / {maxRows}</span>
               </div>
-              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                <div className="h-full bg-pink-500 rounded-full transition-all" style={{ width: `${devPct}%` }} />
+              <div className="h-2 rounded-full bg-stone-200 overflow-hidden">
+                <div className="h-full bg-pink-600 rounded-full transition-[width] duration-300" style={{ width: `${devPct}%` }} />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between text-[11px] font-semibold text-gray-700 mb-1">
-                <span>Owner Leads & Logs (chat_logs)</span>
+              <div className="flex justify-between text-xs font-medium text-stone-700 mb-1">
+                <span>Owner Leads &amp; Logs (chat_logs)</span>
                 <span>{stats?.chatLogsCount ?? ownerLogs.length} / {maxRows}</span>
               </div>
-              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${chatPct}%` }} />
+              <div className="h-2 rounded-full bg-stone-200 overflow-hidden">
+                <div className="h-full bg-emerald-600 rounded-full transition-[width] duration-300" style={{ width: `${chatPct}%` }} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-xs space-y-3">
+        <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 p-5 shadow-xs space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center">
               <Clock size={15} />
             </div>
             <div>
-              <div className="text-xs font-bold text-gray-900">Auto-Trash Past Interval</div>
-              <div className="text-[11px] text-gray-500">Runs automatically when /dev opens</div>
+              <div className="text-xs font-semibold text-stone-900">Auto-Trash Past Interval</div>
+              <div className="text-xs text-stone-500">Runs automatically when /dev opens</div>
             </div>
           </div>
 
@@ -278,7 +277,7 @@ export default function DevCleanupTab({
               value={pruneDays}
               disabled={Boolean(busyAction)}
               onChange={(e) => handleIntervalChange(Number(e.target.value))}
-              className="w-full min-h-[38px] border border-pink-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-gray-800 bg-white focus:outline-none focus:border-pink-400"
+              className="w-full min-h-9 border border-stone-200/80 rounded-lg px-3 py-1.5 text-xs font-medium text-stone-800 bg-white focus:outline-none focus:border-pink-400"
             >
               {PRUNE_INTERVAL_OPTIONS.map((opt) => (
                 <option key={opt.days} value={opt.days}>
@@ -288,45 +287,45 @@ export default function DevCleanupTab({
             </select>
 
             <div className="flex items-center justify-between gap-2 pt-0.5">
-              <span className="text-[11px] text-gray-500">
+              <span className="text-xs text-stone-500">
                 Real client leads &amp; bookings stay protected.
               </span>
               <button
                 type="button"
                 disabled={Boolean(busyAction) || pruneDays === 0}
                 onClick={handleRunPruneNow}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-semibold disabled:opacity-50 shrink-0 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium disabled:opacity-50 shrink-0 transition-colors"
               >
-                <Sparkles size={12} />
+                <Trash2 size={12} />
                 {busyAction === 'prune' ? 'Cleaning...' : 'Clean Expired Now'}
               </button>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-xs space-y-3">
+        <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 p-5 shadow-xs space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-stone-100 text-stone-700 flex items-center justify-center">
               <HardDrive size={15} />
             </div>
             <div>
-              <div className="text-xs font-bold text-gray-900">This Browser Cache (PC Local)</div>
-              <div className="text-[11px] text-gray-500">Saved public chat drafts on this device</div>
+              <div className="text-xs font-semibold text-stone-900">This Browser Cache (PC Local)</div>
+              <div className="text-xs text-stone-500">Saved public chat drafts on this device</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-center bg-rose-50/40 rounded-xl p-2.5 border border-pink-100">
+          <div className="grid grid-cols-3 gap-2 text-center bg-[#f8f6f2] rounded-lg p-2.5 border border-stone-200/80 tabular-nums">
             <div>
-              <div className="text-sm font-bold text-gray-900">{localCache.draftSessions}</div>
-              <div className="text-[10px] text-gray-500">Empty Drafts</div>
+              <div className="text-sm font-semibold text-stone-900">{localCache.draftSessions}</div>
+              <div className="text-xs text-stone-500">Empty Drafts</div>
             </div>
             <div>
-              <div className="text-sm font-bold text-emerald-700">{localCache.savedSessions}</div>
-              <div className="text-[10px] text-gray-500">Booked / Saved</div>
+              <div className="text-sm font-semibold text-emerald-700">{localCache.savedSessions}</div>
+              <div className="text-xs text-stone-500">Booked / Saved</div>
             </div>
             <div>
-              <div className="text-sm font-bold text-amber-600">{localCache.starredCount}</div>
-              <div className="text-[10px] text-gray-500">Starred Logs</div>
+              <div className="text-sm font-semibold text-amber-700">{localCache.starredCount}</div>
+              <div className="text-xs text-stone-500">Starred Logs</div>
             </div>
           </div>
 
@@ -334,7 +333,7 @@ export default function DevCleanupTab({
             type="button"
             disabled={localCache.draftSessions === 0}
             onClick={handleClearLocalDrafts}
-            className="w-full inline-flex items-center justify-center gap-1.5 min-h-[34px] rounded-xl border border-pink-200 text-xs font-semibold text-pink-600 hover:bg-pink-50 disabled:opacity-45 transition-colors"
+            className="w-full inline-flex items-center justify-center gap-1.5 min-h-9 rounded-lg border border-stone-200/80 bg-[#fdfcfa] text-xs font-medium text-pink-700 hover:bg-stone-100 disabled:opacity-45 transition-colors tabular-nums"
           >
             <Trash2 size={13} />
             Clear {localCache.draftSessions} Local Test Draft(s)
@@ -343,8 +342,8 @@ export default function DevCleanupTab({
       </div>
 
       {/* Session List Card */}
-      <section className="bg-white rounded-2xl border border-pink-100 shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-pink-100 bg-rose-50/30 flex items-center justify-between gap-4">
+      <section className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-stone-200/80 bg-[#f8f6f2] flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             {[
               { id: 'all', label: `All Sessions (${counts.all})` },
@@ -356,10 +355,10 @@ export default function DevCleanupTab({
                 key={tab.id}
                 type="button"
                 onClick={() => setFilter(tab.id)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-colors ${
+                className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors tabular-nums ${
                   filter === tab.id
-                    ? 'bg-pink-500 text-white border-pink-500'
-                    : 'bg-white text-gray-600 border-pink-100 hover:bg-pink-50'
+                    ? 'bg-pink-600 text-white border-pink-600'
+                    : 'bg-[#fdfcfa] text-stone-600 border-stone-200/80 hover:bg-stone-100'
                 }`}
               >
                 {tab.label}
@@ -369,13 +368,13 @@ export default function DevCleanupTab({
 
           <div className="flex items-center gap-2">
             <div className="relative w-64">
-              <Search size={13} className="text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search size={13} className="text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search session ID, intent, text..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-pink-100 rounded-xl focus:outline-none focus:border-pink-400"
+                placeholder="Search sessions"
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-stone-200/80 rounded-lg text-stone-800 placeholder:text-stone-400 focus:outline-none focus:border-pink-400"
               />
             </div>
 
@@ -385,14 +384,14 @@ export default function DevCleanupTab({
                   type="button"
                   disabled={Boolean(busyAction)}
                   onClick={handleEmptyAllTrash}
-                  className="px-3 py-1.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium transition-colors tabular-nums"
                 >
                   Confirm Delete ({counts.trash})
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirmEmptyTrash(false)}
-                  className="px-2.5 py-1.5 rounded-xl border border-gray-200 bg-white text-gray-600 text-xs font-medium hover:bg-gray-50"
+                  className="px-2.5 py-1.5 rounded-lg border border-stone-200/80 bg-[#fdfcfa] text-stone-600 text-xs font-medium hover:bg-stone-100"
                 >
                   Cancel
                 </button>
@@ -402,7 +401,7 @@ export default function DevCleanupTab({
                 type="button"
                 disabled={counts.trash === 0 || Boolean(busyAction)}
                 onClick={() => setConfirmEmptyTrash(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-xl transition-colors disabled:opacity-45"
+                className="inline-flex items-center gap-1.5 text-xs font-medium bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-45 tabular-nums"
               >
                 <Trash2 size={13} />
                 Empty All Trash ({counts.trash})
@@ -413,7 +412,7 @@ export default function DevCleanupTab({
               type="button"
               onClick={onReload}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-pink-50 text-gray-700 hover:text-pink-600 border border-pink-100 px-3 py-1.5 rounded-xl transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-xs font-medium bg-[#fdfcfa] hover:bg-stone-100 text-stone-700 hover:text-pink-700 border border-stone-200/80 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
             >
               <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
               Refresh
@@ -422,14 +421,14 @@ export default function DevCleanupTab({
         </div>
 
         {error && (
-          <div className="m-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700">
+          <div className="m-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700">
             Error loading logs: {error}
           </div>
         )}
 
-        <div className="divide-y divide-pink-50 max-h-[60vh] overflow-y-auto">
+        <div className="divide-y divide-stone-200/60 max-h-[60vh] overflow-y-auto">
           {!loading && filteredSessions.length === 0 ? (
-            <div className="p-12 text-center text-xs text-gray-400">
+            <div className="p-12 text-center text-xs text-stone-400">
               No sessions match your current filter.
             </div>
           ) : (
@@ -439,7 +438,7 @@ export default function DevCleanupTab({
               const turnsToRender = session.devTurns.length > 0 ? session.devTurns : session.ownerTurns
 
               return (
-                <div key={session.sessionKey} className="hover:bg-rose-50/20 transition-colors">
+                <div key={session.sessionKey} className="hover:bg-stone-100/50 transition-colors">
                   <div className="px-5 py-3.5 flex items-center justify-between gap-4">
                     <button
                       type="button"
@@ -448,7 +447,7 @@ export default function DevCleanupTab({
                     >
                       <div className="flex items-center gap-2">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border ${
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${
                             session.isTrashSession
                               ? 'bg-amber-50 text-amber-700 border-amber-200'
                               : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -458,29 +457,29 @@ export default function DevCleanupTab({
                         </span>
 
                         {session.isExpired && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
                             Past {pruneDays}d
                           </span>
                         )}
 
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-stone-100 text-stone-600 tabular-nums">
                           {session.turnCount} {session.turnCount === 1 ? 'turn' : 'turns'}
                         </span>
 
                         {session.intents.slice(0, 2).map((intent) => (
                           <span
                             key={intent}
-                            className="font-mono text-[10px] px-2 py-0.5 rounded bg-gray-100 text-gray-600"
+                            className="font-mono text-xs px-2 py-0.5 rounded-md bg-stone-100 text-stone-600"
                           >
                             {intent}
                           </span>
                         ))}
                       </div>
 
-                      <div className="text-sm font-semibold text-gray-900 truncate">
+                      <div className="text-sm font-semibold text-stone-900 truncate">
                         {session.firstMessage}
                       </div>
-                      <div className="text-[11px] text-gray-400 font-mono truncate">
+                      <div className="text-xs text-stone-400 font-mono truncate tabular-nums">
                         Session: {session.sessionId || 'single-turn'} · Last active {formatTime(session.lastActivityAt)}
                       </div>
                     </button>
@@ -496,13 +495,13 @@ export default function DevCleanupTab({
                               ? 'Delete this entire trash session'
                               : 'Delete raw dev turns for this session (starred/owner leads stay safe)'
                           }
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-45 transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-rose-200 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-45 transition-colors"
                         >
                           <Trash2 size={13} />
                           {isDeleting ? 'Deleting...' : session.isTrashSession ? 'Delete Session' : 'Clean Dev Copy'}
                         </button>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium">
                           Protected Lead
                         </span>
                       )}
@@ -511,7 +510,7 @@ export default function DevCleanupTab({
                         type="button"
                         onClick={() => setExpandedKey(isOpen ? null : session.sessionKey)}
                         aria-label="Toggle session details"
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-pink-50"
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100"
                       >
                         {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
@@ -519,26 +518,26 @@ export default function DevCleanupTab({
                   </div>
 
                   {isOpen && (
-                    <div className="px-5 pb-4 pt-2 border-t border-pink-100/60 bg-rose-50/15 space-y-2">
+                    <div className="px-5 pb-4 pt-2 border-t border-stone-200/70 bg-[#f8f6f2] space-y-2">
                       {turnsToRender.map((turn, idx) => (
                         <div
                           key={turn.id || idx}
-                          className="rounded-xl bg-white border border-pink-100 p-3 text-xs space-y-1"
+                          className="rounded-lg bg-[#fdfcfa] border border-stone-200/80 p-3 text-xs space-y-1"
                         >
-                          <div className="flex items-center justify-between text-[11px] text-gray-400">
-                            <span className="font-mono font-semibold text-gray-600">
+                          <div className="flex items-center justify-between text-xs text-stone-400 tabular-nums">
+                            <span className="font-mono font-medium text-stone-600">
                               Turn {idx + 1} · {turn.intent_classified || 'UNKNOWN'}
                               {typeof turn.confidence === 'number' ? ` (${Math.round(turn.confidence * 100)}%)` : ''}
                             </span>
                             <span>{formatTime(turn.created_at)}</span>
                           </div>
                           <div>
-                            <span className="font-semibold text-pink-600">Client: </span>
-                            <span className="text-gray-800">{turn.user_message}</span>
+                            <span className="font-medium text-pink-700">Client: </span>
+                            <span className="text-stone-800">{turn.user_message}</span>
                           </div>
                           {turn.bot_reply && (
-                            <div className="text-gray-600 whitespace-pre-wrap">
-                              <span className="font-semibold text-gray-500">JAL: </span>
+                            <div className="text-stone-600 whitespace-pre-wrap">
+                              <span className="font-medium text-stone-500">JAL: </span>
                               {turn.bot_reply}
                             </div>
                           )}

@@ -376,5 +376,9 @@ describe('settings, reference extraction & recency grouping', () => {
         messages: [{ id: 'm1', role: 'assistant', content: 'Booked! Reference: JAL-999ZZ' }],
       })
     ).toBe(true)
+
+    expect(extractReferenceCodes('Please send your booking reference code (e.g. JAL-7K3QX).')).toEqual([])
+    expect(extractReferenceCodes('Pakisend po ang booking reference code mo (hal. JAL-7K3QX).')).toEqual([])
+    expect(extractReferenceCodes('Confirmed booking JAL-43LE2 (e.g. JAL-7K3QX)')).toEqual(['JAL-43LE2'])
   })
 })

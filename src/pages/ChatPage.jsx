@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   Send,
-  Sparkles,
   ArrowLeft,
   Wifi,
   WifiOff,
@@ -19,6 +18,7 @@ import {
   Reply,
   Bookmark,
 } from 'lucide-react'
+import StudioMark from '../components/StudioMark.jsx'
 import { createJAlgorithm } from '../jalgorithm/index.js'
 import { createAppointmentService } from '../services/appointments.js'
 import { supabase } from '../lib/supabase.js'
@@ -358,23 +358,23 @@ export default function ChatPage() {
   const isAnimatingCurrent = isTypingActive || revealingMsgId !== null
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200 w-72">
+    <div className="flex flex-col h-full bg-[#fdfcfa] border-r border-stone-200/80 w-72">
       {/* Sidebar top bar */}
-      <div className="p-3 border-b border-gray-100 flex items-center justify-between gap-2">
+      <div className="p-3 border-b border-stone-200/80 flex items-center justify-between gap-2">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-pink-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-pink-50"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 hover:text-stone-900 transition-colors px-2 min-h-9 rounded-lg hover:bg-stone-100"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={14} strokeWidth={1.75} />
           Home
         </Link>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={handleNewChat}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-3 py-1.5 rounded-lg transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-3 min-h-9 rounded-lg transition-colors"
           >
-            <Plus size={14} />
+            <Plus size={14} strokeWidth={1.75} />
             New Chat
           </button>
           <button
@@ -384,9 +384,9 @@ export default function ChatPage() {
               setMobileDrawerOpen(false)
             }}
             title="Hide sidebar"
-            className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 text-stone-500 hover:text-stone-800 rounded-lg hover:bg-stone-100 transition-colors"
           >
-            <PanelLeftClose size={16} />
+            <PanelLeftClose size={16} strokeWidth={1.75} />
           </button>
         </div>
       </div>
@@ -395,7 +395,7 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4">
         {groupedSessions.map((group) => (
           <div key={group.label}>
-            <div className="px-2.5 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+            <div className="px-2.5 mb-1.5 text-xs font-medium text-gray-500">
               {group.label}
             </div>
             <div className="space-y-1">
@@ -468,13 +468,13 @@ export default function ChatPage() {
                         <div className="flex-1 min-w-0">
                           <div className="truncate font-medium text-[13px]">{session.title}</div>
                           {inFlow ? (
-                            <div className="flex items-center gap-1 text-[10px] text-pink-500 font-medium mt-0.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
+                            <div className="flex items-center gap-1.5 text-xs text-pink-700 font-medium mt-0.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-pink-600" />
                               In progress
                             </div>
                           ) : hasSavedSetup(session) ? (
-                            <div className="flex items-center gap-1 text-[10px] text-amber-600 font-medium mt-0.5">
-                              <Bookmark size={10} />
+                            <div className="flex items-center gap-1 text-xs text-amber-700 font-medium mt-0.5">
+                              <Bookmark size={11} />
                               Saved setup
                             </div>
                           ) : null}
@@ -484,7 +484,7 @@ export default function ChatPage() {
                             <button
                               type="button"
                               onClick={(e) => handleDeleteSession(e, session.id)}
-                              className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500 hover:bg-red-600 text-white rounded"
+                              className="px-2 py-0.5 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded-md"
                               title="Confirm delete saved setup"
                             >
                               Delete
@@ -536,29 +536,29 @@ export default function ChatPage() {
       </div>
 
       {/* Sidebar footer */}
-      <div className="p-3 border-t border-gray-100 space-y-2">
+      <div className="p-3 border-t border-stone-200/80 space-y-2">
         <button
           type="button"
           onClick={() => {
             setConfirmClearAll(false)
             setSettingsOpen(true)
           }}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          className="w-full flex items-center justify-between px-3 min-h-9 rounded-lg text-xs font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
         >
           <span className="inline-flex items-center gap-2.5">
-            <Settings size={15} className="text-gray-500" />
+            <Settings size={15} strokeWidth={1.75} className="text-stone-500" />
             Settings
           </span>
         </button>
-        <div className="px-3 text-[11px] text-gray-400">
-          Guest mode | Saved in this browser
+        <div className="px-3 text-xs text-stone-500">
+          Guest mode | Saved locally
         </div>
       </div>
     </div>
   )
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-[100dvh] w-full max-w-full bg-[#f8f6f2] flex overflow-hidden">
       {/* Desktop collapsible sidebar */}
       {sidebarOpen && <aside className="hidden md:flex flex-shrink-0 h-full">{sidebarContent}</aside>}
 
@@ -566,7 +566,7 @@ export default function ChatPage() {
       {mobileDrawerOpen && (
         <div className="fixed inset-0 z-40 flex md:hidden">
           <div
-            className="fixed inset-0 bg-black/40 transition-opacity"
+            className="fixed inset-0 bg-stone-950/40 transition-opacity"
             onClick={() => setMobileDrawerOpen(false)}
           />
           <aside className="relative z-50 h-full shadow-xl">{sidebarContent}</aside>
@@ -576,56 +576,54 @@ export default function ChatPage() {
       {/* Main Chat Column */}
       <div className="flex-1 flex flex-col min-w-0 h-full relative">
         {/* Top Header */}
-        <header className="bg-white border-b border-gray-100 px-4 lg:px-6 py-3 flex items-center justify-between gap-3 flex-shrink-0">
+        <header className="bg-[#fdfcfa] border-b border-stone-200/80 px-4 lg:px-6 py-3 flex items-center justify-between gap-3 flex-shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             {!sidebarOpen && (
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
                 title="Show conversations"
-                className="hidden md:inline-flex p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                className="hidden md:inline-flex p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors"
               >
-                <PanelLeftOpen size={18} />
+                <PanelLeftOpen size={18} strokeWidth={1.75} />
               </button>
             )}
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
               title="Show conversations"
-              className="md:hidden p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              className="md:hidden p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors"
             >
-              <PanelLeftOpen size={18} />
+              <PanelLeftOpen size={18} strokeWidth={1.75} />
             </button>
 
             {!sidebarOpen && (
               <Link
                 to="/"
                 title="Back to home"
-                className="hidden md:inline-flex p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+                className="hidden md:inline-flex p-1.5 text-stone-400 hover:text-stone-700 rounded-lg transition-colors"
               >
-                <ArrowLeft size={18} />
+                <ArrowLeft size={18} strokeWidth={1.75} />
               </Link>
             )}
 
-            <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <Sparkles size={14} className="text-white" />
-            </div>
+            <StudioMark size="sm" roundedFull />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm text-gray-900">JAL</span>
+                <span className="font-medium text-sm text-stone-900">JAL</span>
                 {activeSession?.title && activeSession.title !== 'New Chat' && (
-                  <span className="hidden sm:inline-block text-xs text-gray-400 truncate max-w-[240px] lg:max-w-[320px]">
+                  <span className="hidden sm:inline-block text-xs text-stone-500 truncate max-w-[240px] lg:max-w-[320px]">
                     / {activeSession.title}
                   </span>
                 )}
               </div>
               {online
                 ? (
-                  <div className="flex items-center gap-1 text-xs text-green-500 font-medium">
-                    <Wifi size={10} /> Online{catalog?.business?.name ? ` | ${catalog.business.name}` : ''}
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
+                    <Wifi size={12} strokeWidth={1.75} /> Online{catalog?.business?.name ? ` | ${catalog.business.name}` : ''}
                   </div>
                 )
-                : <div className="flex items-center gap-1 text-xs text-amber-500 font-medium"><WifiOff size={10} /> Offline, questions only</div>}
+                : <div className="flex items-center gap-1.5 text-xs text-amber-700 font-medium"><WifiOff size={12} strokeWidth={1.75} /> Offline, questions only</div>}
             </div>
           </div>
 
@@ -634,9 +632,9 @@ export default function ChatPage() {
               type="button"
               onClick={handleNewChat}
               title="Start a new chat"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-pink-600 hover:bg-pink-50 border border-gray-200 hover:border-pink-200 px-2.5 py-1.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-700 hover:text-stone-900 hover:bg-stone-100 border border-stone-200 px-3 min-h-9 rounded-lg transition-colors"
             >
-              <Plus size={15} />
+              <Plus size={15} strokeWidth={1.75} />
               <span className="hidden sm:inline">New Chat</span>
             </button>
           </div>
@@ -644,39 +642,39 @@ export default function ChatPage() {
 
         {/* Live Booking Step Progress Bar */}
         {bookingStepIdx >= 0 && (
-          <div className="bg-white border-b border-pink-100/80 px-4 lg:px-6 py-2 flex-shrink-0">
-            <div className="max-w-3xl xl:max-w-4xl mx-auto flex items-center justify-between gap-2 overflow-x-auto">
+          <div className="bg-white border-b border-stone-200/80 px-3.5 sm:px-4 lg:px-6 py-2.5 flex-shrink-0 w-full min-w-0 overflow-hidden">
+            <div className="max-w-3xl xl:max-w-4xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2 w-full">
               {BOOKING_STEPS.map((step, idx) => {
                 const done = idx < bookingStepIdx
                 const current = idx === bookingStepIdx
                 return (
-                  <div key={step.key} className="flex items-center gap-2 flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 min-w-0">
+                  <div key={step.key} className={`flex items-center gap-1.5 sm:gap-2 min-w-0 ${idx < BOOKING_STEPS.length - 1 ? 'flex-1' : 'flex-shrink-0 sm:flex-1'}`}>
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                       <span
-                        className={`w-5 h-5 rounded-full text-[11px] font-semibold flex items-center justify-center flex-shrink-0 transition-colors ${
+                        className={`w-6 h-6 rounded-md text-xs font-medium tabular-nums flex items-center justify-center flex-shrink-0 transition-colors ${
                           done
-                            ? 'bg-pink-500 text-white'
+                            ? 'bg-pink-600 text-white'
                             : current
-                              ? 'bg-pink-100 text-pink-600 border border-pink-300'
-                              : 'bg-gray-100 text-gray-400'
+                              ? 'bg-pink-50 text-pink-700 border border-pink-300'
+                              : 'bg-stone-100 text-stone-500'
                         }`}
                       >
-                        {done ? <Check size={11} /> : idx + 1}
+                        {done ? <Check size={12} strokeWidth={2} /> : idx + 1}
                       </span>
                       <span
                         className={`text-xs truncate ${
                           current
-                            ? 'font-semibold text-pink-600'
+                            ? 'inline font-medium text-pink-700'
                             : done
-                              ? 'font-medium text-gray-700'
-                              : 'text-gray-400'
+                              ? 'hidden sm:inline font-medium text-stone-800'
+                              : 'hidden sm:inline text-stone-500'
                         }`}
                       >
                         {step.label}
                       </span>
                     </div>
                     {idx < BOOKING_STEPS.length - 1 && (
-                      <div className={`hidden sm:block flex-1 h-px ${done ? 'bg-pink-300' : 'bg-gray-200'}`} />
+                      <div className={`flex-1 h-px min-w-[8px] ${done ? 'bg-pink-300' : 'bg-stone-200'}`} />
                     )}
                   </div>
                 )
@@ -689,7 +687,7 @@ export default function ChatPage() {
         <div
           ref={scrollAreaRef}
           onScroll={handleMessagesScroll}
-          className="flex-1 overflow-y-auto px-4 lg:px-8 py-6"
+          className="flex-1 overflow-y-auto overflow-x-hidden px-3.5 sm:px-4 lg:px-8 py-5 sm:py-6"
         >
           <div className="max-w-3xl xl:max-w-4xl mx-auto w-full space-y-5">
             {messages.map((msg) => (
@@ -709,14 +707,12 @@ export default function ChatPage() {
 
             {(isTypingActive || !bot) && (
               <div className="flex gap-3 items-end animate-msg-in">
-                <div className="w-7 h-7 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Sparkles size={12} className="text-pink-500" />
-                </div>
-                <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-typing-dot" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-typing-dot" style={{ animationDelay: '180ms' }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-typing-dot" style={{ animationDelay: '360ms' }} />
-                  <span className="ml-1.5 text-xs text-gray-400">JAL is typing...</span>
+                <StudioMark size="xs" tone="soft" roundedFull />
+                <div className="bg-white border border-gray-200/80 rounded-2xl rounded-bl-sm px-4 py-3 shadow-2xs flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-pink-600 animate-typing-dot" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-pink-600 animate-typing-dot" style={{ animationDelay: '180ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-pink-600 animate-typing-dot" style={{ animationDelay: '360ms' }} />
+                  <span className="ml-1.5 text-xs text-gray-500">JAL is typing...</span>
                 </div>
               </div>
             )}
@@ -758,21 +754,21 @@ export default function ChatPage() {
         )}
 
         {/* Composer */}
-        <div className="bg-white border-t border-gray-100 px-4 lg:px-8 py-3 flex-shrink-0">
+        <div className="bg-[#fdfcfa] border-t border-stone-200/80 px-4 lg:px-8 py-3 flex-shrink-0">
           {replyTarget && (
-            <div className="max-w-3xl xl:max-w-4xl mx-auto mb-2 flex items-center justify-between gap-2 bg-pink-50/80 border border-pink-200 rounded-xl px-3 py-1.5 text-xs">
+            <div className="max-w-3xl xl:max-w-4xl mx-auto mb-2 flex items-center justify-between gap-2 bg-[#f8f6f2] border border-stone-200 rounded-lg px-3 py-1.5 text-xs">
               <div className="flex items-center gap-2 min-w-0">
-                <Reply size={13} className="text-pink-500 shrink-0" />
-                <span className="font-semibold text-pink-700 shrink-0">
+                <Reply size={13} strokeWidth={1.75} className="text-pink-700 shrink-0" />
+                <span className="font-medium text-pink-700 shrink-0">
                   Replying to {replyTarget.role === 'user' ? 'Client' : 'JAL'}:
                 </span>
-                <span className="text-gray-600 truncate">{replyTarget.content}</span>
+                <span className="text-stone-600 truncate">{replyTarget.content}</span>
               </div>
               <button
                 type="button"
                 onClick={() => setReplyTarget(null)}
                 title="Cancel reply"
-                className="p-0.5 text-gray-400 hover:text-gray-700 rounded shrink-0"
+                className="p-0.5 text-stone-400 hover:text-stone-700 rounded shrink-0"
               >
                 <X size={13} />
               </button>
@@ -792,16 +788,16 @@ export default function ChatPage() {
                   handleFormSubmit(e)
                 }
               }}
-              placeholder="Type your message..."
+              placeholder="Type a message"
               rows={1}
-              className="flex-1 resize-none border border-gray-200 rounded-xl px-4 py-3 text-sm leading-5 max-h-[128px] overflow-y-auto focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-100 transition-all"
+              className="flex-1 resize-none border border-stone-200 bg-white rounded-lg px-4 py-3 text-sm leading-5 max-h-[128px] overflow-y-auto focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-[border-color,box-shadow]"
             />
             <button
               type="submit"
               disabled={!input.trim() || isBusy || !bot}
-              className="bg-pink-500 hover:bg-pink-600 disabled:bg-pink-200 text-white p-3 rounded-xl transition-colors flex-shrink-0"
+              className="btn-press bg-pink-600 hover:bg-pink-700 disabled:bg-pink-200 text-white p-3 rounded-lg flex-shrink-0"
             >
-              <Send size={16} />
+              <Send size={16} strokeWidth={1.75} />
             </button>
           </form>
         </div>
@@ -908,7 +904,7 @@ function SettingToggleRow({ label, description, checked, onToggle }) {
         aria-checked={checked}
         onClick={onToggle}
         className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${
-          checked ? 'bg-pink-500' : 'bg-gray-200'
+          checked ? 'bg-pink-600' : 'bg-stone-300'
         }`}
       >
         <span

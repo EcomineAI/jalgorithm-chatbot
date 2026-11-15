@@ -69,7 +69,7 @@ function getSessionPrimaryBadge(session) {
   if (session.outcomeAction === 'rescheduled') {
     return {
       label: `Rescheduled${refSuffix}`,
-      tone: 'bg-sky-50 text-sky-700 border-sky-200',
+      tone: 'bg-amber-50 text-amber-800 border-amber-200',
     }
   }
   if (session.outcomeAction === 'cancelled') {
@@ -99,12 +99,12 @@ function getSessionPrimaryBadge(session) {
   if (session.category === 'greetings') {
     return {
       label: 'Greeting',
-      tone: 'bg-gray-50 text-gray-600 border-gray-200',
+      tone: 'bg-stone-100 text-stone-600 border-stone-200/80',
     }
   }
   return {
     label: 'Inquiry',
-    tone: 'bg-purple-50 text-purple-700 border-purple-200',
+    tone: 'bg-pink-50 text-pink-700 border-pink-200',
   }
 }
 
@@ -267,28 +267,26 @@ export default function ChatLogsTab({ chatLogs }) {
   const hasActiveFilter = category !== 'all' || Boolean(query.trim())
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       {/* Compact 3-Card Summary Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatKpiCard
-          label={viewMode === 'sessions' ? 'Total Conversations' : 'Total Messages'}
-          value={counts.all}
-          sublabel={
-            viewMode === 'sessions'
-              ? `${allBaseLogs.length} client turns grouped`
-              : 'Individual client turns'
-          }
-          icon={MessageSquare}
-          tone="charcoal"
-          active={category === 'all'}
-          onClick={() => setCategory('all')}
-        />
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4">
+        <div className="col-span-2 sm:col-span-1">
+          <StatKpiCard
+            label={viewMode === 'sessions' ? 'Total Conversations' : 'Total Messages'}
+            value={counts.all}
+            sublabel={
+              viewMode === 'sessions'
+                ? `${allBaseLogs.length} client turns grouped`
+                : 'Individual client turns'
+            }
+            active={category === 'all'}
+            onClick={() => setCategory('all')}
+          />
+        </div>
         <StatKpiCard
           label="Bookings & Leads"
           value={counts.leads}
           sublabel="Booking, reschedule & cancel chats"
-          icon={CalendarCheck}
-          tone="emerald"
           active={category === 'bookings'}
           onClick={() => setCategory('bookings')}
         />
@@ -296,17 +294,15 @@ export default function ChatLogsTab({ chatLogs }) {
           label="Needs Review"
           value={counts.attention}
           sublabel="Unresolved or urgent chats"
-          icon={AlertTriangle}
-          tone="amber"
           active={category === 'attention'}
           onClick={() => setCategory('attention')}
         />
       </div>
 
       {/* Calm Filter & Search Toolbar */}
-      <div className="bg-white rounded-2xl border border-pink-100 shadow-xs p-5 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
+      <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs p-3.5 sm:p-5 space-y-3 sm:space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+          <div className="flex overflow-x-auto sm:flex-wrap gap-2 pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
             {filterChips.map((chip) => {
               const isSelected = category === chip.id
               return (
@@ -314,16 +310,16 @@ export default function ChatLogsTab({ chatLogs }) {
                   key={chip.id}
                   type="button"
                   onClick={() => setCategory(chip.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 min-h-[38px] rounded-xl text-xs font-semibold transition-all border ${
+                  className={`inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap px-3 sm:px-3.5 min-h-9 rounded-lg text-xs font-medium transition-colors border ${
                     isSelected
-                      ? 'bg-pink-500 text-white border-pink-500 shadow-xs'
-                      : 'bg-white text-gray-600 border-pink-100 hover:bg-pink-50/70'
+                      ? 'bg-pink-600 text-white border-pink-600'
+                      : 'bg-[#fdfcfa] text-stone-600 border-stone-200/80 hover:bg-stone-100'
                   }`}
                 >
                   <span>{chip.label}</span>
                   <span
-                    className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold ${
-                      isSelected ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-600'
+                    className={`px-1.5 py-0.5 rounded-md text-xs font-medium tabular-nums ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-600'
                     }`}
                   >
                     {chip.count}
@@ -338,18 +334,18 @@ export default function ChatLogsTab({ chatLogs }) {
               <button
                 type="button"
                 onClick={() => setHideTrash((v) => !v)}
-                className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors"
+                className="inline-flex items-center gap-1 text-xs font-medium text-stone-400 hover:text-stone-700 transition-colors"
                 title={hideTrash ? 'Show filtered spam/test turns' : 'Hide spam/test turns'}
               >
                 <Trash2 size={12} />
-                <span>{hideTrash ? `${trashCount} noise hidden` : 'Hide noise'}</span>
+                <span className="tabular-nums">{hideTrash ? `${trashCount} noise hidden` : 'Hide noise'}</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={() => setViewMode((m) => (m === 'sessions' ? 'turns' : 'sessions'))}
-              className="text-xs font-semibold text-pink-600 hover:text-pink-700 underline-offset-2 hover:underline transition-colors"
+              className="text-xs font-medium text-pink-700 hover:text-pink-800 underline-offset-2 hover:underline transition-colors"
             >
               {viewMode === 'sessions' ? 'Show individual turns' : 'Back to conversations'}
             </button>
@@ -358,20 +354,20 @@ export default function ChatLogsTab({ chatLogs }) {
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search client message, booking ref, or service..."
-              className="w-full min-h-[42px] border border-pink-100 rounded-xl pl-10 pr-9 py-2 text-xs text-gray-800 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-200"
+              placeholder="Search logs"
+              className="w-full min-h-10 border border-stone-200/80 bg-[#f8f6f2] focus:bg-[#fdfcfa] rounded-lg pl-10 pr-9 py-2 text-xs text-stone-800 placeholder:text-stone-400 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery('')}
                 aria-label="Clear chat log search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-pink-50"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-stone-400 hover:text-stone-700 hover:bg-stone-100"
               >
                 <X size={14} />
               </button>
@@ -381,7 +377,7 @@ export default function ChatLogsTab({ chatLogs }) {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="min-h-[42px] border border-pink-100 rounded-xl px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-200"
+            className="min-h-10 border border-stone-200/80 rounded-lg px-3.5 py-2 text-xs font-medium text-stone-700 bg-[#fdfcfa] focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
           >
             <option value="important">Sort: Most Important</option>
             <option value="newest">Sort: Newest First</option>
@@ -390,11 +386,11 @@ export default function ChatLogsTab({ chatLogs }) {
       </div>
 
       {/* Main List */}
-      <div className="bg-white rounded-2xl border border-pink-100 shadow-xs overflow-hidden">
+      <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
         {viewMode === 'sessions' ? (
           pagedSessions.items.length === 0 ? (
             <div className="px-6 py-12 text-center space-y-3">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-stone-400">
                 {(chatLogs ?? []).length === 0
                   ? 'No client chat logs recorded yet.'
                   : 'No conversations match your current filter.'}
@@ -406,14 +402,14 @@ export default function ChatLogsTab({ chatLogs }) {
                     setCategory('all')
                     setQuery('')
                   }}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-pink-200 text-xs font-semibold text-pink-600 hover:bg-pink-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-stone-200/80 text-xs font-medium text-pink-700 hover:bg-stone-100 transition-colors"
                 >
                   Clear filters
                 </button>
               )}
             </div>
           ) : (
-            <div className="divide-y divide-pink-50">
+            <div className="divide-y divide-stone-200/60">
               {pagedSessions.items.map((session) => {
                 const isOpen = expandedId === session.sessionId
                 const badge = getSessionPrimaryBadge(session)
@@ -427,7 +423,7 @@ export default function ChatLogsTab({ chatLogs }) {
                         ? 'bg-amber-50/25'
                         : session.needsReview && !session.resolvedCleanly
                           ? 'bg-amber-50/15'
-                          : 'hover:bg-rose-50/20'
+                          : 'hover:bg-stone-100/50'
                     }`}
                   >
                     <div
@@ -440,7 +436,7 @@ export default function ChatLogsTab({ chatLogs }) {
                           setExpandedId(isOpen ? null : session.sessionId)
                         }
                       }}
-                      className="px-5 py-4 cursor-pointer space-y-2"
+                      className="px-3.5 sm:px-5 py-3 sm:py-4 cursor-pointer space-y-2"
                     >
                       {/* Row 1: Max 2 concise badges + time + expand */}
                       <div className="flex items-center justify-between gap-3">
@@ -452,24 +448,24 @@ export default function ChatLogsTab({ chatLogs }) {
                             className={`p-1 rounded-lg transition-colors shrink-0 ${
                               session.hasStarred
                                 ? 'text-amber-500 bg-amber-50'
-                                : 'text-gray-300 hover:text-amber-500'
+                                : 'text-stone-300 hover:text-amber-500'
                             }`}
                           >
                             <Star size={14} fill={session.hasStarred ? 'currentColor' : 'none'} />
                           </button>
 
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badge.tone}`}
+                            className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${badge.tone}`}
                           >
                             {badge.label}
                           </span>
 
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-500">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-stone-100 text-stone-600 tabular-nums">
                             {msgLabel}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0 text-xs text-gray-400">
+                        <div className="flex items-center gap-2 shrink-0 text-xs text-stone-400 tabular-nums">
                           <span>{formatLogTime(session.latest?.created_at)}</span>
                           {isOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                         </div>
@@ -477,58 +473,58 @@ export default function ChatLogsTab({ chatLogs }) {
 
                       {/* Row 2: Clean 1-line client topic + 1-line latest reply */}
                       <div className="pl-7 space-y-0.5">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
+                        <p className="text-sm font-semibold text-stone-900 truncate">
                           {session.title || 'Client inquiry'}
                         </p>
-                        <p className="text-xs text-gray-500 truncate">
+                        <p className="text-xs text-stone-500 truncate">
                           Latest JAL reply: {collapseToSingleLine(session.latest?.bot_reply)}
                         </p>
                       </div>
                     </div>
 
                     {isOpen && (
-                      <div className="px-5 pb-5 pt-3 border-t border-pink-100/70 bg-rose-50/15 space-y-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-500">
+                      <div className="px-5 pb-5 pt-3 border-t border-stone-200/80 bg-[#f8f6f2] space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500">
                           <div className="flex flex-wrap items-center gap-3">
                             {session.service && (
                               <span>
-                                Service: <strong className="text-gray-700">{session.service}</strong>
+                                Service: <strong className="font-medium text-stone-800">{session.service}</strong>
                               </span>
                             )}
                             {session.referenceCode && (
                               <span>
-                                Ref: <strong className="text-pink-600">{session.referenceCode}</strong>
+                                Ref: <strong className="font-medium text-pink-700 tabular-nums">{session.referenceCode}</strong>
                               </span>
                             )}
                           </div>
-                          <span className="font-mono text-gray-400">Session: {session.sessionId}</span>
+                          <span className="font-mono text-stone-400">Session: {session.sessionId}</span>
                         </div>
 
                         <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
                           {session.turns.map((turn, idx) => (
                             <div
                               key={turn.id || `${session.sessionId}-${idx}`}
-                              className="rounded-xl border border-pink-100 bg-white p-3.5 space-y-2 text-xs"
+                              className="rounded-xl border border-stone-200/80 bg-[#fdfcfa] p-3.5 space-y-2 text-xs"
                             >
-                              <div className="flex items-center justify-between gap-2 text-[11px] text-gray-400">
-                                <span className="font-semibold text-gray-500">
+                              <div className="flex items-center justify-between gap-2 text-xs text-stone-400 tabular-nums">
+                                <span className="font-medium text-stone-600">
                                   Turn {idx + 1} · {turn.intent_classified || 'UNKNOWN'}
                                 </span>
                                 <span>{formatLogTime(turn.created_at)}</span>
                               </div>
                               <div>
-                                <span className="text-[11px] font-semibold text-pink-600 uppercase tracking-wide">
+                                <span className="text-xs font-medium text-pink-700">
                                   Client
                                 </span>
-                                <p className="text-gray-800 whitespace-pre-wrap mt-0.5">
+                                <p className="text-stone-800 whitespace-pre-wrap mt-0.5">
                                   {turn.user_message}
                                 </p>
                               </div>
-                              <div className="pt-1 border-t border-pink-50">
-                                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                              <div className="pt-1 border-t border-stone-200/60">
+                                <span className="text-xs font-medium text-stone-500">
                                   JAL Reply
                                 </span>
-                                <p className="text-gray-600 whitespace-pre-wrap mt-0.5">
+                                <p className="text-stone-600 whitespace-pre-wrap mt-0.5">
                                   {turn.bot_reply || '-'}
                                 </p>
                               </div>
@@ -544,7 +540,7 @@ export default function ChatLogsTab({ chatLogs }) {
           )
         ) : pagedLogs.items.length === 0 ? (
           <div className="px-6 py-12 text-center space-y-3">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-stone-400">
               {(chatLogs ?? []).length === 0
                 ? 'No client chat logs recorded yet.'
                 : 'No messages match your current filter.'}
@@ -556,14 +552,14 @@ export default function ChatLogsTab({ chatLogs }) {
                   setCategory('all')
                   setQuery('')
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-pink-200 text-xs font-semibold text-pink-600 hover:bg-pink-50 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-stone-200/80 text-xs font-medium text-pink-700 hover:bg-stone-100 transition-colors"
               >
                 Clear filters
               </button>
             )}
           </div>
         ) : (
-          <div className="divide-y divide-pink-50">
+          <div className="divide-y divide-stone-200/60">
             {pagedLogs.items.map((log) => {
               const isOpen = expandedId === log.id
               const isStarred = starredIds.has(log.id)
@@ -575,13 +571,13 @@ export default function ChatLogsTab({ chatLogs }) {
                     ? { label: 'Booking Lead', tone: 'bg-pink-50 text-pink-700 border-pink-200' }
                     : cat === 'changes'
                       ? { label: 'Change Request', tone: 'bg-rose-50 text-rose-700 border-rose-200' }
-                      : { label: 'Inquiry', tone: 'bg-purple-50 text-purple-700 border-purple-200' }
+                      : { label: 'Inquiry', tone: 'bg-stone-100 text-stone-700 border-stone-200' }
 
               return (
                 <div
                   key={log.id}
                   onClick={() => setExpandedId(isOpen ? null : log.id)}
-                  className="px-5 py-4 cursor-pointer hover:bg-rose-50/20 transition-colors space-y-2"
+                  className="px-5 py-4 cursor-pointer hover:bg-stone-100/50 transition-colors space-y-2"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 min-w-0">
@@ -590,26 +586,26 @@ export default function ChatLogsTab({ chatLogs }) {
                         onClick={(e) => toggleStar(log.id, e)}
                         aria-label={isStarred ? 'Unstar message' : 'Star message'}
                         className={`p-1 rounded-lg transition-colors shrink-0 ${
-                          isStarred ? 'text-amber-500 bg-amber-50' : 'text-gray-300 hover:text-amber-500'
+                          isStarred ? 'text-amber-500 bg-amber-50' : 'text-stone-300 hover:text-amber-500'
                         }`}
                       >
                         <Star size={14} fill={isStarred ? 'currentColor' : 'none'} />
                       </button>
 
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${catBadge.tone}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${catBadge.tone}`}
                       >
                         {catBadge.label}
                       </span>
 
                       {typeof log.confidence === 'number' && (
-                        <span className="text-[11px] text-gray-400">
+                        <span className="text-xs text-stone-400 tabular-nums">
                           {Math.round(log.confidence * 100)}% match
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 text-xs text-gray-400">
+                    <div className="flex items-center gap-2 shrink-0 text-xs text-stone-400 tabular-nums">
                       <span>{formatLogTime(log.created_at)}</span>
                       {isOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                     </div>
@@ -617,14 +613,14 @@ export default function ChatLogsTab({ chatLogs }) {
 
                   <div className="pl-7 space-y-0.5">
                     <p
-                      className={`text-sm font-semibold text-gray-900 ${
+                      className={`text-sm font-semibold text-stone-900 ${
                         isOpen ? 'whitespace-pre-wrap' : 'truncate'
                       }`}
                     >
                       {log.user_message}
                     </p>
                     <p
-                      className={`text-xs text-gray-500 ${
+                      className={`text-xs text-stone-500 ${
                         isOpen ? 'whitespace-pre-wrap' : 'truncate'
                       }`}
                     >
@@ -633,18 +629,18 @@ export default function ChatLogsTab({ chatLogs }) {
                   </div>
 
                   {isOpen && (
-                    <div className="pl-7 pt-2 flex flex-wrap gap-3 text-[11px] text-gray-500">
+                    <div className="pl-7 pt-2 flex flex-wrap gap-3 text-xs text-stone-500">
                       {log.language && (
                         <span>
                           Language:{' '}
-                          <strong className="text-gray-700">
+                          <strong className="font-medium text-stone-800">
                             {log.language === 'fil' ? 'Filipino / Taglish' : 'English'}
                           </strong>
                         </span>
                       )}
                       {log.entities?.service && (
                         <span>
-                          Service: <strong className="text-gray-700">{log.entities.service}</strong>
+                          Service: <strong className="font-medium text-stone-800">{log.entities.service}</strong>
                         </span>
                       )}
                       {log.entities?.date && (

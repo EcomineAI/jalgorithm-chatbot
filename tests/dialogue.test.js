@@ -371,3 +371,160 @@ describe('beneficiary interview dialogue features (Trev Luna preset)', () => {
     expect(rReplyPrice.reply).toMatch(/5000-7000/)
   })
 })
+
+describe('smarter NLU, memory & JAL identity', () => {
+  it('introduces itself as JAL in welcome and greeting messages', async () => {
+    const bot = createJAlgorithm({ actions: mockActions(), now: () => NOW })
+    expect(bot.welcome('en')).toMatch(/\bJAL\b/)
+    expect(bot.welcome('fil')).toMatch(/\bJAL\b/)
+    const hiEn = await bot.processMessage('hello', bot.initialState())
+    expect(hiEn.reply).toMatch(/\bJAL\b/)
+    const hiFil = await bot.processMessage('hi po kumusta', bot.initialState())
+    expect(hiFil.reply).toMatch(/\bJAL\b/)
+  })
+
+  it('remembers service context from an FAQ turn into a following booking turn', async () => {
+    const { turns } = await chat([
+      'Magkano bridal makeup?',
+      'Pa-book po sa Nov 20 10am',
+    ])
+    expect(turns[0].intent).toBe('ASK_PRICE')
+    expect(turns[0].reply).toMatch(/3,500/)
+    expect(turns[1].intent).toBe('BOOK_APPOINTMENT')
+    expect(turns[1].state.flow.slots.service).toBe('bridal')
+    expect(turns[1].state.flow.slots.date).toBe('2026-11-20')
+    expect(turns[1].state.flow.slots.time).toBe('10:00')
+    expect(turns[1].reply).toMatch(/pangalan/)
+  })
+
+  it('computes group additional-head estimates when additionalHeadPrice is configured', async () => {
+    const trevCatalog = toCatalog(BENEFICIARY_PRESET_TREV_LUNA)
+    const catalogWithHeadPrice = {
+      ...trevCatalog,
+      business: { ...trevCatalog.business, additionalHeadPrice: 1500, additionalHeadNote: 'Includes hair & makeup.' },
+    }
+    const bot = createJAlgorithm({ catalog: catalogWithHeadPrice, actions: mockActions(), now: () => NOW })
+    const res = await bot.processMessage('Magkano bridal with 3 additional heads?', bot.initialState())
+    expect(res.reply).toMatch(/9,500/)
+    expect(res.reply).toMatch(/3 additional head/)
+    expect(res.handoff?.draft).toMatch(/3 additional head/i)
+  })
+
+  it('answers compound multi-question inquiries (price + location) in one reply', async () => {
+    const { last } = await chat(['Magkano bridal makeup at saan po location ninyo?'])
+    expect(last.reply).toMatch(/3,500/)
+    expect(last.reply).toMatch(/Olongapo/)
+  })
+
+  it('proactively suggests earliest valid slots on too_soon and lets client accept with a time', async () => {
+    const { turns } = await chat([
+      'May available ba bukas?',
+      '10am',
+      'oo',
+    ])
+    expect(turns[0].reply).toMatch(/Nov 15/)
+    expect(turns[0].reply).toMatch(/9:00 AM/)
+    expect(turns[1].state.pending).toMatchObject({ type: 'offer_book', slots: { date: '2026-11-15', time: '10:00' } })
+    expect(turns[1].reply).toMatch(/Available po ang 10:00 AM/i)
+    expect(turns[2].intent).toBe('BOOK_APPOINTMENT')
+    expect(turns[2].state.flow.slots.date).toBe('2026-11-15')
+  })
+
+  it('allows direct mid-flow slot editing before reaching confirmation and handles venue/number change requests', async () => {
+    const bot = createJAlgorithm({ actions: mockActions(), now: () => NOW })
+
+    const editStart = await bot.processMessage('book bridal sa nov 20 10am', bot.initialState())
+    const editDate = await bot.processMessage('change date', editStart.state)
+    expect(editDate.state.flow.slots.date).toBeNull()
+    expect(editDate.state.flow.awaiting).toBe('date')
+    expect(editDate.reply).toMatch(/What date|Anong date/i)
+
+    const venueGuide = await bot.processMessage('chaneg my loc for JAL-7K3QX', bot.initialState())
+    expect(venueGuide.reply).toMatch(/venue|location/i)
+    expect(venueGuide.handoff?.reason).toBe('change_venue')
+
+    const numGuide = await bot.processMessage('change numb', bot.initialState())
+    expect(numGuide.reply).toMatch(/mobile number/i)
+    expect(numGuide.handoff?.reason).toBe('edit_booking_detail')
+  })
+
+  it('guides clients cleanly when requesting a number update mid-reschedule after booking lookup', async () => {
+    const midReschedNum = await chat([
+      'reschedule my appointment',
+      'JAL-7K3QX',
+      '09171234567',
+      'change number',
+    ])
+    expect(midReschedNum.last.reply).not.toMatch(/didn't get that/i)
+    expect(midReschedNum.last.reply).toMatch(/JAL-7K3QX/)
+    expect(midReschedNum.last.reply).toMatch(/mobile number/i)
+    expect(midReschedNum.last.handoff?.draft).toMatch(/JAL-7K3QX/)
+  })
+})
+
+describe('multi-style NLU and real-world salon scenarios', () => {
+  it('routes forgot-reference-code messages to Page Handoff without looping on ask_reference', async () => {
+    const { last } = await chat(['check my booking', 'nakalimutan ko ref code ko'])
+    expect(last.reply).not.toMatch(/Pakisend po ang booking reference/i)
+    expect(last.reply).toMatch(/Page handoff/i)
+    expect(last.handoff?.reason).toBe('forgot_reference')
+    expect(last.state.flow).toBeNull()
+  })
+
+  it('checks availability for both dates when asked dual-date availability', async () => {
+    const { turns } = await chat([
+      'May available ba sa Nov 20 o Nov 21?',
+      'nov 20',
+    ])
+    expect(turns[0].intent).toBe('CHECK_AVAILABILITY')
+    expect(turns[0].reply).toMatch(/Nov 20/)
+    expect(turns[0].reply).toMatch(/Nov 21/)
+    expect(turns[0].state.flow?.awaiting).toBe('date')
+    expect(turns[1].state.flow?.slots.date).toBe('2026-11-20')
+  })
+
+  it('extracts attendee name cleanly when booking for someone else', async () => {
+    const { turns, actions } = await chat([
+      'book bridal sa nov 20 10am',
+      'para kay Maria Santos',
+      '09171234567',
+      'skip',
+      'oo',
+    ])
+    expect(turns[1].state.flow.slots.name).toBe('Maria Santos')
+    expect(turns[3].reply).toMatch(/Maria Santos/)
+    expect(actions.bookAppointment).toHaveBeenCalledWith(expect.objectContaining({ name: 'Maria Santos' }))
+  })
+
+  it('pauses the flow warmly on mid-flow hesitation and resumes later', async () => {
+    const { turns } = await chat([
+      'book bridal sa nov 20 10am',
+      'wait lang tanong ko muna kay mama',
+      'resume',
+      'Ana Cruz',
+    ])
+    expect(turns[1].reply).not.toMatch(/hindi ko nakuha|didn't get/i)
+    expect(turns[1].reply).toMatch(/resume|ituloy/i)
+    expect(turns[1].state.flow).toBeNull()
+    expect(turns[1].state.pausedFlow?.slots.service).toBe('bridal')
+    expect(turns[2].reply).toMatch(/pangalan|name/i)
+    expect(turns[3].state.flow?.slots.name).toBe('Ana Cruz')
+  })
+
+  it('handles pre-opening early call-time requests with operating hours note and Page Handoff', async () => {
+    const { last } = await chat(['pwede ba 4am call time sa bridal?'])
+    expect(last.reply).toMatch(/8:00 AM/)
+    expect(last.reply).toMatch(/4:00 AM/)
+    expect(last.handoff?.reason).toBe('early_calltime')
+    expect(last.handoff?.draft).toMatch(/4:00 AM/)
+  })
+
+  it('understands Conyo and Jeje booking/inquiry phrasing in conversation', async () => {
+    const conyoAvail = await chat(['avail p b tom?'])
+    expect(conyoAvail.last.intent).toBe('CHECK_AVAILABILITY')
+
+    const jejeBook = await chat(['pbook nmn aq ng bridal s dec 5 10am'])
+    expect(jejeBook.last.intent).toBe('BOOK_APPOINTMENT')
+    expect(jejeBook.last.state.flow?.slots).toMatchObject({ service: 'bridal', date: '2026-12-05', time: '10:00' })
+  })
+})

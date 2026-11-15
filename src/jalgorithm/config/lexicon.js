@@ -28,6 +28,7 @@ export const CONCEPTS = {
   ],
   VIEW: [
     'view', 'status', 'details', 'detail', 'reference', 'ref', 'lookup', ['check', 'my'], ['see', 'my'], ['look', 'up'],
+    ['pa', 'check'], ['paki', 'check'], ['magpa', 'check'], ['magpapa', 'check'], ['confirmed', 'na'], ['tuloy', 'pa', 'ba'],
     ['confirm', 'kung'], ['naka', 'book', 'ba'], ['nakabook', 'ba'], ['booked', 'ba'], ['did', 'my'], ['still', 'on'],
     ['what', 'date', 'did', 'i'], ['when', 'did', 'i', 'book'], ['kailan', 'ako', 'nag', 'book'], ['anong', 'date', 'ko'],
   ],
@@ -35,7 +36,7 @@ export const CONCEPTS = {
     'available', 'availability', 'vacant', 'free', 'vacancy', 'open', ['may', 'slot'], ['meron', 'slot'], ['may', 'available'],
     ['meron', 'available'], ['fully', 'booked'], ['full', 'booked'], ['kaya', 'ba'], ['kaya', 'ninyo', 'ba'], ['kaya', 'po', 'ba'],
     ['have', 'time'], ['pwede', 'ba'], ['are', 'you', 'free'],
-    ['may', 'bakante'], ['open', 'slot'], ['open', 'slots'], 'slot',
+    ['may', 'bakante'], ['open', 'slot'], ['open', 'slots'], ['g', 'ba'], ['libre', 'ba'], 'slot',
   ],
   // "...kaya ba or ako mag-adjust?": the CLIENT offers to adjust, i.e. asking if a time is possible.
   FLEX: [
@@ -104,6 +105,7 @@ export const CONCEPTS = {
     'joke', 'robot', 'news', 'basketball', 'math', 'translate', 'bored', 'favorite', 'shoes',
     'pasok', 'school', 'bigas', 'president', 'presidente', 'tired', 'pagod',
     'hiring', 'apply', 'trabaho', 'gown', 'lalaki', 'barber',
+    'sell', 'selling', 'benta', 'nagbebenta', 'tinda', 'nagtitinda', 'cashier', 'kape', 'perfume', 'lipstick', 'skincare', 'cosmetics', 'shipping',
   ],
 }
 
@@ -135,6 +137,19 @@ export const KNOWN_WORDS = new Set(`
   thanks salamat thank welcome bye paalam ingat
   book booking appointment schedule reschedule cancel available slot price rate fee consultation location address
   hours open close service offer
+  graduation pageant prenup entourage birthday prom party debutante wedding reception bridal
+  lipstick pabango cosmetics retail bottle matte foundation skincare
+  sinigang adobo luto ulam kwentuhan tula globe hiring nagbebenta nagpapagawa nagugupit
+  pinakamaagang earliest landmark landmarks zambales bakanteng covered outside holiday
+  matutuloy tutuloy nakalimutan makakasipot maabutan memakeup magmemakeup nagpaayos
+  lahat gawing baguhin palitan ilipat iusog lipat palipat ikansela icancel kanselahin
+  abort delete void verify urgent conflict transfer handle reminders reminder lock touch
+  algorithm jal change edit update number mobile contact cellphone numb num mob cel
+  sis be bes bestie muna sakali sakaling magtatanong itatanong nagtanong nagtatanong tanong tanungin
+  asking around inquire inquiring confirm double calltime early maaga madaling dawn
+  nakalimutan limot kalimutan maalala tandaan forgot lost nawala sandali teka hold sec
+  pass push bet para mom sister kapatid mama nanay friend kaibigan work works libre
+  banda event usually start weekends studio parlor kailangan kapag malalaman confirmed status rates pambayad pina
 `.split(/\s+/).filter(Boolean))
 
 // Words the fuzzy corrector is allowed to correct TOWARDS (domain vocabulary only).
@@ -145,7 +160,8 @@ export const FUZZY_TARGETS = [
   'service', 'hairstyle', 'styling', 'tomorrow', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
   'saturday', 'sunday', 'miyerkules', 'huwebes', 'biyernes', 'sabado', 'makapunta', 'makakapunta',
   'debutante', 'entourage', 'portfolio', 'operating', 'salamat', 'thanks', 'kumusta', 'pwede', 'paano',
-  'reference', 'available', 'postpone', 'ngayon', 'mamaya', 'umaga', 'hapon',
+  'reference', 'postpone', 'ngayon', 'mamaya', 'umaga', 'hapon',
+  'number', 'mobile', 'contact', 'cellphone', 'bridesmaid', 'additional', 'inclusions',
 ]
 
 // Reply language detection: tokens that strongly indicate Filipino.

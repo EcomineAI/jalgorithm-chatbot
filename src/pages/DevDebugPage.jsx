@@ -126,26 +126,26 @@ export default function DevDebugPage() {
 
   if (!allowed) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm max-w-md w-full p-7 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-[#f8f6f2] flex items-center justify-center p-6">
+        <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 shadow-xs max-w-md w-full p-7 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
             <ShieldAlert size={22} />
           </div>
-          <h1 className="text-lg font-bold text-gray-900">Local Development Only</h1>
-          <p className="text-sm text-gray-500 leading-relaxed">
+          <h1 className="text-lg font-semibold text-stone-900">Local Development Only</h1>
+          <p className="text-sm text-stone-500 leading-relaxed">
             The JAlgorithm Dev Studio is locked on deployed hosts and only opens from localhost or Vite development mode for an authenticated owner account.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
             <Link
               to="/owner"
-              className="inline-flex items-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              className="inline-flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium px-4 min-h-10 rounded-lg transition-colors"
             >
               <ArrowLeft size={14} />
               Back to Owner Studio
             </Link>
             <Link
               to="/"
-              className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+              className="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-medium px-4 min-h-10 rounded-lg transition-colors"
             >
               Public Site
             </Link>
@@ -157,26 +157,26 @@ export default function DevDebugPage() {
 
   if (!isDesktop) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-rose-50/50 to-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl border border-pink-100 shadow-sm max-w-md w-full p-8 text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-gray-900 text-pink-400 flex items-center justify-center mx-auto">
-            <Monitor size={24} />
+      <div className="min-h-screen bg-[#f8f6f2] flex items-center justify-center p-6">
+        <div className="bg-[#fdfcfa] rounded-2xl border border-stone-200/80 max-w-md w-full p-8 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-stone-900 text-pink-300 flex items-center justify-center mx-auto">
+            <Monitor size={22} />
           </div>
-          <h1 className="text-lg font-bold text-gray-900">Desktop Browser Required</h1>
-          <p className="text-sm text-gray-500 leading-relaxed">
-            The JAlgorithm Dev Studio has been streamlined for wide desktop screens (1024px or wider) to display full NLU traces, session cleanup tables, and the visual system map clearly. Please open <span className="font-mono text-gray-700">/dev</span> on a desktop or laptop browser.
+          <h1 className="font-display text-xl font-medium text-stone-900">Desktop Browser Required</h1>
+          <p className="text-sm text-stone-500 leading-relaxed">
+            The JAlgorithm Dev Studio has been streamlined for wide desktop screens (1024px or wider) to display full NLU traces, session cleanup tables, and the visual system map clearly. Please open <span className="font-mono text-stone-700">/dev</span> on a desktop or laptop browser.
           </p>
           <div className="flex flex-col gap-2 pt-2">
             <Link
               to="/owner"
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+              className="w-full inline-flex items-center justify-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium px-4 min-h-11 rounded-lg transition-colors"
             >
               <ArrowLeft size={14} />
               Open Owner Studio
             </Link>
             <Link
               to="/"
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
+              className="w-full inline-flex items-center justify-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-medium px-4 min-h-11 rounded-lg transition-colors"
             >
               Public Site
             </Link>
@@ -200,22 +200,22 @@ export default function DevDebugPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-rose-50/40 via-gray-50 to-gray-50 flex flex-col">
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-pink-100/80 px-6 py-3 flex items-center justify-between gap-4">
+    <div className="min-h-screen bg-[#f8f6f2] flex flex-col">
+      <header className="sticky top-0 z-20 bg-[#fdfcfa]/95 backdrop-blur-md border-b border-stone-200/80 px-6 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-gray-900 text-pink-400 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-stone-900 text-pink-300 flex items-center justify-center shrink-0">
             <Terminal size={17} />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="font-bold text-gray-900 text-base truncate">
+              <h1 className="font-semibold text-stone-900 text-base truncate">
                 JAlgorithm Dev Studio
               </h1>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-900 text-pink-300 px-2 py-0.5 rounded-full">
-                Localhost Desktop
+              <span className="text-xs font-mono bg-stone-900 text-pink-300 px-2 py-0.5 rounded-md">
+                Localhost desktop
               </span>
             </div>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs text-stone-500 truncate">
               {bizName} | NLU Trace Runner, Session Trash Cleanup, Batch Tester &amp; Visual System Map
             </p>
           </div>
@@ -224,21 +224,21 @@ export default function DevDebugPage() {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/owner"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-pink-600 bg-white border border-gray-200 hover:border-pink-200 px-3 py-1.5 rounded-xl transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-700 hover:text-pink-700 bg-[#fdfcfa] border border-stone-200/80 hover:bg-stone-100 px-3 min-h-8 rounded-lg transition-colors"
           >
             <ArrowLeft size={13} />
             Owner Studio
           </Link>
           <Link
             to="/chat"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-pink-600 bg-white border border-gray-200 hover:border-pink-200 px-3 py-1.5 rounded-xl transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-700 hover:text-pink-700 bg-[#fdfcfa] border border-stone-200/80 hover:bg-stone-100 px-3 min-h-8 rounded-lg transition-colors"
           >
             <MessageSquare size={13} />
             Public Chat
           </Link>
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-pink-600 bg-white border border-gray-200 hover:border-pink-200 px-3 py-1.5 rounded-xl transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-700 hover:text-pink-700 bg-[#fdfcfa] border border-stone-200/80 hover:bg-stone-100 px-3 min-h-8 rounded-lg transition-colors"
           >
             <Globe size={13} />
             Website
@@ -248,7 +248,7 @@ export default function DevDebugPage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-5 space-y-5">
         <div className="flex items-center justify-between gap-4">
-          <div className="inline-flex items-center bg-white border border-pink-100 rounded-2xl p-1.5 shadow-2xs gap-1">
+          <div className="inline-flex items-center bg-[#fdfcfa] border border-stone-200/80 rounded-xl p-1 shadow-xs gap-1">
             {tabs.map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -257,18 +257,18 @@ export default function DevDebugPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-colors ${
+                  className={`inline-flex items-center gap-2 text-xs font-medium px-3.5 min-h-9 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-pink-500 text-white shadow-xs'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-rose-50/50'
+                      ? 'bg-pink-600 text-white shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
                   }`}
                 >
-                  <Icon size={14} />
+                  <Icon size={14} strokeWidth={1.75} />
                   <span>{tab.label}</span>
                   {tab.badge !== null && tab.badge !== undefined && (
                     <span
-                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        isActive ? 'bg-white/25 text-white' : 'bg-amber-100 text-amber-800'
+                      className={`px-1.5 py-0.5 rounded-md text-xs font-medium tabular-nums ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
                       }`}
                     >
                       {tab.badge}
@@ -279,12 +279,12 @@ export default function DevDebugPage() {
             })}
           </div>
 
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-stone-500 tabular-nums">
             Auto-clean:{' '}
-            <strong className="text-gray-800">
+            <strong className="font-medium text-stone-800">
               {logStats.autoPruneDays === 0 ? 'Off' : `Past ${logStats.autoPruneDays}d`}
             </strong>{' '}
-            · Cap: <strong className="text-gray-800">1,000 rows/table</strong>
+            · Cap: <strong className="font-medium text-stone-800">1,000 rows/table</strong>
           </div>
         </div>
 

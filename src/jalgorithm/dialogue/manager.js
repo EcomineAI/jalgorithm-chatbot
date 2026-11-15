@@ -15,7 +15,7 @@
 import { newFlow, cloneState } from './state.js'
 import { INTENTS, FLOW_INTENTS } from '../config/intents.js'
 import { YES_WORDS, NO_WORDS, RESET_PHRASES } from '../config/lexicon.js'
-import { manilaToday, compareIso } from '../entities/calendar.js'
+import { manilaToday, addDays, compareIso } from '../entities/calendar.js'
 import { replyLanguage } from '../pipeline/language.js'
 
 const INFO_INTENTS = new Set(['ASK_PRICE', 'ASK_SERVICES', 'ASK_LOCATION', 'ASK_OPERATING_HOURS', 'ASK_BOOKING_POLICY', 'GENERAL_INQUIRY', 'GREETING', 'THANKS'])
@@ -28,6 +28,10 @@ const CHANGE_WORDS = {
   contact: ['number', 'contact', 'mobile', 'phone', 'cp', 'cellphone'],
   location: ['location', 'venue', 'lugar', 'address'],
 }
+const CHANGE_VERBS = new Set(['change', 'edit', 'palitan', 'palit', 'ibahin', 'update', 'baguhin'])
+const POLICY_EXPLICIT_WORDS = new Set(['policy', 'policies', 'rules', 'rule', 'refund', 'refundable', 'downpayment', 'dp', 'deposit', 'penalty', 'patakaran'])
+const HOURS_EXPLICIT_WORDS = new Set(['hours', 'opening', 'closing', 'sarado', 'operating', 'magsasara', 'nagsasara', 'nagbubukas', 'magbubukas'])
+const NON_SCHED_CHANGE_TARGETS = ['contact', 'location', 'service', 'name']
 const OPTION_TAGS = {
   RESCHEDULE_APPOINTMENT: 'MOVE', CANCEL_APPOINTMENT: 'CANCEL', BOOK_APPOINTMENT: 'BOOK', CHECK_AVAILABILITY: 'AVAIL',
   ASK_PRICE: 'PRICE', ASK_SERVICES: 'SERVICE_Q', ASK_OPERATING_HOURS: 'HOURS', VIEW_APPOINTMENT: 'VIEW',
@@ -41,8 +45,28 @@ const HEAD_WORDS = new Set(['additional', 'dagdag', 'extra', 'head', 'heads', 'p
 const ACK_EXTRA_WORDS = new Set(['noted', 'gets', 'cge', 'copy', 'alright', 'right', 'oh', 'ah', 'ahh', 'hmm', 'thank', 'thanks', 'ty', 'salamat'])
 const RESUME_PHRASES = [['resume'], ['continue'], ['ituloy'], ['tuloy'], ['tuloy', 'natin'], ['resume', 'booking'], ['resume', 'setup']]
 const DISCARD_DRAFT_PHRASES = [['discard', 'draft'], ['clear', 'draft'], ['delete', 'draft'], ['burahin', 'draft'], ['start', 'fresh']]
+const FORGOT_REF_WORDS = new Set(['nakalimutan', 'limot', 'kalimutan', 'maalala', 'tandaan', 'forgot', 'lost', 'nawala'])
+const CALLTIME_WORDS = new Set(['calltime', 'early', 'maaga', 'madaling', 'dawn'])
+const HESITATE_STARTERS = new Set(['wait', 'sandali', 'teka'])
+const HESITATE_CHECK_VERBS = new Set(['check', 'tanong', 'tanungin', 'ask', 'confirm', 'usap', 'consult'])
 
 const hasFilledSetup = (flow) => Boolean(flow?.slots && Object.values(flow.slots).some(Boolean))
+const hasBigram = (words, a, b) => words.some((w, i) => w === a && words[i + 1] === b)
+const isHesitationPause = (words, entities) => {
+  if (!words.length) return false
+  if (entities?.date || entities?.time || entities?.reference || entities?.contact || entities?.service) return false
+  if (hasBigram(words, 'hold', 'on') || hasBigram(words, 'one', 'sec')) return true
+  if (HESITATE_STARTERS.has(words[0]) && words.length >= 2 && !NO_WORDS.has(words[1]) && !words.some((w) => ['mali', 'wrong', 'cancel', 'reset'].includes(w))) return true
+  return words.includes('muna') && words.some((w) => HESITATE_CHECK_VERBS.has(w))
+}
+const isEarlyCallTime = (words, entities, biz) => {
+  const open = biz?.hours?.open || '08:00'
+  if (entities?.time && entities.time < open) return true
+  const isAskingOpenTime = !entities?.time && words.some((w) => ['anong', 'ano', 'what', 'kailan', 'when'].includes(w))
+  if (isAskingOpenTime) return false
+  const hasCallCue = hasWordIn(words, CALLTIME_WORDS) || hasBigram(words, 'call', 'time') || hasBigram(words, 'madaling', 'araw')
+  return hasCallCue && !words.some((w) => ['magsasara', 'close', 'closing', 'sarado'].includes(w))
+}
 const matchesPhraseList = (words, phrases) => {
   const clean = words.filter((x) => x !== 'po' && x !== '?' && x !== 'please')
   return phrases.some((p) => p.length === clean.length && p.every((x, i) => clean[i] === x))
@@ -105,6 +129,7 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     await route(ctx)
 
     state.lastIntent = ctx.resolvedIntent
+    rememberContext(state, nlu, nowDate)
     return {
       reply: ctx.out.join('\n\n'),
       state,
@@ -115,6 +140,71 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
       appointment: ctx.appointment,
       replyTo: ctx.replyTo,
     }
+  }
+
+  function rememberContext(state, nlu, nowDate) {
+    const e = nlu?.entities
+    if (!e) return
+    const today = manilaToday(nowDate)
+    const prev = state.recentContext ?? { service: null, date: null, time: null, updatedTurn: 0 }
+    const next = { ...prev }
+    let updated = false
+    if (e.service) {
+      next.service = e.service
+      updated = true
+    }
+    if (e.date && compareIso(e.date, today) >= 0) {
+      next.date = e.date
+      updated = true
+    }
+    if (e.time) {
+      next.time = e.time
+      updated = true
+    }
+    if (updated) {
+      next.updatedTurn = state.turn
+      state.recentContext = next
+    }
+  }
+
+  function clearRecentContext(state) {
+    state.recentContext = { service: null, date: null, time: null, updatedTurn: 0 }
+  }
+
+  function replyBookingDetailChange(ctx, target, refCode = null) {
+    ctx.resolvedIntent = 'RESCHEDULE_APPOINTMENT'
+    const refLabel = refCode || (ctx.state.lang === 'fil' ? 'kasama ang reference code mo' : 'with your reference code')
+    const detail = ctx.label(`detail_${target}`)
+    if (target === 'location') ctx.say('change_venue_guide')
+    else ctx.say('change_booking_detail_guide', { detail, refLabel })
+    setHandoff(ctx, {
+      reason: target === 'location' ? 'change_venue' : 'edit_booking_detail',
+      topic: `Update ${detail} on Page`,
+      draft: `Hi ${business.artist}! I want to update the ${detail} for my booking (${refCode || 'Ref Code: '}). Updated ${detail}: `,
+    })
+  }
+
+  function replyForgotReference(ctx) {
+    ctx.state.flow = null
+    ctx.say('forgot_reference_guide')
+    setHandoff(ctx, {
+      reason: 'forgot_reference',
+      topic: 'Help find booking reference code on Page',
+      draft: `Hi ${business.artist}! I forgot or lost my booking reference code. Could you help me check my booking? Name, event date & mobile number: `,
+    })
+  }
+
+  function replyEarlyCallTime(ctx, slotLike = ctx.nlu.entities) {
+    const timeLabel = slotLike?.time ? fmtTime(slotLike.time) : 'early call-time'
+    const svc = slotLike?.service ? services.find((x) => x.key === slotLike.service) : null
+    const svcDraft = svc ? ` (${svc.name})` : ''
+    const dateDraft = slotLike?.date ? ` on ${fmtDate(ctx, slotLike.date)}` : ''
+    ctx.say('early_calltime_guide', { time: timeLabel })
+    setHandoff(ctx, {
+      reason: 'early_calltime',
+      topic: 'Request early call-time / pre-opening slot on Page',
+      draft: `Hi ${business.artist}! Could I request an early call-time at ${timeLabel}${svcDraft}${dateDraft}? Location: `,
+    })
   }
 
   function setHandoff(ctx, { reason, topic, draft }) {
@@ -140,6 +230,7 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
       state.flow = null
       state.pausedFlow = null
       state.pending = null
+      clearRecentContext(state)
       ctx.resolvedIntent = 'RESET'
       return ctx.say(hadAnything ? 'draft_discarded' : 'nothing_to_reset')
     }
@@ -168,6 +259,7 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
       const hadSomething = state.flow || state.pending
       state.flow = null
       state.pending = null
+      clearRecentContext(state)
       ctx.resolvedIntent = 'RESET'
       return ctx.say(wasConfirming ? 'action_aborted' : hadSomething ? 'reset_done' : 'nothing_to_reset')
     }
@@ -178,6 +270,23 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     }
 
     if (state.flow) return handleFlowTurn(ctx)
+
+    // Out-of-flow explicit request to change a non-schedule booking detail (venue, mobile number, service, or name)
+    const outDetailTarget =
+      (hasWordIn(nlu.words, CHANGE_VERBS) || nlu.tags.includes('MOVE')) &&
+      !nlu.entities.date &&
+      !nlu.entities.time &&
+      !nlu.words.some((w) => ['saan', 'where', 'nasaan', 'located', 'magkano', 'price', 'book', 'reserve'].includes(w))
+        ? NON_SCHED_CHANGE_TARGETS.find((k) => CHANGE_WORDS[k].some((w) => nlu.words.includes(w)))
+        : null
+    if (outDetailTarget) {
+      return replyBookingDetailChange(ctx, outDetailTarget, nlu.entities.reference)
+    }
+
+    if (isEarlyCallTime(nlu.words, nlu.entities, business)) {
+      ctx.resolvedIntent = FLOW_INTENTS.includes(nlu.intent) ? nlu.intent : 'ASK_OPERATING_HOURS'
+      return replyEarlyCallTime(ctx, nlu.entities)
+    }
 
     if (nlu.ambiguous && nlu.candidates.length === 2) {
       state.pending = { type: 'clarify', options: nlu.candidates, slots: carriedSlots(ctx) }
@@ -243,16 +352,33 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     ctx.resolvedIntent = intent
 
     if (FLOW_INTENTS.includes(intent)) {
-      state.flow = newFlow(intent, carried)
+      const recent = state.recentContext
+      const recentFresh = Boolean(recent?.updatedTurn && state.turn - recent.updatedTurn <= 4)
+      const shouldInheritService =
+        recentFresh &&
+        recent.service &&
+        !carried.service &&
+        !nlu.entities.service &&
+        (intent === 'BOOK_APPOINTMENT' || intent === 'CHECK_AVAILABILITY')
+      const mergedCarried = shouldInheritService ? { service: recent.service, ...carried } : { ...carried }
+      state.flow = newFlow(intent, mergedCarried)
       const { notes } = absorb(ctx, state.flow)
+      if (shouldInheritService && intent === 'BOOK_APPOINTMENT') {
+        ctx.say('remembered_service', { service: serviceName(mergedCarried.service) })
+      }
       notes.forEach((n) => ctx.say(n.key, n.vars))
+      answerSecondaryInfo(ctx, intent)
       return advance(ctx)
     }
     if (intent === 'CANNOT_ATTEND') {
       state.pending = { type: 'clarify', options: ['RESCHEDULE_APPOINTMENT', 'CANCEL_APPOINTMENT'], slots: {} }
       return ctx.say('cannot_attend')
     }
-    if (INFO_INTENTS.has(intent)) return answerInfo(ctx, intent)
+    if (INFO_INTENTS.has(intent)) {
+      answerInfo(ctx, intent)
+      answerSecondaryInfo(ctx, intent)
+      return
+    }
     return ctx.say(nlu.reason === 'out_of_scope' || nlu.reason === 'out_of_domain' ? 'out_of_scope' : 'unknown')
   }
 
@@ -260,6 +386,15 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     const { state, nlu } = ctx
     const f = state.flow
     ctx.resolvedIntent = f.intent
+
+    if (isHesitationPause(nlu.words, nlu.entities)) {
+      const paused = f
+      paused.confirming = false
+      state.pausedFlow = paused
+      state.flow = null
+      ctx.resolvedIntent = 'RESET'
+      return ctx.say('setup_hesitation_paused', { flow: ctx.label(`flow_${paused.intent}`) })
+    }
 
     if (f.confirming) {
       const yn = yesNo(nlu.words)
@@ -271,19 +406,55 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
       }
     }
 
+    if (f.awaiting === 'reference' && !nlu.entities.reference && hasWordIn(nlu.words, FORGOT_REF_WORDS)) {
+      return replyForgotReference(ctx)
+    }
+
+    if (isEarlyCallTime(nlu.words, nlu.entities, business)) {
+      f.slots.time = null
+      f.awaiting = 'time'
+      return replyEarlyCallTime(ctx, { ...f.slots, ...nlu.entities })
+    }
+
     let changeRequested = false
-    if (f.awaiting === 'change') {
+    const wantsChange = f.awaiting === 'change' || hasWordIn(nlu.words, CHANGE_VERBS)
+    if (wantsChange) {
       const target = Object.keys(CHANGE_WORDS).find((k) => CHANGE_WORDS[k].some((w) => nlu.words.includes(w)))
+      // Inside RESCHEDULE after the booking is verified, requesting to edit contact/location/service/name
+      // cannot be done via the date/time reschedule RPC -> guide to artist handoff cleanly instead of looping.
+      if (
+        f.intent === 'RESCHEDULE_APPOINTMENT' &&
+        f.appointment &&
+        target &&
+        NON_SCHED_CHANGE_TARGETS.includes(target) &&
+        !nlu.entities.date &&
+        !nlu.entities.time
+      ) {
+        const ref = f.appointment.reference_code
+        state.flow = null
+        return replyBookingDetailChange(ctx, target, ref)
+      }
       if (target && flowSlots(f.intent).has(target)) {
         f.slots[target] = null
         if (target === 'location') f.locationAsked = false
         if (target === 'date' || target === 'service') f.checked = null
+        if (target === 'date') f.suggestedDate = null
         changeRequested = true
       }
     }
 
+    // If the bot suggested an earliest/next valid date after too_soon or avail_none and user accepts or sends a time
+    let acceptedSuggestion = false
+    if (f.awaiting === 'date' && f.suggestedDate && !nlu.entities.date && !nlu.entities.dateInfo?.week) {
+      if (yesNo(nlu.words) === 'yes' || nlu.entities.time || nlu.entities.timeInfo?.period) {
+        f.slots.date = f.suggestedDate
+        f.suggestedDate = null
+        acceptedSuggestion = true
+      }
+    }
+
     const { filled, notes } = absorb(ctx, f)
-    if (filled.length || notes.length || changeRequested) {
+    if (filled.length || notes.length || changeRequested || acceptedSuggestion) {
       notes.forEach((n) => ctx.say(n.key, n.vars))
       f.misses = 0
       f.confirming = false
@@ -369,6 +540,13 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
       else if (e.date) {
         set('date', e.date)
         f.weekHint = null
+        if (f.intent === 'CHECK_AVAILABILITY' && Array.isArray(e.dates) && e.dates.length >= 2) {
+          const todayIso = manilaToday(ctx.nowDate)
+          const futureDates = e.dates.filter((d) => compareIso(d, todayIso) >= 0)
+          f.multiDates = futureDates.length >= 2 ? futureDates.slice(0, 3) : null
+        } else {
+          f.multiDates = null
+        }
       }
     }
 
@@ -393,8 +571,9 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     if (e.reference) set('reference', e.reference)
     // Free-text answers (name, venue) are only accepted when the message isn't itself a request
     // or question, so "magkano bridal?" while we wait for a name is answered, not saved as a name.
+    const isRelationName = /^(?:(?:this\s+)?(?:booking\s+)?(?:is\s+)?)?(?:para\s+(?:kay|sa)|for\s+(?:my|the)|name\s+(?:ko|ni|ng)|pangalan\s+(?:ko|ni|ng))/i.test(ctx.nlu.original.trim())
     const isFreeText = !ctx.nlu.words.includes('?') && ctx.nlu.tags.every((t) => FREE_TEXT_TAGS.has(t))
-    if (f.awaiting === 'name' && e.name && isFreeText) set('name', e.name)
+    if (f.awaiting === 'name' && e.name && (isFreeText || (isRelationName && !INFO_INTENTS.has(ctx.nlu.intent)))) set('name', e.name)
     if (f.awaiting === 'location' && e.location && isFreeText) {
       f.locationAsked = true
       if (e.location.skipped) filled.push('location')
@@ -457,6 +636,36 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
 
   async function advanceAvailability(ctx, f) {
     const s = f.slots
+    if (Array.isArray(f.multiDates) && f.multiDates.length >= 2) {
+      const targetDates = f.multiDates
+      f.multiDates = null
+      const lines = []
+      for (const d of targetDates) {
+        const r = await call(ctx, 'getAvailableSlots', { date: d, serviceKey: s.service ?? null })
+        if (!r.ok && (r.reason === 'unreachable' || r.reason === 'error')) {
+          sayReason(ctx, r)
+          ctx.state.flow = null
+          return
+        }
+        if (!r.ok) {
+          const msg =
+            r.reason === 'too_soon'
+              ? ctx.state.lang === 'fil'
+                ? `hindi pa open online (min ${business.rules.minAdvanceDays} araw in advance)`
+                : `requires ${business.rules.minAdvanceDays}-day advance notice`
+              : ctx.state.lang === 'fil'
+                ? 'hindi available'
+                : 'unavailable'
+          lines.push(`• ${fmtDate(ctx, d)}: ${msg}`)
+        } else {
+          const daySlots = r.data?.slots ?? []
+          lines.push(`• ${fmtDate(ctx, d)}: ${daySlots.length ? fmtSlots(daySlots) : ctx.state.lang === 'fil' ? 'walang bakanteng slot' : 'fully booked'}`)
+        }
+      }
+      s.date = null
+      f.awaiting = 'date'
+      return ctx.say('dual_date_avail_summary', { summary: lines.join('\n') })
+    }
     if (!s.date) return askDate(ctx, f, 'ask_date_avail')
     const slots = await availableSlots(ctx, f, s.date, s.service)
     if (!slots) return
@@ -473,7 +682,10 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
 
   async function advanceExisting(ctx, f) {
     const s = f.slots
-    if (!s.reference) return ask(ctx, 'ask_reference', 'reference')
+    if (!s.reference) {
+      if (hasWordIn(ctx.nlu.words, FORGOT_REF_WORDS)) return replyForgotReference(ctx)
+      return ask(ctx, 'ask_reference', 'reference')
+    }
     if (!s.contact) return ask(ctx, 'ask_contact_lookup', 'contact')
 
     if (!f.appointment) {
@@ -569,14 +781,27 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     const r = await call(ctx, 'getAvailableSlots', { date, serviceKey: serviceKey ?? null })
     if (!r.ok) {
       sayReason(ctx, r)
-      if (r.reason === 'too_soon' && business.rules?.sameDayRushNote) {
-        ctx.say('rush_booking_note')
-        const svcLabel = serviceKey ? ` for ${serviceName(serviceKey)}` : ''
-        setHandoff(ctx, {
-          reason: 'rush_inquiry',
-          topic: 'Rush / short-notice slot inquiry',
-          draft: `Hi ${business.artist}! I want to ask if a rush or short-notice slot on ${fmtDate(ctx, date)}${svcLabel} is available.`,
-        })
+      if (r.reason === 'too_soon') {
+        if (r.data?.min_date && actions && typeof actions.getAvailableSlots === 'function') {
+          try {
+            const minRes = await actions.getAvailableSlots({ date: r.data.min_date, serviceKey: serviceKey ?? null })
+            if (minRes?.ok && minRes.data?.slots?.length) {
+              f.suggestedDate = r.data.min_date
+              ctx.say('nearest_date_slots', { date: fmtDate(ctx, r.data.min_date), slots: fmtSlots(minRes.data.slots) })
+            }
+          } catch {
+            // Side peek is advisory only; fall through to standard prompt.
+          }
+        }
+        if (business.rules?.sameDayRushNote) {
+          ctx.say('rush_booking_note')
+          const svcLabel = serviceKey ? ` for ${serviceName(serviceKey)}` : ''
+          setHandoff(ctx, {
+            reason: 'rush_inquiry',
+            topic: 'Rush / short-notice slot inquiry',
+            draft: `Hi ${business.artist}! I want to ask if a rush or short-notice slot on ${fmtDate(ctx, date)}${svcLabel} is available.`,
+          })
+        }
       }
       if (['too_soon', 'past_date', 'invalid_date'].includes(r.reason)) {
         f.slots.date = null
@@ -593,11 +818,27 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     const slots = r.data?.slots ?? []
     if (!slots.length) {
       ctx.say('avail_none', { date: fmtDate(ctx, date) })
+      if (actions && typeof actions.getAvailableSlots === 'function') {
+        for (let offset = 1; offset <= 3; offset++) {
+          const candidateDate = addDays(date, offset)
+          try {
+            const altRes = await actions.getAvailableSlots({ date: candidateDate, serviceKey: serviceKey ?? null })
+            if (altRes?.ok && altRes.data?.slots?.length) {
+              f.suggestedDate = candidateDate
+              ctx.say('nearest_date_slots', { date: fmtDate(ctx, candidateDate), slots: fmtSlots(altRes.data.slots) })
+              break
+            }
+          } catch {
+            break
+          }
+        }
+      }
       f.slots.date = null
       f.slots.time = null
       f.awaiting = 'date'
       return null
     }
+    f.suggestedDate = null
     f.checked = { date, service: serviceKey ?? null, slots }
     return slots
   }
@@ -654,6 +895,7 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
         }
         ctx.state.flow = null
         ctx.state.pausedFlow = null
+        clearRecentContext(ctx.state)
         ctx.say('booking_success', { ref: r.data.reference_code, service: svcTitle, date: fDate, time: fTime })
         if (isTieredPolicy(business.rules)) {
           const isWedding = ['bridal', 'wedding_package'].includes(s.service)
@@ -717,6 +959,9 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
     const s = f.slots
     switch (r.reason) {
       case 'slot_taken':
+        f.checked = null
+        s.time = null
+        return advance(ctx)
       case 'outside_hours':
         s.time = null
         f.checked = null
@@ -773,12 +1018,104 @@ export function createDialogueManager({ analyzer, responder, actions, catalog, n
   }
 
   function sayAdditionalHeads(ctx) {
-    ctx.say(business.additionalHeadPrice != null ? 'additional_heads_set' : 'additional_heads_unset')
+    const hc = ctx.nlu.entities.headCount
+    const svcKey = ctx.nlu.entities.service || ctx.state.recentContext?.service
+    const svc = svcKey ? services.find((x) => x.key === svcKey) : null
+    if (hc && business.additionalHeadPrice != null) {
+      if (svc && svc.price != null) {
+        const extra = hc.kind === 'total' ? Math.max(0, hc.count - 1) : hc.count
+        const total = Number(svc.price) + extra * Number(business.additionalHeadPrice)
+        ctx.say('additional_heads_quote_with_service', {
+          service: svc.name,
+          servicePrice: responder.fmt.servicePrice(svc),
+          extra,
+          total: responder.fmt.price(total),
+        })
+      } else {
+        const total = hc.count * Number(business.additionalHeadPrice)
+        ctx.say('additional_heads_quote', {
+          count: hc.count,
+          total: responder.fmt.price(total),
+        })
+      }
+    } else if (hc && business.additionalHeadPrice == null) {
+      ctx.say('additional_heads_unset_count', { count: hc.count })
+    } else {
+      ctx.say(business.additionalHeadPrice != null ? 'additional_heads_set' : 'additional_heads_unset')
+    }
+    const svcDraft = svc ? `${svc.name} + ` : ''
+    const headDraft = hc ? `${hc.count} ${hc.kind === 'total' ? 'total heads' : 'additional head(s)'}` : 'additional heads / entourage members'
     setHandoff(ctx, {
       reason: 'additional_heads',
       topic: 'Get group / additional heads quote on Page',
-      draft: `Hi ${business.artist}! I would like to ask for a quote for additional heads / entourage members. Number of heads & event date: `,
+      draft: `Hi ${business.artist}! I would like to ask for a quote for ${svcDraft}${headDraft}. Event date: `,
     })
+  }
+
+  function answerSecondaryInfo(ctx, primaryIntent) {
+    const { nlu } = ctx
+    const tags = new Set(nlu.tags ?? [])
+
+    // 1. Price / additional heads / inclusions mentioned alongside booking, availability, location, or hours
+    if (
+      primaryIntent !== 'ASK_PRICE' &&
+      primaryIntent !== 'ASK_SERVICES' &&
+      tags.has('PRICE') &&
+      !nlu.words.includes('consultation')
+    ) {
+      if (hasWordIn(nlu.words, HEAD_WORDS) || nlu.entities.headCount) {
+        sayAdditionalHeads(ctx)
+      } else {
+        const svc = services.find((x) => x.key === nlu.entities.service)
+        if (svc) {
+          ctx.say('price_service', { service: svc.name, price: responder.fmt.servicePrice(svc) })
+          if (business.rules.reservationFee > 0 && business.rules.reservationFeeServices.includes(svc.key)) {
+            ctx.say('reservation_fee_note')
+          }
+        }
+      }
+    } else if (FLOW_INTENTS.includes(primaryIntent)) {
+      if (hasWordIn(nlu.words, INCLUSION_WORDS)) sayInclusions(ctx)
+      else if (hasWordIn(nlu.words, HEAD_WORDS) || nlu.entities.headCount) sayAdditionalHeads(ctx)
+    }
+
+    // 2. Explicit location question combined with price/services/hours/policy
+    if (
+      primaryIntent !== 'ASK_LOCATION' &&
+      INFO_INTENTS.has(primaryIntent) &&
+      tags.has('LOCATION')
+    ) {
+      if (hasTravelDetails(business)) {
+        ctx.say('location_with_travel_note')
+        if (!ctx.handoff) {
+          setHandoff(ctx, {
+            reason: 'travel_quote',
+            topic: 'Request out-of-town / venue travel quote',
+            draft: `Hi ${business.artist}! I would like to check if an out-of-town travel fee applies to our event venue. Venue & date: `,
+          })
+        }
+      } else {
+        ctx.say('location')
+      }
+    }
+
+    // 3. Explicit operating hours question combined with another info inquiry
+    if (
+      primaryIntent !== 'ASK_OPERATING_HOURS' &&
+      INFO_INTENTS.has(primaryIntent) &&
+      hasWordIn(nlu.words, HOURS_EXPLICIT_WORDS)
+    ) {
+      ctx.say('hours')
+    }
+
+    // 4. Explicit policy / downpayment question combined with another info inquiry
+    if (
+      primaryIntent !== 'ASK_BOOKING_POLICY' &&
+      INFO_INTENTS.has(primaryIntent) &&
+      hasWordIn(nlu.words, POLICY_EXPLICIT_WORDS)
+    ) {
+      ctx.say(isTieredPolicy(business.rules) ? 'policy_tiered' : 'policy')
+    }
   }
 
   function answerInfo(ctx, intent) {

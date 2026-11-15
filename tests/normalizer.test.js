@@ -112,4 +112,17 @@ describe('human-typing normalization enhancements', () => {
     const custom = createNormalizer({ services: [{ key: 'airbrush', name: 'Airbrush Makeup', aliases: ['airbrush'] }] })
     expect(custom.normalize(tokenize(preprocess('airbrsh').text)).words).toEqual(['airbrush'])
   })
+  it('normalizes real-world chat shortcuts like chaneg, pabook, and hmpo', () => {
+    expect(norm('chaneg loc').words).toEqual(['change', 'location'])
+    expect(norm('pabook bkas').words).toEqual(['pa', 'book', 'bukas'])
+    expect(norm('hmpo bridal').words).toEqual(['magkano', 'po', 'bridal'])
+  })
+  it('normalizes Conyo, Jeje, and compressed SMS styles cleanly without corrupting words', () => {
+    expect(norm('avail p b tom').words).toEqual(['available', 'pa', 'ba', 'tomorrow'])
+    expect(norm('mron p b slot bks').words).toEqual(['meron', 'pa', 'ba', 'slot', 'bukas'])
+    expect(norm('pbook nmn aq ng bridal s dec 5').words).toEqual(['pa', 'book', 'naman', 'ako', 'ng', 'bridal', 'sa', 'dec', '5'])
+    expect(norm('d aq mkkpunta').words).toEqual(['hindi', 'ako', 'makakapunta'])
+    expect(norm('bet ko hair + makeup').words).toEqual(['gusto', 'ko', 'hair', 'and', 'makeup'])
+    expect(norm('pwde b gcash lng pmbayad').words).toEqual(['pwede', 'ba', 'gcash', 'lang', 'pambayad'])
+  })
 })

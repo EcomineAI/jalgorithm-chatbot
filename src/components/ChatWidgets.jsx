@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import {
-  Sparkles,
   Check,
   Copy,
   Calendar,
@@ -21,6 +20,7 @@ import {
   Filter,
   Building2,
 } from 'lucide-react'
+import StudioMark from './StudioMark.jsx'
 import { formatServicePrice, formatDuration } from '../lib/ownerInsights.js'
 import { computeOwnerPrepSummary } from '../lib/calendarLinks.js'
 import { copyText } from '../lib/nluDebug.js'
@@ -166,7 +166,7 @@ export function FlowControls({
   if (showStarters && !flow && !pending && !pausedFlow) {
     return (
       <div className="pt-2 animate-controls-in">
-        <div className="text-xs font-medium text-gray-400 mb-2.5">Quick actions</div>
+        <div className="text-xs font-medium text-stone-500 mb-2.5">Quick actions</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {STARTER_CARDS.map((card) => {
             const Icon = card.icon
@@ -176,17 +176,17 @@ export function FlowControls({
                 type="button"
                 disabled={disabled}
                 onClick={() => onSelect(card.prompt)}
-                className="text-left bg-white hover:bg-pink-50/60 border border-gray-200 hover:border-pink-300 rounded-xl p-3.5 transition-all group shadow-2xs"
+                className="text-left bg-white hover:bg-[#fdfcfa] border border-stone-200/80 hover:border-pink-300 rounded-xl p-3.5 transition-[background-color,border-color] group"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-pink-50 group-hover:bg-pink-100 text-pink-500 flex items-center justify-center flex-shrink-0 transition-colors">
-                    <Icon size={16} />
+                  <div className="w-8 h-8 rounded-lg bg-stone-100 group-hover:bg-pink-600 text-stone-700 group-hover:text-white flex items-center justify-center flex-shrink-0 transition-colors">
+                    <Icon size={16} strokeWidth={1.75} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-gray-800 group-hover:text-pink-600 transition-colors">
+                    <div className="text-sm font-medium text-stone-900 group-hover:text-pink-700 transition-colors">
                       {card.title}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5 leading-snug">{card.desc}</div>
+                    <div className="text-xs text-stone-500 mt-0.5 leading-snug">{card.desc}</div>
                   </div>
                 </div>
               </button>
@@ -201,19 +201,19 @@ export function FlowControls({
   if (!flow && !pending && pausedFlow) {
     const summaryParts = summarizeDraftSlots(pausedFlow, services)
     return (
-      <div className="animate-controls-in pl-10">
-        <div className="bg-gradient-to-br from-amber-50/80 via-white to-pink-50/60 border border-amber-200/90 rounded-2xl p-3.5 max-w-md space-y-2.5 shadow-xs">
+      <div className="animate-controls-in pl-0 sm:pl-10">
+        <div className="bg-[#fdfcfa] border border-amber-200 rounded-xl p-4 max-w-md space-y-2.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-amber-700">
-              <Pause size={12} />
-              Saved Setup Draft
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-800">
+              <Pause size={12} strokeWidth={1.75} />
+              Saved setup draft
             </span>
-            <span className="text-[10px] font-medium text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
               Paused
             </span>
           </div>
           {summaryParts.length > 0 && (
-            <div className="text-xs text-gray-700 leading-relaxed">
+            <div className="text-xs text-stone-700 leading-relaxed">
               {summaryParts.join(' | ')}
             </div>
           )}
@@ -222,18 +222,18 @@ export function FlowControls({
               type="button"
               disabled={disabled}
               onClick={() => (onResumeDraft ? onResumeDraft() : onSelect('resume'))}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-3.5 py-1.5 rounded-xl transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-3.5 min-h-9 rounded-lg transition-colors"
             >
-              <Play size={12} />
+              <Play size={12} strokeWidth={1.75} />
               Resume Setup
             </button>
             <button
               type="button"
               disabled={disabled}
               onClick={() => (onDiscardDraft ? onDiscardDraft() : onSelect('discard draft'))}
-              className="inline-flex items-center gap-1 text-xs font-medium bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-gray-600 border border-gray-200 px-3 py-1.5 rounded-xl transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-medium bg-white hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-stone-600 border border-stone-200 px-3 min-h-9 rounded-lg transition-colors"
             >
-              <Trash2 size={12} />
+              <Trash2 size={12} strokeWidth={1.75} />
               Discard Draft
             </button>
           </div>
@@ -245,21 +245,21 @@ export function FlowControls({
   // 2. Pending confirmation / clarification choices.
   if (pending?.type === 'offer_book') {
     return (
-      <div className="animate-controls-in flex flex-wrap gap-2 pl-10">
+      <div className="animate-controls-in flex flex-wrap gap-2 pl-0 sm:pl-10">
         <button
           type="button"
           disabled={disabled}
           onClick={() => onSelect('yes')}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-xl transition-colors shadow-xs"
+          className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-4 min-h-9 rounded-lg transition-colors"
         >
-          <Check size={14} />
+          <Check size={14} strokeWidth={1.75} />
           Yes, book this slot
         </button>
         <button
           type="button"
           disabled={disabled}
           onClick={() => onSelect('no')}
-          className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-4 py-2 rounded-xl transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-4 min-h-9 rounded-lg transition-colors"
         >
           No, thanks
         </button>
@@ -269,12 +269,12 @@ export function FlowControls({
 
   if (pending?.type === 'cancel_or_abort') {
     return (
-      <div className="animate-controls-in flex flex-wrap gap-2 pl-10">
+      <div className="animate-controls-in flex flex-wrap gap-2 pl-0 sm:pl-10">
         <button
           type="button"
           disabled={disabled}
           onClick={() => onSelect('1')}
-          className="text-xs font-medium bg-white hover:bg-pink-50 hover:text-pink-600 hover:border-pink-300 text-gray-700 border border-gray-200 px-3.5 py-2 rounded-xl transition-colors"
+          className="text-xs font-medium bg-white hover:bg-stone-50 hover:text-pink-700 hover:border-pink-300 text-stone-700 border border-stone-200 px-3.5 min-h-9 rounded-lg transition-colors"
         >
           1. Pause current booking setup
         </button>
@@ -282,7 +282,7 @@ export function FlowControls({
           type="button"
           disabled={disabled}
           onClick={() => onSelect('2')}
-          className="text-xs font-medium bg-white hover:bg-pink-50 hover:text-pink-600 hover:border-pink-300 text-gray-700 border border-gray-200 px-3.5 py-2 rounded-xl transition-colors"
+          className="text-xs font-medium bg-white hover:bg-stone-50 hover:text-pink-700 hover:border-pink-300 text-stone-700 border border-stone-200 px-3.5 min-h-9 rounded-lg transition-colors"
         >
           2. Cancel existing appointment
         </button>
@@ -292,14 +292,14 @@ export function FlowControls({
 
   if (pending?.type === 'clarify' && Array.isArray(pending.options)) {
     return (
-      <div className="animate-controls-in flex flex-wrap gap-2 pl-10">
+      <div className="animate-controls-in flex flex-wrap gap-2 pl-0 sm:pl-10">
         {pending.options.map((intentOpt, idx) => (
           <button
             key={intentOpt}
             type="button"
             disabled={disabled}
             onClick={() => onSelect(String(idx + 1))}
-            className="text-xs font-medium bg-white hover:bg-pink-50 hover:text-pink-600 hover:border-pink-300 text-gray-700 border border-gray-200 px-3.5 py-2 rounded-xl transition-colors"
+            className="text-xs font-medium bg-white hover:bg-stone-50 hover:text-pink-700 hover:border-pink-300 text-stone-700 border border-stone-200 px-3.5 min-h-9 rounded-lg transition-colors"
           >
             {idx + 1}. {INTENT_OPTION_LABELS[intentOpt] || intentOpt}
           </button>
@@ -318,51 +318,51 @@ export function FlowControls({
     const timeLabel = slots.time ? formatTime(slots.time) : null
 
     return (
-      <div className="animate-controls-in pl-10 space-y-2.5">
-        <div className="bg-gradient-to-br from-rose-50/80 via-white to-pink-50/70 border border-pink-200/80 rounded-2xl p-4 shadow-xs max-w-md space-y-3">
+      <div className="animate-controls-in pl-0 sm:pl-10 space-y-2.5">
+        <div className="bg-[#fdfcfa] border border-stone-200 rounded-xl p-4 max-w-md space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-pink-600">
-                {isBooking ? 'Booking Summary' : isReschedule ? 'Reschedule Summary' : 'Confirm Request'}
+              <div className="text-xs font-medium text-pink-700">
+                {isBooking ? 'Booking summary' : isReschedule ? 'Reschedule summary' : 'Confirm request'}
               </div>
-              <div className="text-sm font-bold text-gray-900 mt-0.5">
+              <div className="text-sm font-medium text-stone-900 mt-0.5">
                 {svc?.name || (slots.reference ? `Reference: ${slots.reference}` : 'Please review your details')}
               </div>
               {svc?.durationMinutes && (
-                <div className="text-[11px] text-gray-500 mt-0.5">
+                <div className="text-xs text-stone-500 mt-0.5 tabular-nums">
                   Estimated session: {formatDuration(svc.durationMinutes)}
                 </div>
               )}
             </div>
             {svc && (
-              <span className="text-xs font-semibold bg-white border border-pink-200 text-pink-600 px-2.5 py-1 rounded-full shrink-0">
+              <span className="text-xs font-medium bg-white border border-stone-200 text-pink-700 px-2.5 py-1 rounded-md shrink-0 tabular-nums">
                 {formatServicePrice(svc)}
               </span>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-pink-100/80">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-stone-200/80">
             {(dateLabel || timeLabel) && (
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <Calendar size={13} className="text-pink-500 shrink-0" />
+              <div className="flex items-center gap-1.5 text-stone-700 tabular-nums">
+                <Calendar size={14} strokeWidth={1.75} className="text-stone-400 shrink-0" />
                 <span>{[dateLabel, timeLabel].filter(Boolean).join(' at ')}</span>
               </div>
             )}
             {slots.name && (
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <User size={13} className="text-pink-500 shrink-0" />
+              <div className="flex items-center gap-1.5 text-stone-700">
+                <User size={14} strokeWidth={1.75} className="text-stone-400 shrink-0" />
                 <span className="truncate">{slots.name}</span>
               </div>
             )}
             {slots.contact && (
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <Phone size={13} className="text-pink-500 shrink-0" />
-                <span className="font-mono">{slots.contact}</span>
+              <div className="flex items-center gap-1.5 text-stone-700">
+                <Phone size={14} strokeWidth={1.75} className="text-stone-400 shrink-0" />
+                <span className="font-mono tabular-nums">{slots.contact}</span>
               </div>
             )}
             {isBooking && (
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <MapPin size={13} className="text-pink-500 shrink-0" />
+              <div className="flex items-center gap-1.5 text-stone-700">
+                <MapPin size={14} strokeWidth={1.75} className="text-stone-400 shrink-0" />
                 <span className="truncate">{slots.location || 'Not specified'}</span>
               </div>
             )}
@@ -374,16 +374,16 @@ export function FlowControls({
             type="button"
             disabled={disabled}
             onClick={() => onSelect('Yes, confirm')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-xl transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-4 min-h-9 rounded-lg transition-colors"
           >
-            <Check size={14} />
+            <Check size={14} strokeWidth={1.75} />
             Confirm
           </button>
           <button
             type="button"
             disabled={disabled}
             onClick={() => onSelect('No, change something')}
-            className="text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-3.5 py-2 rounded-xl transition-colors"
+            className="text-xs font-medium bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-3.5 min-h-9 rounded-lg transition-colors"
           >
             Change a detail
           </button>
@@ -391,7 +391,7 @@ export function FlowControls({
             type="button"
             disabled={disabled}
             onClick={() => onSelect('pause')}
-            className="inline-flex items-center gap-1 text-xs font-medium bg-white hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 text-gray-600 border border-gray-200 px-3.5 py-2 rounded-xl transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-medium bg-white hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 text-stone-600 border border-stone-200 px-3.5 min-h-9 rounded-lg transition-colors"
           >
             <Pause size={12} />
             Pause &amp; Save
@@ -404,8 +404,8 @@ export function FlowControls({
   // 3b. Saved recent booking reference pills when JAL asks for a code.
   if (flow?.awaiting === 'reference' && savedReferences.length > 0) {
     return (
-      <div className="animate-controls-in pl-10 space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+      <div className="animate-controls-in pl-0 sm:pl-10 space-y-2">
+        <div className="text-xs font-medium text-gray-500">
           Your recent booking codes on this device
         </div>
         <div className="flex flex-wrap gap-2">
@@ -419,11 +419,11 @@ export function FlowControls({
                 type="button"
                 disabled={disabled}
                 onClick={() => onSelect(item.reference)}
-                className="inline-flex items-center gap-1.5 text-xs bg-white hover:bg-pink-50 hover:border-pink-300 border border-pink-100 rounded-xl px-3 py-2 transition-colors shadow-xs"
+                className="inline-flex items-center gap-1.5 text-xs bg-white hover:bg-[#fdfcfa] hover:border-pink-300 border border-stone-200 rounded-lg px-3 min-h-9 transition-colors"
               >
-                <Bookmark size={12} className="text-pink-500 shrink-0" />
-                <span className="font-mono font-semibold text-pink-600">{item.reference}</span>
-                {details && <span className="text-gray-500">({details})</span>}
+                <Bookmark size={13} strokeWidth={1.75} className="text-pink-600 shrink-0" />
+                <span className="font-mono font-medium text-pink-700">{item.reference}</span>
+                {details && <span className="text-stone-500">({details})</span>}
               </button>
             )
           })}
@@ -435,8 +435,8 @@ export function FlowControls({
   // 4. Service picker cards.
   if (flow?.awaiting === 'service' && services.length > 0) {
     return (
-      <div className="animate-controls-in pl-10">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+      <div className="animate-controls-in pl-0 sm:pl-10">
+        <div className="text-xs font-medium text-stone-500 mb-2">
           Select a service
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -446,25 +446,25 @@ export function FlowControls({
               type="button"
               disabled={disabled}
               onClick={() => onSelect(svc.aliases?.[0] || svc.name)}
-              className="flex items-start justify-between gap-2 text-left bg-white hover:bg-pink-50 border border-gray-200 hover:border-pink-300 rounded-xl px-3.5 py-2.5 transition-all group"
+              className="flex items-start justify-between gap-2 text-left bg-white hover:bg-[#fdfcfa] border border-stone-200/80 hover:border-pink-300 rounded-xl px-3.5 py-2.5 transition-[background-color,border-color] group"
             >
               <div className="min-w-0">
-                <div className="text-xs font-semibold text-gray-800 group-hover:text-pink-600 truncate">
+                <div className="text-xs font-medium text-stone-900 group-hover:text-pink-700 truncate">
                   {svc.name}
                 </div>
                 {svc.durationMinutes && (
-                  <div className="text-[11px] text-gray-400">{formatDuration(svc.durationMinutes)}</div>
+                  <div className="text-xs text-stone-500 tabular-nums">{formatDuration(svc.durationMinutes)}</div>
                 )}
                 {svc.inclusions && (
-                  <div className="text-[11px] text-gray-500 mt-0.5 line-clamp-2 leading-snug">
+                  <div className="text-xs text-stone-500 mt-0.5 line-clamp-2 leading-snug">
                     Includes: {svc.inclusions}
                   </div>
                 )}
                 {svc.priceNote && (
-                  <div className="text-[10px] text-gray-400 mt-0.5 leading-snug">{svc.priceNote}</div>
+                  <div className="text-xs text-stone-400 mt-0.5 leading-snug">{svc.priceNote}</div>
                 )}
               </div>
-              <span className="text-xs font-semibold text-pink-600 flex-shrink-0 text-right">
+              <span className="text-xs font-medium text-pink-700 tabular-nums flex-shrink-0 text-right">
                 {formatServicePrice(svc)}
               </span>
             </button>
@@ -477,8 +477,8 @@ export function FlowControls({
   // 5. Date selection: quick upcoming dates + inline date picker.
   if (flow?.awaiting === 'date') {
     return (
-      <div className="animate-controls-in pl-10 space-y-2.5">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+      <div className="animate-controls-in pl-0 sm:pl-10 space-y-2.5">
+        <div className="text-xs font-medium text-stone-500 tabular-nums">
           Choose a date (earliest: {formatDateChipLabel(earliestDate)})
         </div>
         <div className="flex flex-wrap gap-2">
@@ -488,9 +488,9 @@ export function FlowControls({
               type="button"
               disabled={disabled}
               onClick={() => onSelect(formatDateForNlu(iso))}
-              className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-pink-50 hover:text-pink-600 hover:border-pink-300 text-gray-700 border border-gray-200 px-3 py-2 rounded-xl transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-[#fdfcfa] hover:text-pink-700 hover:border-pink-300 text-stone-700 border border-stone-200 px-3 min-h-9 rounded-lg transition-colors"
             >
-              <Calendar size={12} className="text-pink-500" />
+              <Calendar size={13} strokeWidth={1.75} className="text-stone-400" />
               {formatDateChipLabel(iso)}
             </button>
           ))}
@@ -501,13 +501,13 @@ export function FlowControls({
             min={earliestDate}
             value={pickedDate}
             onChange={(e) => setPickedDate(e.target.value)}
-            className="text-xs bg-white border border-gray-200 rounded-xl px-3 py-1.5 text-gray-700 focus:outline-none focus:border-pink-300"
+            className="text-xs bg-white border border-stone-200 rounded-lg px-3 min-h-9 text-stone-700 focus:outline-none focus:border-pink-400"
           />
           <button
             type="button"
             disabled={disabled || !pickedDate}
             onClick={() => pickedDate && onSelect(formatDateForNlu(pickedDate))}
-            className="text-xs font-semibold bg-pink-500 hover:bg-pink-600 disabled:bg-pink-200 text-white px-3.5 py-1.5 rounded-xl transition-colors"
+            className="text-xs font-medium bg-pink-600 hover:bg-pink-700 disabled:bg-pink-200 text-white px-3.5 min-h-9 rounded-lg transition-colors"
           >
             Select Date
           </button>
@@ -521,8 +521,8 @@ export function FlowControls({
     const slots = flow.checked?.slots ?? []
     if (slots.length > 0) {
       return (
-        <div className="animate-controls-in pl-10">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">
+        <div className="animate-controls-in pl-0 sm:pl-10">
+          <div className="text-xs font-medium text-stone-500 mb-2">
             Available time slots
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
@@ -532,7 +532,7 @@ export function FlowControls({
                 type="button"
                 disabled={disabled}
                 onClick={() => onSelect(formatTime(hhmm))}
-                className="text-xs font-medium bg-white hover:bg-pink-50 hover:text-pink-600 hover:border-pink-300 text-gray-700 border border-gray-200 py-2 px-2 rounded-xl transition-colors text-center"
+                className="text-xs font-medium tabular-nums bg-white hover:bg-[#fdfcfa] hover:text-pink-700 hover:border-pink-300 text-stone-700 border border-stone-200 min-h-9 px-2 rounded-lg transition-colors text-center"
               >
                 {formatTime(hhmm)}
               </button>
@@ -542,14 +542,14 @@ export function FlowControls({
       )
     }
     return (
-      <div className="animate-controls-in flex flex-wrap gap-2 pl-10">
+      <div className="animate-controls-in flex flex-wrap gap-2 pl-0 sm:pl-10">
         {['Morning', 'Afternoon', 'Evening'].map((p) => (
           <button
             key={p}
             type="button"
             disabled={disabled}
             onClick={() => onSelect(p)}
-            className="text-xs font-medium bg-white hover:bg-pink-50 hover:text-pink-600 hover:border-pink-300 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-xl transition-colors"
+            className="text-xs font-medium bg-white hover:bg-[#fdfcfa] hover:text-pink-700 hover:border-pink-300 text-stone-700 border border-stone-200 px-3 min-h-9 rounded-lg transition-colors"
           >
             {p}
           </button>
@@ -582,13 +582,13 @@ export function FlowControls({
     }
 
     return (
-      <div className="animate-controls-in pl-10">
-        <div className="bg-white border border-pink-100 rounded-2xl p-3.5 max-w-lg space-y-3 shadow-xs">
+      <div className="animate-controls-in pl-0 sm:pl-10">
+        <div className="bg-white border border-stone-200/80 rounded-xl p-4 max-w-lg space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-              Select Service Location
+            <span className="text-xs font-medium text-stone-600">
+              Select service location
             </span>
-            <span className="text-[11px] text-gray-500 truncate max-w-[220px]">
+            <span className="text-xs text-stone-500 truncate max-w-[220px]">
               Studio: {studioAddress}
             </span>
           </div>
@@ -598,18 +598,18 @@ export function FlowControls({
               type="button"
               disabled={disabled}
               onClick={() => onSelect('At Artist Studio')}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-3.5 py-2 rounded-xl transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-3.5 min-h-9 rounded-lg transition-colors"
             >
-              <Building2 size={13} />
+              <Building2 size={14} strokeWidth={1.75} />
               At Artist Studio
             </button>
             <button
               type="button"
               disabled={disabled}
               onClick={() => onSelect(`Home / Event Venue (${homeArea})`)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 px-3 py-2 rounded-xl transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 px-3 min-h-9 rounded-lg transition-colors"
             >
-              <MapPin size={13} className="text-pink-500" />
+              <MapPin size={14} strokeWidth={1.75} className="text-pink-700" />
               My Event Venue ({homeArea})
             </button>
           </div>
@@ -626,22 +626,22 @@ export function FlowControls({
                   onSelect(customVenue.trim())
                 }
               }}
-              placeholder="Or type venue / hotel / barangay..."
-              className="flex-1 min-w-0 text-xs bg-gray-50 focus:bg-white border border-gray-200 focus:border-pink-300 rounded-xl px-3 py-2 text-gray-700 focus:outline-none"
+              placeholder="Venue or barangay"
+              className="flex-1 min-w-0 text-xs bg-[#fdfcfa] focus:bg-white border border-stone-200 focus:border-pink-400 rounded-lg px-3 min-h-9 text-stone-800 focus:outline-none"
             />
             <button
               type="button"
               disabled={disabled || !customVenue.trim()}
               onClick={() => customVenue.trim() && onSelect(customVenue.trim())}
-              className="text-xs font-semibold bg-gray-900 hover:bg-pink-600 disabled:bg-gray-200 text-white px-3.5 py-2 rounded-xl transition-colors shrink-0"
+              className="text-xs font-medium bg-stone-900 hover:bg-pink-600 disabled:bg-stone-200 text-white px-3.5 min-h-9 rounded-lg transition-colors shrink-0"
             >
               Use Venue
             </button>
           </div>
 
           {uniqueAreas.length > 0 && (
-            <div className="space-y-1.5 pt-1 border-t border-gray-100">
-              <div className="text-[11px] font-medium text-gray-400">Quick service areas</div>
+            <div className="space-y-1.5 pt-2 border-t border-stone-100">
+              <div className="text-xs font-medium text-stone-500">Quick service areas</div>
               <div className="flex flex-wrap gap-1.5">
                 {uniqueAreas.slice(0, 8).map((item) => (
                   <button
@@ -649,13 +649,13 @@ export function FlowControls({
                     type="button"
                     disabled={disabled}
                     onClick={() => onSelect(item.label)}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-pink-50 hover:border-pink-300 text-gray-700 border border-gray-200 px-2.5 py-1.5 rounded-xl transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-stone-50 hover:border-stone-300 text-stone-700 border border-stone-200 px-2.5 min-h-8 rounded-lg transition-colors"
                   >
-                    <MapPin size={11} className="text-pink-500 shrink-0" />
+                    <MapPin size={12} strokeWidth={1.75} className="text-stone-400 shrink-0" />
                     <span>{item.label}</span>
                     <span
-                      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                        item.isFree ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                      className={`text-xs font-medium px-1.5 py-0.5 rounded-md ${
+                        item.isFree ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'
                       }`}
                     >
                       {item.isFree ? 'Free travel' : 'Out-of-town fee'}
@@ -666,7 +666,7 @@ export function FlowControls({
                   type="button"
                   disabled={disabled}
                   onClick={() => onSelect('skip')}
-                  className="text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-xl transition-colors"
+                  className="text-xs font-medium bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 min-h-8 rounded-lg transition-colors"
                 >
                   Skip for now
                 </button>
@@ -684,14 +684,14 @@ export function FlowControls({
       ? ['Date', 'Time']
       : ['Service', 'Date', 'Time', 'Name', 'Number', 'Location']
     return (
-      <div className="animate-controls-in flex flex-wrap gap-2 pl-10">
+      <div className="animate-controls-in flex flex-wrap gap-2 pl-0 sm:pl-10">
         {fields.map((field) => (
           <button
             key={field}
             type="button"
             disabled={disabled}
             onClick={() => onSelect(field)}
-            className="text-xs font-medium bg-white hover:bg-pink-50 hover:text-pink-600 hover:border-pink-300 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-xl transition-colors"
+            className="text-xs font-medium bg-white hover:bg-[#fdfcfa] hover:text-pink-700 hover:border-pink-300 text-stone-700 border border-stone-200 px-3 min-h-9 rounded-lg transition-colors"
           >
             {field}
           </button>
@@ -703,14 +703,14 @@ export function FlowControls({
   // 9. Post-info follow-up chips outside an active flow.
   if (!flow && INFO_FOLLOWUP_INTENTS.has(state?.lastIntent)) {
     return (
-      <div className="animate-controls-in flex flex-wrap gap-2 pl-10">
+      <div className="animate-controls-in flex flex-wrap gap-2 pl-0 sm:pl-10">
         {['Book an appointment', 'What is included in bridal makeup?', 'Check available slots', 'How much additional heads?'].map((q) => (
           <button
             key={q}
             type="button"
             disabled={disabled}
             onClick={() => onSelect(q)}
-            className="text-xs font-medium bg-white hover:bg-pink-50 hover:text-pink-600 hover:border-pink-300 text-gray-600 border border-gray-200 px-3 py-1.5 rounded-full transition-colors"
+            className="text-xs font-medium bg-white hover:bg-[#fdfcfa] hover:text-pink-700 hover:border-pink-300 text-stone-600 border border-stone-200 px-3 min-h-9 rounded-lg transition-colors"
           >
             {q}
           </button>
@@ -827,14 +827,14 @@ export function ChatBubble({
     <button
       type="button"
       onClick={() => message.replyTo?.id && onJumpToMessage?.(message.replyTo.id)}
-      className={`w-full text-left border-l-2 rounded-lg px-2.5 py-1.5 mb-2 text-[11px] transition-colors ${
+      className={`w-full text-left border-l-2 rounded-lg px-2.5 py-1.5 mb-2 text-xs transition-colors ${
         isUser
-          ? 'border-white/80 bg-pink-600/50 text-pink-50 hover:bg-pink-600/70'
-          : 'border-pink-400 bg-pink-50/70 text-gray-600 hover:bg-pink-100/60'
+          ? 'border-white/80 bg-pink-700/40 text-pink-50 hover:bg-pink-700/60'
+          : 'border-pink-500 bg-[#f8f6f2] text-stone-600 hover:bg-stone-100'
       }`}
     >
-      <div className="font-semibold inline-flex items-center gap-1">
-        <Reply size={10} />
+      <div className="font-medium inline-flex items-center gap-1">
+        <Reply size={11} strokeWidth={1.75} />
         Replying to {message.replyTo.role === 'user' ? 'Client' : 'JAL'}
       </div>
       <div className="truncate opacity-90 mt-0.5">{message.replyTo.text}</div>
@@ -846,31 +846,27 @@ export function ChatBubble({
       id={message.id ? `msg-${message.id}` : undefined}
       className={`flex gap-3 items-end animate-msg-in ${isUser ? 'flex-row-reverse' : ''}`}
     >
-      {!isUser && (
-        <div className="w-7 h-7 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0">
-          <Sparkles size={12} className="text-pink-500" />
-        </div>
-      )}
+      {!isUser && <StudioMark size="xs" tone="soft" roundedFull />}
       <div className={`max-w-[85%] md:max-w-[78%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
         {appt ? (
-          <div className="bg-white border-2 border-pink-200 rounded-2xl rounded-bl-sm shadow-md overflow-hidden w-full">
+          <div className="bg-white border border-stone-200 rounded-xl rounded-bl-sm shadow-2xs overflow-hidden w-full">
             {/* Highlighted Ref Code & Status Banner */}
-            <div className="bg-gradient-to-r from-pink-50 via-rose-50 to-pink-50 border-b border-pink-100 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+            <div className="bg-[#fdfcfa] border-b border-stone-200/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {primaryCode && (
-                  <span className="inline-flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider bg-pink-500 text-white px-2.5 py-1 rounded-lg shadow-2xs">
-                    <Bookmark size={11} />
-                    REF: {primaryCode}
+                  <span className="inline-flex items-center gap-1.5 font-mono text-xs font-medium bg-pink-600 text-white px-2.5 py-1 rounded-md tabular-nums">
+                    <Bookmark size={12} strokeWidth={1.75} />
+                    Ref: {primaryCode}
                   </span>
                 )}
-                <span className="text-[11px] font-medium text-pink-700">
+                <span className="text-xs font-medium text-stone-600">
                   Save this code
                 </span>
               </div>
               <span
-                className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                className={`text-xs font-medium px-2.5 py-0.5 rounded-md border ${
                   appt.status === 'rescheduled'
-                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
                     : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 }`}
               >
@@ -878,37 +874,37 @@ export function ChatBubble({
               </span>
             </div>
 
-            <div className="p-4 space-y-3.5 text-sm leading-relaxed text-gray-800">
+            <div className="p-4 space-y-3.5 text-sm leading-relaxed text-stone-800">
               {replyQuoteEl}
               <div className="whitespace-pre-wrap">{shownContent}</div>
 
               {/* Embedded Booking Summary Box */}
-              <div className="bg-gradient-to-br from-rose-50/70 via-white to-pink-50/60 border border-pink-200/80 rounded-xl p-3.5 space-y-2.5">
+              <div className="bg-[#f8f6f2] border border-stone-200/80 rounded-xl p-3.5 space-y-2.5">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-pink-600">
-                      Booking Summary
+                    <div className="text-xs font-medium text-pink-700">
+                      Booking summary
                     </div>
-                    <div className="text-sm font-bold text-gray-900 mt-0.5">
+                    <div className="text-sm font-medium text-stone-900 mt-0.5">
                       {appt.service_name || matchedService?.name || 'Scheduled Service'}
                     </div>
                     {appt.duration_minutes && (
-                      <div className="text-[11px] text-gray-500 mt-0.5">
+                      <div className="text-xs text-stone-500 mt-0.5 tabular-nums">
                         Estimated session: {formatDuration(appt.duration_minutes)}
                       </div>
                     )}
                   </div>
                   {matchedService && (
-                    <span className="text-xs font-semibold bg-white border border-pink-200 text-pink-600 px-2.5 py-1 rounded-full shrink-0">
+                    <span className="text-xs font-medium bg-white border border-stone-200 text-pink-700 px-2.5 py-1 rounded-md shrink-0 tabular-nums">
                       {formatServicePrice(matchedService)}
                     </span>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-pink-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-stone-200/80">
                   {(appt.date || appt.time) && (
-                    <div className="flex items-center gap-1.5 text-gray-700">
-                      <Calendar size={13} className="text-pink-500 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-stone-700 tabular-nums">
+                      <Calendar size={14} strokeWidth={1.75} className="text-stone-400 shrink-0" />
                       <span>
                         {[appt.date ? formatDateChipLabel(appt.date) : null, appt.time ? formatTime(appt.time) : null]
                           .filter(Boolean)
@@ -917,19 +913,19 @@ export function ChatBubble({
                     </div>
                   )}
                   {appt.client_name && (
-                    <div className="flex items-center gap-1.5 text-gray-700">
-                      <User size={13} className="text-pink-500 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-stone-700">
+                      <User size={14} strokeWidth={1.75} className="text-stone-400 shrink-0" />
                       <span className="truncate">{appt.client_name}</span>
                     </div>
                   )}
                   {appt.client_contact && (
-                    <div className="flex items-center gap-1.5 text-gray-700">
-                      <Phone size={13} className="text-pink-500 shrink-0" />
-                      <span className="font-mono">{appt.client_contact}</span>
+                    <div className="flex items-center gap-1.5 text-stone-700">
+                      <Phone size={14} strokeWidth={1.75} className="text-stone-400 shrink-0" />
+                      <span className="font-mono tabular-nums">{appt.client_contact}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-1.5 text-gray-700">
-                    <MapPin size={13} className="text-pink-500 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-stone-700">
+                    <MapPin size={14} strokeWidth={1.75} className="text-stone-400 shrink-0" />
                     <span className="truncate">{appt.location || 'Studio / To be confirmed'}</span>
                   </div>
                 </div>
@@ -942,9 +938,9 @@ export function ChatBubble({
                       key={code}
                       type="button"
                       onClick={() => handleCopyCode(code)}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 px-2.5 py-1 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium bg-[#fdfcfa] hover:bg-stone-100 text-stone-800 border border-stone-200 px-2.5 min-h-8 rounded-lg transition-colors"
                     >
-                      {copiedCode === code ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                      {copiedCode === code ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
                       {copiedCode === code ? `Copied ${code}` : `Copy Code: ${code}`}
                     </button>
                   ))}
@@ -953,11 +949,11 @@ export function ChatBubble({
                       href={appointmentLinks.calendarUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-pink-50 text-pink-600 border border-pink-200 px-2.5 py-1 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-stone-50 text-pink-700 border border-stone-200 px-2.5 min-h-8 rounded-lg transition-colors"
                     >
-                      <CalendarPlus size={12} />
+                      <CalendarPlus size={12} strokeWidth={1.75} />
                       Add to Google Calendar
-                      <ExternalLink size={10} />
+                      <ExternalLink size={11} />
                     </a>
                   )}
                   {appointmentLinks?.mapsUrl && (
@@ -965,25 +961,25 @@ export function ChatBubble({
                       href={appointmentLinks.mapsUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-2.5 min-h-8 rounded-lg transition-colors"
                     >
-                      <MapPin size={12} className="text-pink-500" />
+                      <MapPin size={12} strokeWidth={1.75} className="text-stone-500" />
                       View Venue in Google Maps
-                      <ExternalLink size={10} />
+                      <ExternalLink size={11} />
                     </a>
                   )}
                 </div>
               )}
 
               {message.handoff && (
-                <div className="bg-pink-50/70 border border-pink-100 rounded-xl p-3 space-y-2 text-xs">
+                <div className="bg-[#f8f6f2] border border-stone-200/80 rounded-xl p-3 space-y-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-gray-800 inline-flex items-center gap-1.5">
-                      <MessageCircle size={13} className="text-pink-500" />
+                    <span className="font-medium text-stone-900 inline-flex items-center gap-1.5">
+                      <MessageCircle size={14} strokeWidth={1.75} className="text-pink-700" />
                       {message.handoff.topic || `Message ${message.handoff.artist || 'Owner'} on Page`}
                     </span>
                     {ownerContact && (
-                      <span className="text-[11px] text-gray-500 truncate max-w-[180px]">{ownerContact}</span>
+                      <span className="text-xs text-stone-500 truncate max-w-[180px] tabular-nums">{ownerContact}</span>
                     )}
                   </div>
                   <textarea
@@ -991,15 +987,15 @@ export function ChatBubble({
                     onChange={(e) => setHandoffDraft(e.target.value)}
                     rows={3}
                     aria-label="Ready-to-send message"
-                    className="w-full bg-white border border-pink-200/80 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 leading-relaxed focus:outline-none focus:border-pink-400"
+                    className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-800 leading-relaxed focus:outline-none focus:border-pink-400"
                   />
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       onClick={handleCopyHandoff}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-3 min-h-8 rounded-lg transition-colors"
                     >
-                      {copiedHandoff ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                      {copiedHandoff ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
                       {copiedHandoff ? 'Copied Message' : 'Copy Message'}
                     </button>
                     {pageUrl && (
@@ -1011,10 +1007,10 @@ export function ChatBubble({
                           setTimeout(() => setCopiedHandoff(false), 1800)
                           window.open(pageUrl, '_blank', 'noopener,noreferrer')
                         }}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-3 min-h-8 rounded-lg transition-colors"
                       >
                         Copy &amp; Message Page
-                        <ExternalLink size={11} />
+                        <ExternalLink size={12} />
                       </button>
                     )}
                   </div>
@@ -1022,21 +1018,21 @@ export function ChatBubble({
               )}
 
               {showDevMeta && message.meta && (
-                <div className="pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-mono bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md">
+                <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center gap-1.5 tabular-nums">
+                  <span className="text-xs font-mono bg-stone-100 text-stone-700 px-2 py-0.5 rounded-md">
                     {message.meta.intent}
                   </span>
-                  <span className="text-[10px] font-semibold bg-pink-50 text-pink-600 px-2 py-0.5 rounded-md">
+                  <span className="text-xs font-medium bg-pink-50 text-pink-700 px-2 py-0.5 rounded-md">
                     {Math.round((message.meta.confidence ?? 0) * 100)}%
                   </span>
-                  <span className="text-[10px] text-gray-400">{message.meta.elapsedMs ?? 0}ms</span>
+                  <span className="text-xs text-stone-500">{message.meta.elapsedMs ?? 0}ms</span>
                   <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                      message.meta.isTrash ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'
+                    className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${
+                      message.meta.isTrash ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-700'
                     }`}
                   >
-                    <Filter size={9} />
-                    {message.meta.isTrash ? 'Dev Only' : 'Owner Logged'}
+                    <Filter size={11} />
+                    {message.meta.isTrash ? 'Dev only' : 'Owner logged'}
                   </span>
                 </div>
               )}
@@ -1044,10 +1040,10 @@ export function ChatBubble({
           </div>
         ) : (
           <div
-            className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm ${
+            className={`px-4 py-3 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
               isUser
-                ? 'bg-pink-500 text-white rounded-br-sm'
-                : 'bg-white border border-gray-100 text-gray-800 rounded-bl-sm'
+                ? 'bg-pink-600 text-white rounded-br-sm'
+                : 'bg-white border border-stone-200/80 text-stone-800 rounded-bl-sm'
             }`}
           >
             {replyQuoteEl}
@@ -1057,10 +1053,10 @@ export function ChatBubble({
                 {referenceCodes.map((code) => (
                   <span
                     key={`badge-${code}`}
-                    className="inline-flex items-center gap-1 font-mono text-[11px] font-bold tracking-wider bg-pink-500 text-white px-2.5 py-0.5 rounded-md"
+                    className="inline-flex items-center gap-1 font-mono text-xs font-medium bg-pink-600 text-white px-2.5 py-0.5 rounded-md tabular-nums"
                   >
-                    <Bookmark size={10} />
-                    REF: {code}
+                    <Bookmark size={11} />
+                    Ref: {code}
                   </span>
                 ))}
               </div>
@@ -1075,9 +1071,9 @@ export function ChatBubble({
                     key={code}
                     type="button"
                     onClick={() => handleCopyCode(code)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 px-2.5 py-1 rounded-lg transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-[#fdfcfa] hover:bg-stone-100 text-stone-800 border border-stone-200 px-2.5 min-h-8 rounded-lg transition-colors"
                   >
-                    {copiedCode === code ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                    {copiedCode === code ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
                     {copiedCode === code ? `Copied ${code}` : `Copy Code: ${code}`}
                   </button>
                 ))}
@@ -1085,14 +1081,14 @@ export function ChatBubble({
             )}
 
             {!isUser && !isRevealing && message.handoff && (
-              <div className="mt-3 bg-pink-50/70 border border-pink-100 rounded-xl p-3 space-y-2 text-xs">
+              <div className="mt-3 bg-[#f8f6f2] border border-stone-200/80 rounded-xl p-3 space-y-2 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-gray-800 inline-flex items-center gap-1.5">
-                    <MessageCircle size={13} className="text-pink-500" />
+                  <span className="font-medium text-stone-900 inline-flex items-center gap-1.5">
+                    <MessageCircle size={14} strokeWidth={1.75} className="text-pink-700" />
                     {message.handoff.topic || `Message ${message.handoff.artist || 'Owner'} on Page`}
                   </span>
                   {ownerContact && (
-                    <span className="text-[11px] text-gray-500 truncate max-w-[180px]">{ownerContact}</span>
+                    <span className="text-xs text-stone-500 truncate max-w-[180px] tabular-nums">{ownerContact}</span>
                   )}
                 </div>
                 <textarea
@@ -1100,15 +1096,15 @@ export function ChatBubble({
                   onChange={(e) => setHandoffDraft(e.target.value)}
                   rows={3}
                   aria-label="Ready-to-send message"
-                  className="w-full bg-white border border-pink-200/80 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 leading-relaxed focus:outline-none focus:border-pink-400"
+                  className="w-full bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-800 leading-relaxed focus:outline-none focus:border-pink-400"
                 />
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
                     onClick={handleCopyHandoff}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 px-3 min-h-8 rounded-lg transition-colors"
                   >
-                    {copiedHandoff ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                    {copiedHandoff ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
                     {copiedHandoff ? 'Copied Message' : 'Copy Message'}
                   </button>
                   {pageUrl && (
@@ -1120,10 +1116,10 @@ export function ChatBubble({
                         setTimeout(() => setCopiedHandoff(false), 1800)
                         window.open(pageUrl, '_blank', 'noopener,noreferrer')
                       }}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold bg-pink-500 hover:bg-pink-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium bg-pink-600 hover:bg-pink-700 text-white px-3 min-h-8 rounded-lg transition-colors"
                     >
                       Copy &amp; Message Page
-                      <ExternalLink size={11} />
+                      <ExternalLink size={12} />
                     </button>
                   )}
                 </div>
@@ -1131,21 +1127,21 @@ export function ChatBubble({
             )}
 
             {showDevMeta && !isUser && message.meta && (
-              <div className="mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] font-mono bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md">
+              <div className="mt-2.5 pt-2 border-t border-stone-100 flex flex-wrap items-center gap-1.5 tabular-nums">
+                <span className="text-xs font-mono bg-stone-100 text-stone-700 px-2 py-0.5 rounded-md">
                   {message.meta.intent}
                 </span>
-                <span className="text-[10px] font-semibold bg-pink-50 text-pink-600 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-medium bg-pink-50 text-pink-700 px-2 py-0.5 rounded-md">
                   {Math.round((message.meta.confidence ?? 0) * 100)}%
                 </span>
-                <span className="text-[10px] text-gray-400">{message.meta.elapsedMs ?? 0}ms</span>
+                <span className="text-xs text-stone-500">{message.meta.elapsedMs ?? 0}ms</span>
                 <span
-                  className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                    message.meta.isTrash ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'
+                  className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${
+                    message.meta.isTrash ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-700'
                   }`}
                 >
-                  <Filter size={9} />
-                  {message.meta.isTrash ? 'Dev Only' : 'Owner Logged'}
+                  <Filter size={11} />
+                  {message.meta.isTrash ? 'Dev only' : 'Owner logged'}
                 </span>
               </div>
             )}
@@ -1153,7 +1149,7 @@ export function ChatBubble({
         )}
 
         {(timeLabel || (!isRevealing && (!isUser || onReply))) && (
-          <div className="mt-1 px-1 flex items-center gap-2.5 text-[11px] text-gray-400">
+          <div className="mt-1 px-1 flex items-center gap-2.5 text-xs text-gray-400 tabular-nums">
             {timeLabel && <span>{timeLabel}</span>}
             {!isUser && !isRevealing && (
               <button
